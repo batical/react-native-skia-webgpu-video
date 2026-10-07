@@ -198,7 +198,8 @@ public class VideoPlayer {
       return;
     }
     eglResourcesHolder = EGLResourcesHolder.createWithPBBufferSurface(EGL10.EGL_NO_CONTEXT);
-    eglResourcesHolder.runWithContextCurrent(() -> glFrameExtractor = new GLFrameExtractor());
+    eglResourcesHolder.runWithContextCurrent(() ->
+      glFrameExtractor = new GLFrameExtractor(false, NativeHardwareBuffer.isEnabled()));
     if (player != null) {
       player.setVideoSurface(glFrameExtractor.getSurface());
     }

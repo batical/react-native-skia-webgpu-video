@@ -258,17 +258,60 @@ public class VideoCompositionDecoder {
   }
 
   /**
-   * Updates the video frames of the composition and return them
+   * Updates the composition and returns independently retained frame snapshots.
+   * Callers own these wrappers and may keep them after this decoder is released.
    *
    * @return A map with the updated video frames.
    */
   public Map<String, VideoFrame> updateVideosFrames() {
     synchronized (glLock) {
-      if (eglResourcesHolder == null || released) {
-        return videoFrames;
-      }
-      return eglResourcesHolder.withContextCurrent(this::updateVideosFramesCurrent);
+      updateInternalFrames();
+      return retainFrames(videoFrames);
     }
+  }
+
+  /** Export readiness checks borrow the producer map on the export thread.
+   * They must not publish it or close its frames. Only a completed request
+   * creates retained aliases, so polling never accumulates native leases. */
+  Map<String, VideoFrame> updateInternalFrames() {
+    synchronized (glLock) {
+      if (eglResourcesHolder != null && !released)
+        eglResourcesHolder.withContextCurrent(this::updateVideosFramesCurrent);
+      return videoFrames;
+    }
+  }
+
+  static Map<String, VideoFrame> retainFrames(Map<String, VideoFrame> frames) {
+    Map<String, VideoFrame> retained = new HashMap<>();
+    try {
+      for (Map.Entry<String, VideoFrame> entry : frames.entrySet()) {
+        VideoFrame alias = entry.getValue().retain();
+        try { retained.put(entry.getKey(), alias); }
+        catch (RuntimeException | Error error) {
+          try { alias.close(); }
+          catch (RuntimeException | Error cleanup) { error.addSuppressed(cleanup); }
+          throw error;
+        }
+      }
+      return retained;
+    } catch (RuntimeException | Error error) {
+      try { closeFrames(retained); }
+      catch (RuntimeException | Error cleanup) { error.addSuppressed(cleanup); }
+      throw error;
+    }
+  }
+
+  static void closeFrames(Map<String, VideoFrame> frames) {
+    Throwable failure = null;
+    for (VideoFrame frame : frames.values()) {
+      try { frame.close(); }
+      catch (RuntimeException | Error error) {
+        if (failure == null) failure = error;
+        else failure.addSuppressed(error);
+      }
+    }
+    if (failure instanceof RuntimeException) throw (RuntimeException) failure;
+    if (failure instanceof Error) throw (Error) failure;
   }
 
   private Map<String, VideoFrame> updateVideosFramesCurrent() {
@@ -296,6 +339,11 @@ public class VideoCompositionDecoder {
       if (slot.frame != null && videoFrames.get(id) == slot.frame) {
         videoFrames.remove(id);
         framesVersion++;
+      }
+      // This is the producer's wrapper. Independently retained snapshots stay valid.
+      if (slot.frame != null) {
+        slot.frame.close();
+        slot.frame = null;
       }
     }
     for (VideoComposition.Item item : composition.getItems()) {
@@ -335,9 +383,18 @@ public class VideoCompositionDecoder {
         continue;
       }
       VideoFrame nextFrame = glFrameExtractor.snapshotFrame(0);
+      VideoFrame previous = slot.frame;
+      final VideoFrame displaced;
+      try { displaced = videoFrames.put(item.getId(), nextFrame); }
+      catch (RuntimeException | Error error) {
+        try { nextFrame.close(); }
+        catch (RuntimeException | Error cleanup) { error.addSuppressed(cleanup); }
+        throw error;
+      }
       slot.frame = nextFrame;
-      videoFrames.put(item.getId(), nextFrame);
       framesVersion++;
+      if (previous != null) previous.close();
+      if (displaced != null && displaced != previous) displaced.close();
     }
     return videoFrames;
   }
@@ -413,17 +470,32 @@ public class VideoCompositionDecoder {
       }
     }
     synchronized (glLock) {
-      videoFrames.clear();
-      if (eglResourcesHolder != null) {
-        eglResourcesHolder.runWithContextCurrent(() -> {
-          for (Slot slot : slots.values()) releaseExtractor(slot);
-          for (Slot slot : retired) releaseExtractor(slot);
-        });
-        eglResourcesHolder.release();
-        eglResourcesHolder = null;
+      // Internal wrappers own one lease each. Public snapshots have independent
+      // leases and remain readable after teardown, including from Java tests.
+      try {
+        closeFrames(videoFrames);
+      } finally {
+        videoFrames.clear();
+        // A slot absent from the map was closed when its replacement was
+        // installed. Drop references without revoking any public snapshot.
+        for (Slot slot : slots.values()) slot.frame = null;
+        for (Slot slot : retired) slot.frame = null;
+        try {
+          if (eglResourcesHolder != null) {
+            eglResourcesHolder.runWithContextCurrent(() -> {
+              for (Slot slot : slots.values()) releaseExtractor(slot);
+              for (Slot slot : retired) releaseExtractor(slot);
+            });
+          }
+        } finally {
+          if (eglResourcesHolder != null) {
+            eglResourcesHolder.release();
+            eglResourcesHolder = null;
+          }
+          slots.clear();
+          retired.clear();
+        }
       }
-      slots.clear();
-      retired.clear();
     }
     if (callbackThread != null) {
       callbackThread.quit();
@@ -568,7 +640,8 @@ public class VideoCompositionDecoder {
   }
 
   private GLFrameExtractor newExtractor(VideoComposition.Item item) {
-    GLFrameExtractor glFrameExtractor = new GLFrameExtractor(item.isDirectTexture());
+    GLFrameExtractor glFrameExtractor = new GLFrameExtractor(
+      item.isDirectTexture(), composition.isHardwareBufferEnabled());
     glFrameExtractor.setOnFrameAvailableListener(() -> {
       if (onItemImageAvailableListener != null) {
         onItemImageAvailableListener.onItemImageAvailable(item);

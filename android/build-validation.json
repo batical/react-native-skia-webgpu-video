@@ -209,5 +209,54 @@
   "releaseApkContainsHermesBundle": true,
   "releaseApkAbis": [
     "arm64-v8a"
-  ]
+  ],
+  "initialCheckpointScope": "Historical build-only evidence at 08:59 UTC; initial artifact hashes remain unchanged.",
+  "followUp": {
+    "recordedAt": "2026-10-07T15:01:33.805760+00:00",
+    "deviceReport": "../benchmark/android-device-306-verification.json",
+    "humanReport": "../docs/ANDROID_DEVICE_306.md",
+    "currentHostTests": {
+      "jvm": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "nativeFrameLease": 6,
+      "nativeSanitizers": [
+        "address",
+        "undefined"
+      ]
+    },
+    "currentInventory": {
+      "namedCases": 52,
+      "plannedExecutions": 102,
+      "fullSuitePassed": false
+    },
+    "scopedCopyCheckpoint": {
+      "apkSha256": "789735e095937cc168865986a353613d29f065feeff40bca8676ab0895b2ef0a",
+      "sourceSnapshotSha256": "0a842f1f6f02ca4bb6f274050adcb15897b2cbc78aa76770b1aa94171ccfca3f",
+      "physicalTrial": "8 operations completed; 0 strict cleanup passes",
+      "copyCountBeforeSkia": 1,
+      "zeroCopy": false
+    },
+    "ahbCheckpoint": {
+      "apkSha256": "59afb795cfc9fe86d5bbbbaaa487cf0129130dd6538d0f5faf5d6bc11a6edbfa",
+      "sourceSnapshotSha256": "35c1f59a69c1a2d6cb04170fed083e3c6f81c51cd94efc35a490181cdd06ee43",
+      "bundleSha256": "4e02a04173fd471cd93520ee2b90ff2d3f0bda589649bd791ac1bbda0454e178",
+      "nativeLibrarySha256": "8a5cb7606f82bd829cda52e62644d0152844e7d37ab8bd4273ac425b449772e6",
+      "instrumentationApkSha256": "81aa5c0fc0ea43bbb3296c6380b8a9d55a5d51931e41c46d456c2e9bd680a34d",
+      "build": "Release APK, library Release AAR, Debug instrumentation APK; BUILD SUCCESSFUL",
+      "hostJvmTests": 43,
+      "nativeOwnershipTests": 6,
+      "nativeOwnershipPassed": 6,
+      "nativeOwnershipSkipped": 0,
+      "pixelOracleCases": 10,
+      "pixelOraclePassed": 10,
+      "performanceQualification": "24/24 strict focused workload passes; full instrumentation suite not qualified",
+      "decodeCpuReadback": false,
+      "zeroCopyClaim": false,
+      "lifecycleCasesPassed": 4,
+      "nativeCpuOwnershipTests": 5,
+      "nativeCpuOwnershipPassed": 5
+    }
+  }
 }

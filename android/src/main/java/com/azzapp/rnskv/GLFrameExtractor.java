@@ -41,6 +41,8 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
   private long latestTimeStampNs = -1;
 
   private final boolean direct;
+  private final boolean hardwareBuffer;
+  private long pendingHardwareFrame;
 
   private volatile boolean released;
 
@@ -58,10 +60,17 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
    *               texture, whose storage is then never allocated
    */
   public GLFrameExtractor(boolean direct) {
+    this(direct, false);
+  }
+
+  public GLFrameExtractor(boolean direct, boolean hardwareBuffer) {
     // Both historical modes use the correctness reference backend. An OES
     // texture belongs to this isolated EGL context and cannot be imported by Graphite.
     this.direct = false;
+    this.hardwareBuffer = hardwareBuffer;
     EGLUtils.purgeOpenGLError();
+
+
 
     int[] texIds = new int[2];
     GLES20.glGenTextures(2, texIds,0);
@@ -117,6 +126,53 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
     }
 
     EGLUtils.purgeOpenGLError();
+
+    if (hardwareBuffer) {
+      RgbaLayout.byteSize(width, height);
+      surfaceTexture.updateTexImage();
+      latestTimeStampNs = surfaceTexture.getTimestamp();
+      surfaceTexture.getTransformMatrix(transformMatrix);
+      long writer = NativeHardwareBuffer.createRenderTarget(width, height);
+      Throwable primaryError = null;
+      try {
+        int texture = NativeHardwareBuffer.renderTargetTexture(writer);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer);
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
+          GLES20.GL_TEXTURE_2D, texture, 0);
+        if (GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER) != GLES20.GL_FRAMEBUFFER_COMPLETE)
+          throw new IllegalStateException("Hardware decoder framebuffer is incomplete");
+        GLES20.glClearColor(0, 0, 0, 0);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glViewport(0, 0, width, height);
+        textureRenderer.draw(inputTexId, transformMatrix);
+        EGLUtils.checkGlError("Hardware decoder draw");
+        // Detach before native texture/EGLImage cleanup so this FBO cannot keep
+        // an unaccounted backing alive after its allocation owner is released.
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
+          GLES20.GL_TEXTURE_2D, 0, 0);
+        long ready = NativeHardwareBuffer.finishRenderTarget(writer);
+        writer = 0;
+        NativeHardwareBuffer.release(pendingHardwareFrame);
+        pendingHardwareFrame = ready;
+        frameWidth = width; frameHeight = height;
+        return true;
+      } catch (Throwable error) {
+        primaryError = error;
+        throw error;
+      } finally {
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer);
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0,
+          GLES20.GL_TEXTURE_2D, 0, 0);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        if (writer != 0) {
+          try { NativeHardwareBuffer.abortRenderTarget(writer); }
+          catch (RuntimeException cleanupError) {
+            if (primaryError == null) throw cleanupError;
+            primaryError.addSuppressed(cleanupError);
+          }
+        }
+      }
+    }
 
     if (direct) {
       surfaceTexture.updateTexImage();
@@ -234,6 +290,14 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
 
   /** Copies the rendered pixels while this extractor's private EGL context is current. */
   public VideoFrame snapshotFrame(int rotation) {
+    if (hardwareBuffer) {
+      long ready = pendingHardwareFrame;
+      pendingHardwareFrame = 0;
+      if (ready == 0) throw new IllegalStateException("No completed hardware video frame");
+      try {
+        return new VideoFrame(ready, frameWidth, frameHeight, rotation, latestTimeStampNs, producerId);
+      } catch (Throwable error) { NativeHardwareBuffer.release(ready); throw error; }
+    }
     int size = RgbaLayout.byteSize(frameWidth, frameHeight);
     // One owned allocation is written once by GL and never recycled by this decoder.
     ByteBuffer ownedPixels = NativeRgbaBuffer.allocate(size);
@@ -288,6 +352,8 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
       return;
     }
     released = true;
+    NativeHardwareBuffer.release(pendingHardwareFrame);
+    pendingHardwareFrame = 0;
     onFrameAvailableListener = null;
     frameAvailable.set(false);
     if (surfaceTexture != null) {

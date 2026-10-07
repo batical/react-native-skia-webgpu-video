@@ -54,3 +54,31 @@ test('readiness does not replace or suppress subsequent background observations'
   injected.advance(100);
   assert.equal((await injected.readOperatingConditions()).applicationState, 'inactive');
 });
+
+test('Android and iOS screens reject an unavailable foreground collector before opening video resources', async () => {
+  const { createBenchmarkScreen } = await import('../../benchmark/screen.mjs');
+  for (const platform of ['android', 'ios']) {
+    let collectorCalls = 0, opened = 0, status;
+    const failure = new Error('Native foreground evidence unavailable');
+    const React = { useState: (value) => [value, (next) => { if (typeof next === 'string') status = next; }],
+      useRef: (value) => ({ current: value }), useCallback: (fn) => fn, useEffect: (fn) => fn(),
+      createElement: (type, props, ...children) => ({ type, props: { ...props, children } }) };
+    const Screen = createBenchmarkScreen({ React,
+      native: { View: 'View', Text: 'Text', Button: 'Button', PixelRatio: { get: () => 1 } },
+      skia: { Canvas: 'Canvas', Image: 'Image' },
+      reanimated: { runOnUI: (fn) => fn, runOnJS: (fn) => fn, useSharedValue: () => {} },
+      video: { useVideoComposition: () => { opened++; }, drawVideoFrame: () => {} },
+      files: {}, memory: { operatingConditions: async () => { collectorCalls++; throw failure; } } });
+    const originalError = console.error;
+    const diagnostics = [];
+    console.error = (...args) => diagnostics.push(args);
+    try {
+      Screen({ options: { autorun: true, environment: { platform } } });
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(collectorCalls, 1, platform);
+      assert.equal(opened, 0, platform);
+      assert.match(status, /Native foreground evidence unavailable/);
+      assert.equal(JSON.parse(diagnostics[0][1]).stage, 'screen:foreground-readiness');
+    } finally { console.error = originalError; }
+  }
+});

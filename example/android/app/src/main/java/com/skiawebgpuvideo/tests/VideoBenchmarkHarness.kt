@@ -46,7 +46,7 @@ class VideoBenchmarkHarness(private val context: ReactApplicationContext) : Reac
     val emulator = Build.FINGERPRINT.startsWith("generic") || Build.MODEL.contains("sdk_gphone") || Build.MODEL.contains("Emulator")
     val refresh = (context.getSystemService(android.content.Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.refreshRate
     val intent = MainActivity.benchmarkIntent ?: context.currentActivity?.intent
-    val profile = intent?.getStringExtra("RNSKV_BENCHMARK_PROFILE")?.takeIf { it in listOf("smoke", "full", "soak") }
+    val profile = intent?.getStringExtra("RNSKV_BENCHMARK_PROFILE")?.takeIf { it in listOf("smoke", "full", "soak", "interop") }
     val repetitions = intent?.getIntExtra("RNSKV_BENCHMARK_REPETITIONS", 3)?.coerceIn(1, 10) ?: 3
     val caseIds = intent?.getStringExtra("RNSKV_BENCHMARK_CASE_IDS")?.let { encoded ->
       val values = JSONArray(encoded)

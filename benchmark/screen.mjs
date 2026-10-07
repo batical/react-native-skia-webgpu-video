@@ -42,7 +42,9 @@ export function createBenchmarkScreen({ React, native, skia, reanimated, video, 
   const { View, Text, Button, PixelRatio } = native;
   const { Canvas, Image } = skia;
   const { useSharedValue, runOnUI, runOnJS } = reanimated;
-  const { useVideoCompositionPlayer, drawVideoFrame } = video;
+  const { drawVideoFrame } = video;
+  // The comparison harness also runs against the unchanged Skia 2 reference.
+  const useVideoComposition = video.useVideoComposition ?? video.useVideoCompositionPlayer;
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const now = () => performance.now();
   const pixelRatio = PixelRatio.get();
@@ -120,7 +122,7 @@ export function createBenchmarkScreen({ React, native, skia, reanimated, video, 
         return value;
       });
     }, [counters, renderer, noFrameIds]);
-    const { currentFrame, player } = useVideoCompositionPlayer({ composition: session.composition,
+    const { currentFrame, player } = useVideoComposition({ composition: session.composition,
       width: session.dimensions.logicalWidth, height: session.dimensions.logicalHeight,
       drawFrame, isLooping: looping,
       onReadyToPlay: () => { session.ready = true; },
@@ -316,7 +318,7 @@ export function createBenchmarkScreen({ React, native, skia, reanimated, video, 
       setRunning(true);
       try {
         let foregroundReadiness = null;
-        if (options.environment?.platform === 'ios' && typeof memory?.operatingConditions === 'function') {
+        if (['ios', 'android'].includes(options.environment?.platform) && typeof memory?.operatingConditions === 'function') {
           setStatus('Attente de l’application active…');
           try {
             foregroundReadiness = await waitForBenchmarkForeground({

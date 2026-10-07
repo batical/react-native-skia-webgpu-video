@@ -1,4 +1,5 @@
 #include "VideoCompositionFramesExtractorSyncHostObject.h"
+#include "ReturnedVideoFrames.h"
 #include <cmath>
 
 namespace RNSkiaVideo {
@@ -75,15 +76,21 @@ jsi::Value VideoCompositionFramesExtractorSyncHostObject::get(
           // Do not hold the C++ mutex while Java waits: dispose must be able
           // to cancel that request on another runtime.
           auto frames = current->decodeCompositionFrames(time);
+          ReturnedVideoFrames returned(frames);
           for (auto& entry : *frames) {
             auto id = entry.first->toStdString();
             auto frame = entry.second;
+            if (frame->isHardwareBuffer()) {
+              result.setProperty(runtime, id.c_str(), frame->toJS(runtime));
+              continue;
+            }
             auto cached = getVersionedObject(runtime, "frame:" + id,
               static_cast<double>(frame->getId()), [&](jsi::Object& holder) {
                 holder.setProperty(runtime, "value", frame->toJS(runtime));
               });
             result.setProperty(runtime, id.c_str(), cached.asObject(runtime).getProperty(runtime, "value"));
           }
+          returned.close();
           return result;
         });
   } else if (propName == "start") {

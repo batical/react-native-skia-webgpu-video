@@ -13,6 +13,15 @@ react {
     autolinkLibrariesWithApp()
 }
 
+// The RN bundle task watches JS/TS only under the example root by default.
+// Our imported library sources and shared .mjs harness live outside that root.
+// Declare them explicitly so incremental Release builds cannot package stale code.
+tasks.matching { it.name.startsWith("createBundle") && it.name.endsWith("JsAndAssets") }.configureEach {
+    inputs.files(fileTree("../../../src") { include "**/*.ts", "**/*.tsx" })
+    inputs.files(fileTree("../../../benchmark") { include "*.mjs" })
+    inputs.file(file("../../fixtures/manifest.json"))
+}
+
 android {
     namespace "com.skiawebgpuvideo.tests"
     compileSdk rootProject.ext.compileSdkVersion

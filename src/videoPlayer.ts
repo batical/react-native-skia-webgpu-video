@@ -316,6 +316,3 @@ export const useVideoPlayback = ({
     player,
   };
 };
-
-/** @deprecated Use useVideoPlayback. Kept for existing Skia Video integrations. */
-export const useVideoPlayer = useVideoPlayback;

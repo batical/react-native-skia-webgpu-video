@@ -41,8 +41,8 @@ describe("public API", () => {
   it("exposes the hooks and the export function", () => {
     expect(typeof api.useVideoPlayback).toBe("function");
     expect(typeof api.useVideoComposition).toBe("function");
-    expect(api.useVideoPlayer).toBe(api.useVideoPlayback);
-    expect(api.useVideoCompositionPlayer).toBe(api.useVideoComposition);
+    expect(api).not.toHaveProperty("useVideoPlayer");
+    expect(api).not.toHaveProperty("useVideoCompositionPlayer");
     expect(typeof api.exportVideoComposition).toBe("function");
     expect(typeof api.isEncodingSupported).toBe("function");
   });

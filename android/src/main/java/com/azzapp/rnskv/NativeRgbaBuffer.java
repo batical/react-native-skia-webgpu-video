@@ -18,7 +18,10 @@ final class NativeRgbaBuffer {
   private static final RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetimes,
     NativeRgbaBuffer::nativeReserve, NativeRgbaBuffer::nativeRelease,
     // ART-managed, non-moving backing creates real Java GC pressure.
-    ByteBuffer::allocateDirect, NativeRgbaBuffer::nativeAlias);
+    ByteBuffer::allocateDirect, NativeRgbaBuffer::nativeAlias, size -> {
+      Runtime runtime = Runtime.getRuntime();
+      RgbaBufferAllocator.checkAllocationCapacity(size, runtime.maxMemory());
+    });
 
   static ByteBuffer allocate(int size) { return allocator.allocate(size); }
 

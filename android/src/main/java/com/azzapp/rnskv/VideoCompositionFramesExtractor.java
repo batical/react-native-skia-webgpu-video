@@ -113,7 +113,8 @@ public class VideoCompositionFramesExtractor {
   /**
    * Decode the next frame of each composition item according to the current position of the player.
    *
-   * @return a map of item id to video frame
+   * @return an independently retained snapshot map; callers close its frames
+   * when finished, without affecting the producer or other snapshots
    */
   public Map<String, VideoFrame> decodeCompositionFrames() {
     return decoder.updateVideosFrames();

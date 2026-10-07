@@ -1,6 +1,7 @@
 #include "RNSVCheckedSizes.h"
 #include "NativeEventDispatcher.h"
 #include "NativeRgbaBuffer.h"
+#include "NativeHardwareBuffer.h"
 #include "RNSVMemoryBudget.h"
 #include "VideoCapabilities.h"
 #include "VideoCompositionFramesExtractorHostObject.h"
@@ -18,16 +19,32 @@ void install(jsi::Runtime& jsiRuntime) {
 
   auto RNSVModule = jsi::Object(jsiRuntime);
   MemoryBudget::install(jsiRuntime, RNSVModule);
+  RNSVModule.setProperty(jsiRuntime, "configureNativeBufferInterop",
+    jsi::Function::createFromHostFunction(jsiRuntime,
+      jsi::PropNameID::forAscii(jsiRuntime, "configureNativeBufferInterop"), 1,
+      [](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value* args, size_t count) -> jsi::Value {
+        if (count != 1 || !args[0].isBool())
+          throw jsi::JSError(runtime, "configureNativeBufferInterop requires a boolean");
+        try { NativeHardwareBuffer::configure(args[0].getBool()); }
+        catch (const std::exception& error) { throw jsi::JSError(runtime, error.what()); }
+        return jsi::Value::undefined();
+      }));
   RNSVModule.setProperty(jsiRuntime, "getBackendInfo",
     jsi::Function::createFromHostFunction(jsiRuntime,
       jsi::PropNameID::forAscii(jsiRuntime, "getBackendInfo"), 0,
       [](jsi::Runtime& runtime, const jsi::Value&, const jsi::Value*, size_t) -> jsi::Value {
         auto info = jsi::Object(runtime);
         info.setProperty(runtime, "platform", jsi::String::createFromAscii(runtime, "android"));
-        info.setProperty(runtime, "decodeTransport", jsi::String::createFromAscii(runtime, "cpu-rgba-readback"));
+        const bool hardware = NativeHardwareBuffer::isEnabled();
+        info.setProperty(runtime, "decodeTransport", jsi::String::createFromAscii(runtime,
+            hardware ? "ahardwarebuffer-rgba-egl" : "cpu-rgba-readback"));
         info.setProperty(runtime, "encodeTransport", jsi::String::createFromAscii(runtime, "cpu-rgba-upload"));
-        info.setProperty(runtime, "decodeCpuCopiesBeforeSkia", 0);
-        info.setProperty(runtime, "ownedFrameTransport", jsi::String::createFromAscii(runtime, "direct-buffer-shared-java-jsi"));
+        info.setProperty(runtime, "decodeCpuCopiesBeforeSkia", hardware ? 0 : 1);
+        info.setProperty(runtime, "cpuReadbackDecode", !hardware);
+        info.setProperty(runtime, "ownedFrameTransport", jsi::String::createFromAscii(runtime,
+            hardware ? "immutable-ahardwarebuffer-shared-leases" : "direct-buffer-java-scoped-copy"));
+        info.setProperty(runtime, "skiaImportTransport", jsi::String::createFromAscii(runtime,
+            hardware ? "native-buffer-webgpu-blit-snapshot" : "cpu-rgba-scoped-copy-webgpu-upload-snapshot"));
         info.setProperty(runtime, "zeroCopyDecode", false);
         info.setProperty(runtime, "zeroCopyEncode", false);
         return info;
@@ -289,5 +306,6 @@ Java_com_azzapp_rnskv_ReactNativeSkiaVideoModule_nativeInstall(JNIEnv* env,
 
 jint JNI_OnLoad(JavaVM* vm, void*) {
   return facebook::jni::initialize(
-      vm, [] { NativeEventDispatcher::registerNatives(); NativeRgbaBuffer::registerNatives(); });
+      vm, [] { NativeEventDispatcher::registerNatives(); NativeRgbaBuffer::registerNatives();
+        NativeHardwareBuffer::registerNatives(); });
 }
