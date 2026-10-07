@@ -17,6 +17,8 @@ Apply the required Skia patch in the consuming app, install pods on iOS, and reb
 
 ## Frame drawing
 
+New code uses `useVideoComposition` for a timeline and `useVideoPlayback` for a single video. The previous names `useVideoCompositionPlayer` and `useVideoPlayer` remain deprecated aliases with the same options, return values, and function identity. You can update imports independently from the texture migration.
+
 A native Metal or OpenGL texture handle is not a Dawn texture. Replace calls to `Skia.Image.MakeImageFromNativeTextureUnstable(frame.texture, ...)` with the library helper:
 
 ```ts
@@ -40,7 +42,7 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 
 ## Preview and export
 
-`useVideoCompositionPlayer` renders a composition to a shared current image. Reuse the composition and `drawFrame` in `exportVideoComposition`. The [README example](../README.md#one-composition-preview-and-export) shows both.
+`useVideoComposition` renders a composition to a shared current image. Reuse the composition and `drawFrame` in `exportVideoComposition`. The [README example](../README.md#one-composition-preview-and-export) shows both.
 
 - Composition sources use app-accessible local filesystem paths.
 - Preview width/height are layout points; the drawing callback receives pixel dimensions. Export width/height are pixels.
@@ -50,7 +52,7 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 
 ## Audio
 
-Audio options retain their existing meaning. A video composition item is silent by default; use `audio: true` or `audio: { volume: 0.8 }` to include its audio during playback and export. Separate `kind: 'audio'` items support music or voice-over. `useVideoPlayer` has its own `volume` option.
+Audio options retain their existing meaning. A video composition item is silent by default; use `audio: true` or `audio: { volume: 0.8 }` to include its audio during playback and export. Separate `kind: 'audio'` items support music or voice-over. `useVideoPlayback` has its own `volume` option.
 
 Audio is implemented on both native platforms, but the current 3.0.6 device performance runs did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
 
