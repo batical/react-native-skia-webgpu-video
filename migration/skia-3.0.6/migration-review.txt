@@ -1,0 +1,40 @@
+Migration draft: Skia 3.0.6 / WebGPU 0.12.1, isolated from the active 3.0.3 experiment.
+
+Delivered:
+- skia-3.0.6-migration.patch: unified patch with relative project paths.
+- base-sha256.json: original file digests, null for newly added paths.
+- result-sha256.json: expected resulting digests.
+- patch-verification.json: actual checks and explicit native validation gaps.
+- jest.log / typecheck.log / package-tests.log: 154 JS tests, TypeScript, four packaging tests passed.
+The patch was applied to a fresh copy of every original file and every output digest matched.
+No active source file, installed dependency, fixture, catalog, phone or baseline was changed.
+
+Version selection:
+Skia 3.0.6 ships Graphite 154.1.0 with dawn-chrome-m154a; WebGPU 0.12.1 declares chrome-m154a.
+Skia 3.0.5 and 3.0.6 have identical published source files; only package.json differs.
+WebGPU 0.12.0 and 0.12.1 have unchanged JS/C++ bindings, but use different binary release tags.
+Do not mix the tags or bypass the podspec alignment check.
+
+Implementation:
+1. MakeFromNativeTexture and MakeImageFromNativeTexture become MakeFromGPUTexture and MakeImageFromGPUTexture; pass the GPUTexture object.
+2. Native MakeImageFromNativeBuffer no longer exists. On the main RN runtime capture the shared device and RNWebGPU NativeObject. Their supported native serializers carry them to worklets. Do not assume installWebGPU creates a worklet global RNWebGPU.
+3. Wrap the decoder CVPixelBuffer with NativeVideoFrame, then WebGPU copyExternalImageToTexture into one reusable BGRA scratch texture per consuming runtime. Keep orientation unchanged; drawVideoFrame rotates once.
+4. Draw that scratch into the existing Skia staging surface, take an immutable snapshot, wait for checked GPU completion, dispose the borrowed SkImage, release the extra native wrapper, then release the original decoder lease.
+5. Native wrapper/decoder leases and reservations survive failures to drain. New imports are blocked until cleanup succeeds. Retrying the same pending frame cannot release its original decoder reservation early.
+6. The small version/hash-gated Skia patch keeps canvas disposal and snapshot-null protection, and adds enableCheckedSubmissions() on an individual surface. getVideoCanvas opts in; generic app surfaces do not change. Only opted-in flush/snapshot calls use the helper that rejects snap failure, insert failure, and submit failure. Empty valid recordings are accepted. Raster surfaces cannot pretend to provide a GPU completion fence.
+7. Export remains synchronous readback into the bounded native encoder pool. No zero-copy export change. Public copy/direct preferences retain compatibility semantics.
+8. Native backend diagnostics identify the additional WebGPU blit and scratch capacity.
+
+Memory/performance limits:
+There are THREE full-frame GPU writes in the native import route: native-frame blit -> staging draw -> immutable snapshot. This adds one pass and one scratch texture compared with 3.0.3. A 3840x2160 BGRA scratch is 31.64 MiB, per active consuming runtime, excluding driver padding. The texture is reserved before allocation, reused at equal size, and explicitly destroyed after completion on cleanup/resize. Cached owned snapshots remain bounded at 32 producers; native decoder capacity is unchanged. No claim of better memory, latency, battery, or true direct/zero-copy is justified before new physical measurements.
+
+Remaining integration, after the physical 3.0.3 run has finished and its exact binaries/results are archived:
+- Verify all files against base-sha256.json before applying the patch. The active tree is not a Git repository, so preserve backups explicitly.
+- Apply with: patch -p1 --batch -i /private/tmp/rnskv-skia-306-delivery/skia-3.0.6-migration.patch
+- Update the npm lockfile using the package's new exact versions; no active lockfile was changed here.
+- Update example/package.json from 3.0.3/0.11.0 to 3.0.6/0.12.1, and example/App.tsx's hard-coded benchmark backend versions. These harness files are deliberately outside this patch while the physical test runs. Leave example-baseline and all historical raw/proof JSON unchanged.
+- Run the existing apply-skia-canvas-patch script against installed 3.0.6 before native compilation.
+- Refresh CocoaPods and verify the actual Dawn marker equals WebGPU's declared artifact. Full native rebuild is required; OTA-only delivery will intentionally fail the native contract guard.
+- Run scripts/test-skia-patch-syntax.mjs after the performance run; its digest coverage now includes RNDawnContext.h. Native syntax/build were intentionally NOT run during 3.0.3 profiling.
+- Rebuild iOS and run native tests, then physical Release preview/export smoke on a physical iPhone 15 Pro. Specifically verify actual NativeObject boxing/prototype restoration on UI/export runtimes, BGRA pixels/orientation/crops, repeated size switches, pause/reuse, failure/cancel/unmount, and staging cleanup. JS mocks do not validate these native contracts.
+- Only then repeat memory/performance with new provenance. The added scratch/pass makes reuse of 3.0.3 measurements invalid.

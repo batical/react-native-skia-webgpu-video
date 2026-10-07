@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "width": 1279,
+  "height": 719,
+  "frames": 30,
+  "fps": 30,
+  "frameIndicesExact": true,
+  "timestampsExact": true,
+  "codec": "jpeg",
+  "file": "legacy-odd1279x719.mov",
+  "bytes": 601364,
+  "sha256": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+  "writerSourceSha256": "1a1830e81ec4808952855c8d8e098e4abb723c7699c47d2f04e4cf15386a85cf",
+  "generatedLocally": true,
+  "execution": "macOS AVFoundation pixel/frame-index/PTS validation"
+}

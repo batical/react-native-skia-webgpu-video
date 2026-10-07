@@ -1,0 +1,664 @@
+{
+  "schema": 1,
+  "completedAt": "2026-10-06T16:37:17.633Z",
+  "executionEnvironment": "iOS Simulator",
+  "buildInvocationStartedAt": "2026-10-06T16:35:21.776Z",
+  "testStartedAt": "2026-10-06T16:35:24.898Z",
+  "testFinishedAt": "2026-10-06T16:36:31.073Z",
+  "configuration": "Release",
+  "sdk": "iphonesimulator27.0",
+  "dependencies": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+  "files": {
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionExporter.java": "f88677b933c7a08012190144ccb6cae7672e88b140579b8b7deb65085d3b395a",
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionPlayer.java": "b9633e23a1244103a4cc61e9379572892e800860e307e9fb935a8f5636ad466f",
+    "android/src/main/java/com/azzapp/rnskv/DecodeRequests.java": "18ddabfa8556dce051bb23da16edf45d9e846287bd34c70b6c78eae9c565b153",
+    "android/src/main/java/com/azzapp/rnskv/DecoderWindow.java": "c31565ca278342657895d52ae02a79903487f0f19d15c3677ac1b9c942ef0666",
+    "android/src/main/java/com/azzapp/rnskv/EGLResourcesHolder.java": "210038c00b747d18ce059b3f90e9dd561b6d0159ffc37e966a0ccedb2658359d",
+    "android/src/main/java/com/azzapp/rnskv/EGLUtils.java": "353be2d1bb2c93b74855d84a851e08eb57063626f91f4437e90e99afbc169a44",
+    "android/src/main/java/com/azzapp/rnskv/FrameSize.java": "c23b35630e9e9c8a1b45e99c314f35f5a1170df51aa7624eec466e752762b0f7",
+    "android/src/main/java/com/azzapp/rnskv/GLFrameExtractor.java": "ffcd1588783c6f33b345fa96e40366ae6054dd84334e509acd43f55907118b39",
+    "android/src/main/java/com/azzapp/rnskv/JNIHelpers.java": "36a3121f1198b780214a26641c5f9a65221957865d6f03a9e3ea6fe7a8b10a35",
+    "android/src/main/java/com/azzapp/rnskv/NativeEventDispatcher.java": "38258ea4e495b0fcf94191592e3a6c116a210c3e227968190adb7ba3b30f2f33",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoModule.java": "d80d12f865b1c65b3658a01742c75d47d4ebd3f52d5639b66c8d816641244b7f",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoPackage.java": "5ee788c23d80111b5582d92fe468fb993181caa93db2f7121c3e287d066ee126",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoSpec.java": "0e0d5b0f0a78d35894edaf114f119e60625fe792bbb060c73bf3e9c579874963",
+    "android/src/main/java/com/azzapp/rnskv/RgbaLayout.java": "8d3809ccfa60993b5c174d52e0a65f61a2ecea3935c6f85464d21a2186d89abc",
+    "android/src/main/java/com/azzapp/rnskv/TextureRenderer.java": "c5fd5ee2957b7ad01d7c4a7f285c82fb6338b6dd56e555da7d5ed0d294d2f508",
+    "android/src/main/java/com/azzapp/rnskv/TimeHelpers.java": "dc554a6b7cee28f5537bad60aef5b939c911886499fc6aea4cc4bc9cddeae393",
+    "android/src/main/java/com/azzapp/rnskv/VideoCapabilities.java": "99ddf5dd614ef48724fba5a84bceab1f54af67ffe802c415e70853d8fcaa1f09",
+    "android/src/main/java/com/azzapp/rnskv/VideoComposition.java": "5870bb0aff68ae992da0c02688acb2da16f8e6055f7c62e121e52b94dbf853fd",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionDecoder.java": "ec1063002784416660f44f4575f68e51e1ec8ab916d9dbe1f30e4273ef348b37",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractor.java": "3370fddb949f288cf7cacff8cba9759225b5a5061e37b4e14748e838800bf198",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractorSync.java": "a5500525a9819ce6bd3c493685010bd20f1f36c2ab6aace1f871ea49e94f0b73",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionItemDecoder.java": "19cc0ae227d91395944666457ee77a881312f7f5df5c066305c46892d39ac836",
+    "android/src/main/java/com/azzapp/rnskv/VideoEncoder.java": "c0837ac058b9515af87be4188814a617c21f281c2971c5632ee2c6d0190a76e6",
+    "android/src/main/java/com/azzapp/rnskv/VideoFrame.java": "63e5867c7f2f6da11f3321fe6a7051915903a145c7a3a9f6548dd92e10879ddf",
+    "android/src/main/java/com/azzapp/rnskv/VideoPlayer.java": "3b5daee2af075711e7da2457e0c8fcbed74a8ad84ae1aeabee937b06caf5c807",
+    "android/src/test/java/com/azzapp/rnskv/DecodeRequestsTest.java": "ee0b66e24d1b6aa2566cfd30b4b2c3f59a935c81774b0a8d5aba4ddf0d7f4080",
+    "android/src/test/java/com/azzapp/rnskv/DecoderWindowTest.java": "ad61801e6356f38d748c4856966aac5da27ef5345c4d274810694e99b05e3d47",
+    "android/src/test/java/com/azzapp/rnskv/FrameSizeTest.java": "18bf1bee65d8f6f56d939d80ea9f8c5ddc0e5737e42b65682df30eac735dde4d",
+    "android/src/test/java/com/azzapp/rnskv/RgbaLayoutTest.java": "2903e8f370f5c4e064cf4ba15136c28f2e2d02f4d8e61e2f5809cd0472faa970",
+    "cpp/RNSVCheckedSizes.h": "1e06c34b096e74863f20bc8a5eeba086a910f45ca982a56476663b5d921488ea",
+    "cpp/RNSVEventEmitter.cpp": "85108c326725b1558fe99dea5ab78e85be26de846719a9b0f7db95d2be77e2f4",
+    "cpp/RNSVEventEmitter.h": "910fcbd39598d33efc4ef9506e629709b1747627d63df9fb62fc89204109f63b",
+    "cpp/RNSVHostObject.cpp": "eb469ef7636ebf383a297d66bf1500db764b9f8b96f3bf3da78361e77355baa3",
+    "cpp/RNSVHostObject.h": "5f6ed363cd036e6e6da0511f2ba5323fbd6f15aea7ba8797c3b17c30b9088c7e",
+    "cpp/RNSVMemoryBudget.cpp": "471cc61294e762f0184bda822257a65c4bf4e93d19739e4eb4648a0018c42f45",
+    "cpp/RNSVMemoryBudget.h": "53fa50436b0263dacd4a8a196074430d4fee0559f166a46cc6a85f7e76bb7933",
+    "cpp/RNSVRuntimeLifecycleMonitor.cpp": "7d1eccc3182fef89d0e8d3cfdbe4bb40b2e93d01722125216e5f65b88f56695f",
+    "cpp/RNSVRuntimeLifecycleMonitor.h": "61c9b87288e2ebea3ef7685351dcda820ec505370089af5b99680ffe0e5a4ae9",
+    "example/ios/Podfile": "b2669fc2680e3b40ef4c66d3b78acb1747220c4ec5524a350663a6a9f8cd82cd",
+    "example/ios/Podfile.lock": "6e0c81a8145560dfacde9706298c0034ed2f969377d2066972822908187263a3",
+    "example/ios/ReactNativeSkiaWebGPUVideoExample.xcodeproj/project.pbxproj": "af716a19295e34f701f4241f5f62e4e09ff867c5bd45b2b8bf7213c5bbccd249",
+    "example/ios/ReactNativeSkiaWebGPUVideoExample/AppDelegate.swift": "87179d6818c2734d9520c16e41d77173ba5110c5af3a3a2f72245638c69a0253",
+    "example/ios/ReactNativeSkiaWebGPUVideoExample/Info.plist": "f59b991a80b026a2de0b075ee29563978ea9493c92f4be3f035f9a0a8c88c202",
+    "ios/AVAssetTrackUtils.h": "52a05e76bc9d35652f239d671f341d8ee4774460a329326350d18d72c30786f7",
+    "ios/AudioCompositionUtils.h": "97e0598475217463a35b5d2f206efb51eacbef4da97951d49460ba0214ee97bd",
+    "ios/AudioCompositionUtils.mm": "1a0983e46c01155e4ba825ccdb591c3e3149ee61d55fb584288f0c646e5b3994",
+    "ios/DecoderWindow.h": "ace048d897190b80ac00e55d39e0fa39a43aabf1178f85adcfcf2d67aed88351",
+    "ios/NativeResourceStats.h": "8e374180a0421764fcd3f2e8132119d322bbdf0cd4a837b66e7b8d8deac30b66",
+    "ios/RNSVColorSpace.h": "3560e750ef3e987f539792e4fba7c36eb7f9d9d5769e96824463683c2d3521ea",
+    "ios/RNSVJSIUtils.h": "4c144fb06bb1c0dab547438d3a2da48f3ad34012a981c51d7f112b84d21e0074",
+    "ios/RNSVScopedPixelBuffer.h": "cd8c05c3da1672af38aea8531c4c03172f095d264383f77308f2ebb9bc751b7f",
+    "ios/RNSVVideoPlayer.h": "d79591775397d18185ab98cf48195d5d96e81f1de8f0ca502d964699bb18618d",
+    "ios/RNSVVideoPlayer.mm": "9e0ddf8238962f30d6efb58880655be41f1010d925f14135419d963520e02b1f",
+    "ios/ReactNativeSkiaVideo.h": "5256f7cf05ad8734a759cdbe1b4f594248d1e7384a9478707830df49e84c3902",
+    "ios/ReactNativeSkiaVideo.mm": "d6d13120296fc2a7d817e990f9706b831dc61a7b1d4b07b9910601a6a15dd94c",
+    "ios/SeekPolicy.h": "e3403d4fd02085bd649685487d15b528c132b21ed9c7019d9ae58c0e9d30b67c",
+    "ios/VideoComposition.h": "d319ff868b02da3136bfdced39d625ab931661253f66d7024da92a9d5ca6d606",
+    "ios/VideoCompositionFramesExtractorHostObject.h": "4c8fcda5e2d7ba7d7a760934c32363bac633ca5878913dc4b5ad67a5a498f61c",
+    "ios/VideoCompositionFramesExtractorHostObject.mm": "6082c9dcabae6bf645e843cc1ad15fc29a181ca061d501e73731149e15b12f38",
+    "ios/VideoCompositionFramesExtractorSyncHostObject.h": "b39faf6dfb107df3693ce0aeb167b07d0c316b42eebe077c826b8b6d51a79c44",
+    "ios/VideoCompositionFramesExtractorSyncHostObject.mm": "b3f122c7820c23de48a50ec7784e6680fb4fe514700127d548d050ce478fe285",
+    "ios/VideoCompositionItemDecoder.h": "a23faec780e81cd7ba43ca16cad31f076346b662ad862065a9af3a8cfcf465f4",
+    "ios/VideoCompositionItemDecoder.mm": "f5148801479bb6aeb3487828cc2dc2debb18cf8a4e2dc56702279e927ac97f4c",
+    "ios/VideoEncoderHostObject.h": "32e9525e4a1c7f13d9814e3d3553f2c87d3a2a8f98c05c2a1f6d6133c3922ab4",
+    "ios/VideoEncoderHostObject.mm": "c291d449ed34b15ac5935cdc7c298183078be344b113ca363c542307ce2500b0",
+    "ios/VideoFrame.h": "50229697b35bdfc548d2bc68b74824fa299219e61db428230056da8acf44ea53",
+    "ios/VideoFrame.mm": "2b53c49407bf20d2258cc443f9784aabea584f60ca3f1369ce9106efacd6a192",
+    "ios/VideoPlayerHostObject.h": "cc84bfb11c7b01f9f36b21593fc242e3ea22040eb660e979b94b91b571150292",
+    "ios/VideoPlayerHostObject.mm": "d74958e1c78023492ede5f04a5e2b9df238455921258d271f8777715d5b3f836",
+    "ios/tests/BufferOwnershipTest.mm": "e6766fc67b9b45f206f37341d05824e045e1c018ceb179040d24bedb8bcd61ec",
+    "ios/tests/EncoderReferenceTest.mm": "65271ed8adbfb14a9afe33f337c68bbd78480d71aa87bffe2fb9d992439aed2c",
+    "ios/tests/LegacyParityTests.mm": "6c2d99ea066247b119ab5f605c6fe5e4c12dd393e71a41c154e5d27889348321",
+    "ios/tests/NativeValidationTest.mm": "abc205453e9621690dd4cce7174f9a3e7b4e7cc108c3534d2657899f8b17e8a8",
+    "ios/tests/fixtures/legacy-odd1279x719.json": "a2dc0ac46d9d80b8fa3d7f7f55a65188940ca496ec4510886f3523d111238744",
+    "ios/tests/fixtures/legacy-odd1279x719.mov": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+    "package-lock.json": "8475635c098eafd098bd9297a3def41da1ef2f719c623d62b5df114075cb7f4e",
+    "package.json": "9fd3c79635378d135dfc0187360591431481ae9ba367547887f4214a7a43fd78",
+    "react-native-skia-webgpu-video.podspec": "5796fe1ea35d1762ad3ae36e89eea58bf7d3d88e4c73cc50763ccfe46b02c3ff",
+    "src/NativeReactNativeSkiaVideo.ts": "1d7fbea0f17ebbe87d408c08b2591d5fc511b1d11b26c8898e0afd37ed2ef8c7",
+    "src/RNSkiaVideoModule.ts": "10f91059f46a344d30b6ea397e88e5dd1d2da799a5e713e6e479f9ae01a834fd",
+    "src/__tests__/export.test.ts": "8b9c337aa7457388a1c244dc362663cf5c44c813a05ab35ecb9b0dcf9f0fbd7d",
+    "src/__tests__/frameInterop.test.ts": "a232863b5490a8e98f3112910bfeb79e4421b7735869d51a3c0cfedd12a4c61c",
+    "src/__tests__/gpu.test.ts": "8f9eb008916db035722e826a6b537b40893de0e5845a31bf85b381e528d5926f",
+    "src/__tests__/hooks.test.tsx": "6252f24aea7b5989ff5cd834231ddcb20692031cdcbf5a0adb1a0b7f77c0a84f",
+    "src/__tests__/index.test.tsx": "7698336d2b157e2fe424d4abe1c986aec5476ae73d3626cce06c694cb24076ef",
+    "src/__tests__/videoFrameImage.test.ts": "b325155b226828d1c5c349652a503f08a1d270389c85c614938e40ecb30de7b0",
+    "src/canvas.ts": "dee1973e493c247a7e23374c13f8f581c2942772a4ea35750a0b41d464987129",
+    "src/exportQueue.ts": "9cd95e057cccd088b94b40a672eb18aaf4b29cf511c2f10b82b654b9f106ed22",
+    "src/exportVideoComposition.ts": "024a76e1f475d94904c76414436faffb6cd6bc67f362be0dd1ec17c10f43b9c4",
+    "src/frameInterop.ts": "c883f91f11ef95cd3e4e873e52620f6889ca124babae4cef53dc4e0a8582f113",
+    "src/gpu.ts": "346602103e93830c0e66db507cc2280e0d9118f66b79294f73477a4f0955ab7a",
+    "src/index.tsx": "e2161caba0c1b1c510e650dbeba4d3507898c8d20f1d107eb7e7f8db65255645",
+    "src/memory.ts": "ced3d6ce4ffba6f46e0c62f75f6341d495140bf5d5d89be7e224e909085f3875",
+    "src/previewLifecycle.ts": "3ca46cad69b79ad9f35ef89b8a1b01f979a668aa8ab97069b9b66b4b432dfbc5",
+    "src/types.ts": "0cdcb261d567d1fa147f50b344a8fbc5396f2e8bcedc5f50cf42bf6e2262afd7",
+    "src/utils/useEventListener.ts": "c51d021bc66e5caf9c171db9bce380e39ff64ae7a42490aeb7229bbed09ce7f3",
+    "src/videoCompositionPlayer.ts": "66a9212fa9baaf108ce3d1f9ee6cedd7a6a4fac0f89a41c6adfc2c4c00e1217e",
+    "src/videoFrameImage.ts": "8eb310c43deb37e9521aaee34c8967d3873f1c7a78df3cadb8108898c24cf4c3",
+    "src/videoPlayer.ts": "75f19f60e9ade572b9a0e5ece5075e81fb5eef879a7e2fd09625d45db776659f",
+    "test/utils/serializedUiRuntime.ts": "9ce48fc20592cf0f1d4a27dd90269bd92ac8355358222358ae0c722a3094881a"
+  },
+  "simulator": {
+    "platform": "iOS Simulator",
+    "modelName": "iPhone 18 Pro",
+    "architecture": "arm64",
+    "osVersion": "27.0",
+    "osBuildNumber": "24A434"
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 50,
+    "passedTests": 50,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0
+  },
+  "passedCases": [
+    {
+      "name": "DecoderWindowTests.testOpensImpliesKeeps",
+      "identifier": "DecoderWindowTests/testOpensImpliesKeeps",
+      "result": "Passed",
+      "durationSeconds": 0.01235508918762207
+    },
+    {
+      "name": "DecoderWindowTests.testSameCasesAsTheHostTest",
+      "identifier": "DecoderWindowTests/testSameCasesAsTheHostTest",
+      "result": "Passed",
+      "durationSeconds": 0.0009349584579467773
+    },
+    {
+      "name": "EncoderTests.testAMontageExportsItsFrames",
+      "identifier": "EncoderTests/testAMontageExportsItsFrames",
+      "result": "Passed",
+      "durationSeconds": 1.4513479471206665
+    },
+    {
+      "name": "EncoderTests.testAnUnknownCodecFallsBackToH264",
+      "identifier": "EncoderTests/testAnUnknownCodecFallsBackToH264",
+      "result": "Passed",
+      "durationSeconds": 0.04808807373046875
+    },
+    {
+      "name": "EncoderTests.testCopyModeEncodesEveryFrame",
+      "identifier": "EncoderTests/testCopyModeEncodesEveryFrame",
+      "result": "Passed",
+      "durationSeconds": 0.06972408294677734
+    },
+    {
+      "name": "EncoderTests.testDirectModeEncodesEveryFrame",
+      "identifier": "EncoderTests/testDirectModeEncodesEveryFrame",
+      "result": "Passed",
+      "durationSeconds": 0.06676006317138672
+    },
+    {
+      "name": "EncoderTests.testHEVC",
+      "identifier": "EncoderTests/testHEVC",
+      "result": "Passed",
+      "durationSeconds": 0.6155160665512085
+    },
+    {
+      "name": "EncoderTests.testTheTestVideoIsWhatItSays",
+      "identifier": "EncoderTests/testTheTestVideoIsWhatItSays",
+      "result": "Passed",
+      "durationSeconds": 0.03243410587310791
+    },
+    {
+      "name": "ExportExtractorTests.testALazyMontageGivesTheSameFramesWithFewerDecoders",
+      "identifier": "ExportExtractorTests/testALazyMontageGivesTheSameFramesWithFewerDecoders",
+      "result": "Passed",
+      "durationSeconds": 0.10654997825622559
+    },
+    {
+      "name": "ExportExtractorTests.testAMontageGivesEachItemItsFrame",
+      "identifier": "ExportExtractorTests/testAMontageGivesEachItemItsFrame",
+      "result": "Passed",
+      "durationSeconds": 0.10016608238220215
+    },
+    {
+      "name": "ExportExtractorTests.testAnItemWithoutFramesDoesNotHoldTheExport",
+      "identifier": "ExportExtractorTests/testAnItemWithoutFramesDoesNotHoldTheExport",
+      "result": "Passed",
+      "durationSeconds": 0.019708991050720215
+    },
+    {
+      "name": "ExportExtractorTests.testASingleItemGivesItsFrameAtEveryTime",
+      "identifier": "ExportExtractorTests/testASingleItemGivesItsFrameAtEveryTime",
+      "result": "Passed",
+      "durationSeconds": 0.08814895153045654
+    },
+    {
+      "name": "ExportExtractorTests.testDisposeLeavesNoDecoderBehind",
+      "identifier": "ExportExtractorTests/testDisposeLeavesNoDecoderBehind",
+      "result": "Passed",
+      "durationSeconds": 1.1235190629959106
+    },
+    {
+      "name": "ExportExtractorTests.testMaxLongSideSizesTheFrame",
+      "identifier": "ExportExtractorTests/testMaxLongSideSizesTheFrame",
+      "result": "Passed",
+      "durationSeconds": 0.032457947731018066
+    },
+    {
+      "name": "ItemDecoderExportTests.testAnItemWithoutFramesInItsRangeDoesNotHang",
+      "identifier": "ItemDecoderExportTests/testAnItemWithoutFramesInItsRangeDoesNotHang",
+      "result": "Passed",
+      "durationSeconds": 0.0021240711212158203
+    },
+    {
+      "name": "ItemDecoderExportTests.testDirectFramesAreRetiredOneByOneInExport",
+      "identifier": "ItemDecoderExportTests/testDirectFramesAreRetiredOneByOneInExport",
+      "result": "Passed",
+      "durationSeconds": 0.01834702491760254
+    },
+    {
+      "name": "ItemDecoderExportTests.testEveryFrameOfAMontage",
+      "identifier": "ItemDecoderExportTests/testEveryFrameOfAMontage",
+      "result": "Passed",
+      "durationSeconds": 0.1073230504989624
+    },
+    {
+      "name": "ItemDecoderExportTests.testEveryFrameOfASingleItem",
+      "identifier": "ItemDecoderExportTests/testEveryFrameOfASingleItem",
+      "result": "Passed",
+      "durationSeconds": 0.08223092555999756
+    },
+    {
+      "name": "ItemDecoderExportTests.testOpeningAndSeekingPastTheEndOfAnItem",
+      "identifier": "ItemDecoderExportTests/testOpeningAndSeekingPastTheEndOfAnItem",
+      "result": "Passed",
+      "durationSeconds": 0.01725602149963379
+    },
+    {
+      "name": "ItemDecoderExportTests.testReleaseFreesTheDecoder",
+      "identifier": "ItemDecoderExportTests/testReleaseFreesTheDecoder",
+      "result": "Passed",
+      "durationSeconds": 0.7339990139007568
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testAForwardScrubReadsTheReaderOn",
+      "identifier": "ItemDecoderPreviewTests/testAForwardScrubReadsTheReaderOn",
+      "result": "Passed",
+      "durationSeconds": 0.054322004318237305
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testALoopWrapsToTheFirstFrame",
+      "identifier": "ItemDecoderPreviewTests/testALoopWrapsToTheFirstFrame",
+      "result": "Passed",
+      "durationSeconds": 0.21130001544952393
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testAScrubSettlesOnTheRightFrame",
+      "identifier": "ItemDecoderPreviewTests/testAScrubSettlesOnTheRightFrame",
+      "result": "Passed",
+      "durationSeconds": 0.36883997917175293
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testASeekKeepsTheFrameOnScreenAlive",
+      "identifier": "ItemDecoderPreviewTests/testASeekKeepsTheFrameOnScreenAlive",
+      "result": "Passed",
+      "durationSeconds": 0.028546929359436035
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testDirectFramesAreRetiredAfterFourInPreview",
+      "identifier": "ItemDecoderPreviewTests/testDirectFramesAreRetiredAfterFourInPreview",
+      "result": "Passed",
+      "durationSeconds": 0.025333046913146973
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testPlayThroughAtSixtyHertz",
+      "identifier": "ItemDecoderPreviewTests/testPlayThroughAtSixtyHertz",
+      "result": "Passed",
+      "durationSeconds": 0.10042810440063477
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testPlayThroughEveryItemOfAMontage",
+      "identifier": "ItemDecoderPreviewTests/testPlayThroughEveryItemOfAMontage",
+      "result": "Passed",
+      "durationSeconds": 0.13815903663635254
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testSeekIntoTheMiddleOfAMontageItem",
+      "identifier": "ItemDecoderPreviewTests/testSeekIntoTheMiddleOfAMontageItem",
+      "result": "Passed",
+      "durationSeconds": 0.05582702159881592
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testSeeks",
+      "identifier": "ItemDecoderPreviewTests/testSeeks",
+      "result": "Passed",
+      "durationSeconds": 0.11839401721954346
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testTheFirstFrameAfterASeekIsShown",
+      "identifier": "ItemDecoderPreviewTests/testTheFirstFrameAfterASeekIsShown",
+      "result": "Passed",
+      "durationSeconds": 0.03266406059265137
+    },
+    {
+      "name": "MediaTests.test1080p",
+      "identifier": "MediaTests/test1080p",
+      "result": "Passed",
+      "durationSeconds": 0.33884406089782715
+    },
+    {
+      "name": "MediaTests.test4K",
+      "identifier": "MediaTests/test4K",
+      "result": "Passed",
+      "durationSeconds": 1.0981030464172363
+    },
+    {
+      "name": "MediaTests.test60fps",
+      "identifier": "MediaTests/test60fps",
+      "result": "Passed",
+      "durationSeconds": 0.16573500633239746
+    },
+    {
+      "name": "MediaTests.testAnExplicitResolutionWins",
+      "identifier": "MediaTests/testAnExplicitResolutionWins",
+      "result": "Passed",
+      "durationSeconds": 0.048339009284973145
+    },
+    {
+      "name": "MediaTests.testDirectTextureMode",
+      "identifier": "MediaTests/testDirectTextureMode",
+      "result": "Passed",
+      "durationSeconds": 0.020711064338684082
+    },
+    {
+      "name": "MediaTests.testHEVC",
+      "identifier": "MediaTests/testHEVC",
+      "result": "Passed",
+      "durationSeconds": 2.672693967819214
+    },
+    {
+      "name": "MediaTests.testMaxLongSideCapsTheDecodedSize",
+      "identifier": "MediaTests/testMaxLongSideCapsTheDecodedSize",
+      "result": "Passed",
+      "durationSeconds": 0.15924501419067383
+    },
+    {
+      "name": "MediaTests.testMaxLongSideOnARotatedClip",
+      "identifier": "MediaTests/testMaxLongSideOnARotatedClip",
+      "result": "Passed",
+      "durationSeconds": 0.07961690425872803
+    },
+    {
+      "name": "MediaTests.testOddDimensions",
+      "identifier": "MediaTests/testOddDimensions",
+      "result": "Passed",
+      "durationSeconds": 0.08745992183685303
+    },
+    {
+      "name": "MediaTests.testRotated",
+      "identifier": "MediaTests/testRotated",
+      "result": "Passed",
+      "durationSeconds": 0.028411030769348145
+    },
+    {
+      "name": "MediaTests.testSlowMotionIsDecodedInThePresentationTimeline",
+      "identifier": "MediaTests/testSlowMotionIsDecodedInThePresentationTimeline",
+      "result": "Passed",
+      "durationSeconds": 0.10249102115631104
+    },
+    {
+      "name": "PreviewExtractorTests.testAClosedItemLeavesTheFramesObject",
+      "identifier": "PreviewExtractorTests/testAClosedItemLeavesTheFramesObject",
+      "result": "Passed",
+      "durationSeconds": 0.042333006858825684
+    },
+    {
+      "name": "PreviewExtractorTests.testALazyMontagePlaysThroughWithFewDecoders",
+      "identifier": "PreviewExtractorTests/testALazyMontagePlaysThroughWithFewDecoders",
+      "result": "Passed",
+      "durationSeconds": 5.914434909820557
+    },
+    {
+      "name": "PreviewExtractorTests.testALoopWrapsToTheStart",
+      "identifier": "PreviewExtractorTests/testALoopWrapsToTheStart",
+      "result": "Passed",
+      "durationSeconds": 3.726873993873596
+    },
+    {
+      "name": "PreviewExtractorTests.testAnEagerMontagePlaysThrough",
+      "identifier": "PreviewExtractorTests/testAnEagerMontagePlaysThrough",
+      "result": "Passed",
+      "durationSeconds": 6.476298093795776
+    },
+    {
+      "name": "PreviewExtractorTests.testAScrubSettlesOnTheRightFrame",
+      "identifier": "PreviewExtractorTests/testAScrubSettlesOnTheRightFrame",
+      "result": "Passed",
+      "durationSeconds": 1.0290279388427734
+    },
+    {
+      "name": "PreviewExtractorTests.testASeekBeforeReadyLands",
+      "identifier": "PreviewExtractorTests/testASeekBeforeReadyLands",
+      "result": "Passed",
+      "durationSeconds": 0.04460108280181885
+    },
+    {
+      "name": "PreviewExtractorTests.testASeekIntoAClosedItemShowsItsFrame",
+      "identifier": "PreviewExtractorTests/testASeekIntoAClosedItemShowsItsFrame",
+      "result": "Passed",
+      "durationSeconds": 0.10028302669525146
+    },
+    {
+      "name": "PreviewExtractorTests.testDisposeReleasesEverything",
+      "identifier": "PreviewExtractorTests/testDisposeReleasesEverything",
+      "result": "Passed",
+      "durationSeconds": 0.14785706996917725
+    },
+    {
+      "name": "PreviewExtractorTests.testSeeksWhilePaused",
+      "identifier": "PreviewExtractorTests/testSeeksWhilePaused",
+      "result": "Passed",
+      "durationSeconds": 0.3875429630279541
+    }
+  ],
+  "passedAssertions": [
+    "ios/tests/LegacyParityTests.mm:DecoderWindowTests.testOpensImpliesKeeps",
+    "ios/tests/LegacyParityTests.mm:DecoderWindowTests.testSameCasesAsTheHostTest",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testAMontageExportsItsFrames",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testAnUnknownCodecFallsBackToH264",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testCopyModeEncodesEveryFrame",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testDirectModeEncodesEveryFrame",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testHEVC",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testTheTestVideoIsWhatItSays",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testALazyMontageGivesTheSameFramesWithFewerDecoders",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testAMontageGivesEachItemItsFrame",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testAnItemWithoutFramesDoesNotHoldTheExport",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testASingleItemGivesItsFrameAtEveryTime",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testDisposeLeavesNoDecoderBehind",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testMaxLongSideSizesTheFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testAnItemWithoutFramesInItsRangeDoesNotHang",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testDirectFramesAreRetiredOneByOneInExport",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testEveryFrameOfAMontage",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testEveryFrameOfASingleItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testOpeningAndSeekingPastTheEndOfAnItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testReleaseFreesTheDecoder",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testAForwardScrubReadsTheReaderOn",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testALoopWrapsToTheFirstFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testAScrubSettlesOnTheRightFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testASeekKeepsTheFrameOnScreenAlive",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testDirectFramesAreRetiredAfterFourInPreview",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testPlayThroughAtSixtyHertz",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testPlayThroughEveryItemOfAMontage",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testSeekIntoTheMiddleOfAMontageItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testSeeks",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testTheFirstFrameAfterASeekIsShown",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test1080p",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test4K",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test60fps",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testAnExplicitResolutionWins",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testDirectTextureMode",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testHEVC",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testMaxLongSideCapsTheDecodedSize",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testMaxLongSideOnARotatedClip",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testOddDimensions",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testRotated",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testSlowMotionIsDecodedInThePresentationTimeline",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAClosedItemLeavesTheFramesObject",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testALazyMontagePlaysThroughWithFewDecoders",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testALoopWrapsToTheStart",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAnEagerMontagePlaysThrough",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAScrubSettlesOnTheRightFrame",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testASeekBeforeReadyLands",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testASeekIntoAClosedItemShowsItsFrame",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testDisposeReleasesEverything",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testSeeksWhilePaused"
+  ],
+  "fixture": {
+    "file": "ios/tests/fixtures/legacy-odd1279x719.mov",
+    "sha256": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+    "metadata": {
+      "schema": 1,
+      "width": 1279,
+      "height": 719,
+      "frames": 30,
+      "fps": 30,
+      "frameIndicesExact": true,
+      "timestampsExact": true,
+      "codec": "jpeg",
+      "file": "legacy-odd1279x719.mov",
+      "bytes": 601364,
+      "sha256": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+      "writerSourceSha256": "1a1830e81ec4808952855c8d8e098e4abb723c7699c47d2f04e4cf15386a85cf",
+      "generatedLocally": true,
+      "execution": "macOS AVFoundation pixel/frame-index/PTS validation"
+    }
+  },
+  "evidence": {
+    "resultBundle": "<temporary-directory>/skia-webgpu-simulator-2026-10-06T16-35-21-776Z/NativeTests.xcresult",
+    "resultInfoSha256": "42c39cdffca049c782667ed52f78d74b66d60385ce0be9a2f01d74eaca1e6ac5",
+    "summarySha256": "5e4311e12dae0e3957e18e6d17ef466616029f9c9292f1e601d5163cd24cbdc9",
+    "testNodesSha256": "7c334a94fa94ff7b126019230fecb748726cc9844ff2ab3f296c85e4428f84d0",
+    "actionMetadataSha256": "bff6cc0b1440049099dd26dc61eecb0fbf5f09d0530ad0fd7686272ea63cd737",
+    "buildLogSha256": "8347ccbf54356bbb7e80f0a8037bff338686d59f4161d572fb3cb59461fad737",
+    "xcode": "Xcode 27.0\nBuild version 27A266a"
+  },
+  "runtimeWarnings": [
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/tests/LegacyParityTests.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/tests/LegacyParityTests.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    },
+    {
+      "issueType": "Runtime Warning",
+      "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+      "sourceFile": "ios/VideoCompositionItemDecoder.mm"
+    }
+  ],
+  "limits": [
+    "These are named XCTest cases with multiple pixel/frame/lifetime assertions, not 50 individual assertions.",
+    "Simulator execution does not qualify physical iOS or Android hardware and is not an A/B memory/performance measurement.",
+    "Source freshness uses the runner invocation timestamp and conservative file modification times; later source edits invalidate this proof."
+  ],
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

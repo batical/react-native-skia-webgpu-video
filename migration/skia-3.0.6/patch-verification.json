@@ -1,0 +1,23 @@
+{
+  "target": {
+    "skia": "3.0.6",
+    "webgpu": "0.12.1",
+    "graphite": "154.1.0",
+    "dawn": "dawn-chrome-m154a"
+  },
+  "appliedToFreshBaseCopy": true,
+  "outputSha256Matches": true,
+  "fileCount": 20,
+  "patchSha256": "c0980ea6d31f96bf2265cedd01f0696bf6b2065f71363620f1ced8602b734800",
+  "tests": {
+    "typecheck": "pass",
+    "jestSuites": 8,
+    "jestPassed": 154,
+    "packageTestsPassed": 4,
+    "nativeSyntax": "not run; intentionally deferred until physical3.0.3 measurements finish",
+    "nativeBuild": "not run",
+    "deviceRun": "not run"
+  },
+  "sourceIsolation": "Active repositories and installed dependencies unchanged by this task",
+  "dependencyCopies": "Private Skia3.0.6 andWebGPU0.12.1 copies; unrelated dependencies/tools symlinked read-only"
+}

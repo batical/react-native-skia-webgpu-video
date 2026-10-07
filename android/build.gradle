@@ -1,0 +1,185 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath("com.android.tools.build:gradle")
+    classpath("com.facebook.react:react-native-gradle-plugin")
+  }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "com.facebook.react"
+
+
+import java.nio.file.Paths
+
+static def findNodeModules(baseDir) {
+  def basePath = baseDir.toPath().normalize()
+  // Node's module resolution algorithm searches up to the root directory,
+  // after which the base path will be null
+  while (basePath) {
+    def nodeModulesPath = Paths.get(basePath.toString(), "node_modules")
+    def reactNativePath = Paths.get(nodeModulesPath.toString(), "react-native")
+    if (nodeModulesPath.toFile().exists() && reactNativePath.toFile().exists()) {
+      return nodeModulesPath.toString()
+    }
+    basePath = basePath.getParent()
+  }
+  throw new GradleException("React-Native-Skia-Video: Failed to find node_modules/ path!")
+}
+
+def nodeModules = findNodeModules(projectDir)
+logger.warn("react-native-skia-video: node_modules/ found at: ${nodeModules}")
+
+def buildType = "debug"
+tasks.all({ task ->
+  if (task.name == "buildCMakeRelease") {
+    buildType = "release"
+  }
+})
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["ReactNativeSkiaVideo_" + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["ReactNativeSkiaVideo_" + name]).toInteger()
+}
+
+def reactNativeArchitectures() {
+  def value = project.getProperties().get("reactNativeArchitectures")
+  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+android {
+  namespace "com.azzapp.rnskv"
+
+  ndkVersion getExtOrDefault("ndkVersion")
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+  if (getExtOrIntegerDefault("minSdkVersion") < 28) {
+    throw new GradleException("Skia WebGPU Video requires Android API 28 or newer; the consuming app minSdkVersion is lower")
+  }
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    consumerProguardFiles "proguard-rules.pro"
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    externalNativeBuild {
+      cmake {
+        cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared",
+          "-DNODE_MODULES_DIR=${nodeModules}",
+          "-DBUILD_TYPE=${buildType}"
+        abiFilters (*reactNativeArchitectures())
+      }
+    }
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+
+  packagingOptions {
+    doNotStrip buildType == 'debug' ? "**/**/*.so" : ''
+    excludes = [
+      "META-INF",
+      "META-INF/**",
+      "**/libc++_shared.so",
+      "**/libfbjni.so",
+      "**/libjsi.so",
+      "**/libfolly_json.so",
+      "**/libfolly_runtime.so",
+      "**/libglog.so",
+      "**/libhermes.so",
+      "**/libhermes-executor-debug.so",
+      "**/libhermes_executor.so",
+      "**/libreactnative.so",
+      "**/libreactnativejni.so",
+      "**/libturbomodulejsijni.so",
+      "**/libreact_nativemodule_core.so",
+      "**/libjscexecutor.so",
+      "**/libruntimeexecutor.so"
+    ]
+  }
+
+  buildFeatures {
+    buildConfig true
+    prefab true
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
+  lintOptions {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs += ["${project.buildDir}/generated/source/codegen/java"]
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+def MEDIA3_VERSION = "1.10.1"
+dependencies {
+  implementation 'com.facebook.react:react-android:+'
+  implementation "androidx.media3:media3-exoplayer:${MEDIA3_VERSION}"
+  implementation "androidx.media3:media3-datasource:${MEDIA3_VERSION}"
+  implementation "androidx.media3:media3-exoplayer-hls:${MEDIA3_VERSION}"
+  testImplementation "junit:junit:4.13.2"
+  androidTestImplementation "androidx.test:runner:1.6.2"
+  androidTestImplementation "androidx.test.ext:junit:1.2.1"
+}
+
+tasks.whenTaskAdded { task ->
+  if (task.name.contains("configureCMakeDebug")) {
+    rootProject.getTasksByName("packageReactNdkDebugLibs", true).forEach {
+      task.dependsOn(it)
+    }
+  }
+
+  if (task.name.contains("configureCMakeRel")) {
+    rootProject.getTasksByName("packageReactNdkReleaseLibs", true).forEach {
+      task.dependsOn(it)
+    }
+  }
+}
+
+react {
+  jsRootDir = file("../src/")
+  libraryName = "ReactNativeSkiaVideo"
+  codegenJavaPackageName = "com.azzapp.rnskv"
+}
+
+// A library's device tests run in their own APK, without a consuming RN app.
+// Keep transitive JNI dependencies there while the published AAR still excludes them.
+androidComponents.onVariants(androidComponents.selector().all()) { variant ->
+  if (variant.androidTest != null) {
+    def unsupportedAbis = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"] - reactNativeArchitectures().toList()
+    variant.androidTest.packaging.jniLibs.excludes.set(unsupportedAbis.collect { "**/${it}/*.so" })
+  }
+}

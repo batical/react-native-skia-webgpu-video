@@ -1,0 +1,225 @@
+#include "RNSVCheckedSizes.h"
+#include "VideoPlayerHostObject.h"
+#include "JNIHelpers.h"
+
+namespace RNSkiaVideo {
+VideoPlayerHostObject::VideoPlayerHostObject(jsi::Runtime& runtime,
+                                             const std::string& uri, int width,
+                                             int height)
+    : EventEmitter(runtime, JNIHelpers::getCallInvoker()) {}
+
+void VideoPlayerHostObject::initialize(const std::string& uri, int width, int height) {
+  auto receiver = std::shared_ptr<JEventReceiver>(shared_from_this(), this);
+  jEventDispatcher = make_global(NativeEventDispatcher::create(receiver));
+  player =
+      make_global(VideoPlayer::create(uri, width, height, jEventDispatcher));
+}
+
+VideoPlayerHostObject::~VideoPlayerHostObject() {
+  this->release();
+}
+
+std::vector<jsi::PropNameID>
+VideoPlayerHostObject::getPropertyNames(jsi::Runtime& rt) {
+  std::vector<jsi::PropNameID> result;
+  result.push_back(
+      jsi::PropNameID::forUtf8(rt, std::string("decodeNextFrame")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("play")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("pause")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("seekTo")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("currentTime")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("duration")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("volume")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("playbackSpeed")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("isLooping")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("isPlaying")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("dispose")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("on")));
+  return result;
+}
+
+// The methods are created once per runtime (see RNSVHostObject):
+// `decodeNextFrame` is read by useVideoPlayer at every vsync of the UI
+// runtime, and a fresh host function on each read is two garbage collected
+// allocations per frame for nothing.
+jsi::Value VideoPlayerHostObject::get(jsi::Runtime& runtime,
+                                      const jsi::PropNameID& propNameId) {
+  auto propName = propNameId.utf8(runtime);
+  if (propName == "decodeNextFrame") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(playerMutex);
+          if (released.test()) {
+            return jsi::Value::null();
+          }
+
+          if (!glPrepared) {
+            player->setupGL();
+            glPrepared = true;
+          }
+          auto frame = player->decodeNextFrame();
+          if (!frame) return jsi::Value::null();
+          return frame->toJS(runtime);
+        });
+  } else if (propName == "play") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(playerMutex);
+          if (!released.test()) {
+            player->play();
+          }
+          return jsi::Value::undefined();
+        });
+  } else if (propName == "pause") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(playerMutex);
+          if (!released.test()) {
+            player->pause();
+          }
+          return jsi::Value::undefined();
+        });
+  } else if (propName == "seekTo") {
+    return getFunction(
+        runtime, propName, 1,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(playerMutex);
+          if (released.test()) {
+            return jsi::Value::undefined();
+          }
+          if (count < 1 || !arguments[0].isNumber())
+            throw jsi::JSError(runtime, "seekTo expects media seconds");
+          auto time = checkedMediaSeconds(arguments[0].asNumber());
+          player->seekTo(time * 1000);
+          return jsi::Value::undefined();
+        });
+  } else if (propName == "currentTime") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(
+        released.test() ? 0 : (double)player->getCurrentPosition() / 1000.0);
+  } else if (propName == "duration") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(released.test() ? 0
+                                      : (double)player->getDuration() / 1000.0);
+  } else if (propName == "volume") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(released.test() ? 0 : (double)player->getVolume());
+  } else if (propName == "playbackSpeed") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(released.test() ? 1 : (double)player->getPlaybackSpeed());
+  } else if (propName == "isLooping") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(!(released.test()) && player->getIsLooping());
+  } else if (propName == "isPlaying") {
+    std::lock_guard<std::recursive_mutex> lock(playerMutex);
+    return jsi::Value(!(released.test()) && player->getIsPlaying());
+  } else if (propName == "on") {
+    return getFunction(
+        runtime, propName, 2,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(playerMutex);
+          if (released.test()) {
+            // Nothing to listen to anymore: hand out a no-op unsubscribe.
+            return jsi::Function::createFromHostFunction(
+                runtime, jsi::PropNameID::forAscii(runtime, "dispose"), 0,
+                [](jsi::Runtime& runtime, const jsi::Value& thisValue,
+                   const jsi::Value* arguments, size_t count) -> jsi::Value {
+                  return jsi::Value::undefined();
+                });
+          }
+          auto name = arguments[0].asString(runtime).utf8(runtime);
+          auto handler = arguments[1].asObject(runtime).asFunction(runtime);
+          return this->on(name, std::move(handler));
+        });
+  } else if (propName == "dispose") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          this->release();
+          return jsi::Value::undefined();
+        });
+  }
+  return jsi::Value::undefined();
+}
+
+void VideoPlayerHostObject::set(facebook::jsi::Runtime& runtime,
+                                const facebook::jsi::PropNameID& propNameId,
+                                const facebook::jsi::Value& value) {
+  auto propName = propNameId.utf8(runtime);
+  std::lock_guard<std::recursive_mutex> lock(playerMutex);
+  if (released.test()) {
+    return;
+  }
+  if (propName == "volume") {
+    player->setVolume(value.asNumber());
+  } else if (propName == "playbackSpeed") {
+    player->setPlaybackSpeed(value.asNumber());
+  } else if (propName == "isLooping") {
+    player->setIsLooping(value.asBool());
+  }
+}
+
+void VideoPlayerHostObject::handleEvent(std::string eventName,
+                                        alias_ref<jobject> data) {
+  if (eventName == "ready") {
+    auto dimensions = static_ref_cast<JArrayInt>(data)->getRegion(0, 3);
+    int width = dimensions[0];
+    int height = dimensions[1];
+    int rotation = dimensions[2];
+    emit("ready", [=](jsi::Runtime& runtime) -> jsi::Value {
+      auto dimensions = jsi::Object(runtime);
+      dimensions.setProperty(runtime, "width", jsi::Value(width));
+      dimensions.setProperty(runtime, "height", jsi::Value(height));
+      dimensions.setProperty(runtime, "rotation", jsi::Value(rotation));
+      return dimensions;
+    });
+  } else if (eventName == "error") {
+    auto message = static_ref_cast<JString>(data)->toStdString();
+    emit("error", [=](jsi::Runtime& runtime) -> jsi::Value {
+      auto dimensions = jsi::Object(runtime);
+      dimensions.setProperty(runtime, "message",
+                             jsi::String::createFromUtf8(runtime, message));
+      return dimensions;
+    });
+  } else if (eventName == "bufferingUpdate") {
+    auto bufferedDuration = (double)static_ref_cast<JLong>(data)->value();
+    emit("bufferingUpdate", [=](jsi::Runtime& runtime) -> jsi::Value {
+      auto range = jsi::Object(runtime);
+      range.setProperty(runtime, "start", jsi::Value(0));
+      range.setProperty(runtime, "duration",
+                        jsi::Value(bufferedDuration / 1000));
+      auto ranges = jsi::Array(runtime, 1);
+      ranges.setValueAtIndex(runtime, 0, range);
+      return ranges;
+    });
+  } else if (eventName == "playingStatusChange") {
+    bool playing = static_ref_cast<JBoolean>(data)->value();
+    __android_log_print(ANDROID_LOG_INFO, "VideoPlayer",
+                        "playingStatusChange %d", playing);
+    emit("playingStatusChange",
+         [=](jsi::Runtime&) { return jsi::Value(playing); });
+  } else {
+    emit(eventName);
+  }
+}
+
+void VideoPlayerHostObject::release() {
+  std::lock_guard<std::recursive_mutex> lock(playerMutex);
+  if (!released.test_and_set()) {
+    if (jEventDispatcher) jEventDispatcher->invalidate();
+    if (player) player->release();
+    player = nullptr;
+    this->removeAllListeners();
+    jEventDispatcher = nullptr;
+  }
+}
+} // namespace RNSkiaVideo

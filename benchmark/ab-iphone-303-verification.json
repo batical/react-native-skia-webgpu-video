@@ -1,0 +1,298 @@
+{
+  "schema": 1,
+  "kind": "sanitized-independent-physical-ab-verification",
+  "verifiedAt": "2026-10-07T08:06:19.605Z",
+  "measurementScope": {
+    "candidateSkia": "3.0.3",
+    "candidateWebgpu": "0.11.0",
+    "baselineSkia": "2.10.1",
+    "platform": "iOS",
+    "deviceModel": "iPhone16,1",
+    "osVersion": "27.0.1",
+    "reactNativeVersion": "0.86.2",
+    "buildMode": "release",
+    "workloadVersion": "2026-10-07.1",
+    "repetitionsPerRun": 3,
+    "caseCountPerRun": 8,
+    "measurementPeriodMs": 100
+  },
+  "checks": {
+    "order": "A1 baseline, B1 candidate, B2 candidate, A2 baseline",
+    "balancedOrder": true,
+    "nonOverlapping": true,
+    "distinctProcessAndRunIdentities": true,
+    "samePhysicalDevice": true,
+    "sameExecutableAndBundleHashesWithinBackend": true,
+    "sameFixtureFilesAndManifest": true,
+    "sameCaseCatalog": true,
+    "rawHashesMatchExecutionEvidence": true,
+    "allSamplesActiveAndNormalPower": true,
+    "allSamplesThermallyNominal": false
+  },
+  "originalFork": {
+    "commit": "334348ffeee8a4f6887fd1f663f8cf584f579911",
+    "worktreeCleanAtVerification": true,
+    "modifiedForBenchmark": false
+  },
+  "caseIds": [
+    "steady-playback-h264-1080p30-audio",
+    "steady-playback-h264-4k30",
+    "steady-playback-hevc-4k30",
+    "steady-playback-h264-1080p30-audio-direct",
+    "steady-playback-h264-4k30-direct",
+    "steady-playback-hevc-4k30-direct",
+    "encode-h264-copy",
+    "encode-h264-direct"
+  ],
+  "caseCatalogSha256": "2062c146dee403c38a5785b4441911f8a851aa3f332a9f6e5686e0409611b140",
+  "fixtureManifestCanonicalSha256": "d9b2abc606abdf0251dc8f744f1d87c59d7942e5c58411e1eb529c0751ee1df1",
+  "fixtureFileHashes": [
+    {
+      "name": "h264-1080p-rot90.mp4",
+      "bytes": 404641,
+      "sha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d"
+    },
+    {
+      "name": "h264-1080p30-audio.mp4",
+      "bytes": 682676,
+      "sha256": "c882b99af0c042c0039a6f5b50d4545b1df96919a583e963037be59c1bc8bf64"
+    },
+    {
+      "name": "h264-1080x1920.mp4",
+      "bytes": 452191,
+      "sha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513"
+    },
+    {
+      "name": "h264-4k30.mp4",
+      "bytes": 1061564,
+      "sha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755"
+    },
+    {
+      "name": "h264-638x358.mp4",
+      "bytes": 142050,
+      "sha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc"
+    },
+    {
+      "name": "h264-720p-rot180.mp4",
+      "bytes": 353124,
+      "sha256": "f3d3d31f647361cd1f4cfc9653c2fc78a19bd881ed59014b3bd10395761683e6"
+    },
+    {
+      "name": "h264-720p-short.mp4",
+      "bytes": 23074,
+      "sha256": "9cb3f855e21e440a747181e852ce51f8c3e82919deaff5d2ce50d61fd3d09342"
+    },
+    {
+      "name": "h264-720p60.mp4",
+      "bytes": 585980,
+      "sha256": "29a2c525c9de210c69eceb4ccbf99eb7a44591ff3f28126801aef3b21652535e"
+    },
+    {
+      "name": "h264-slow-motion.mov",
+      "bytes": 134690,
+      "sha256": "f2904e161a938c031e22c22db528931dd9b46482cd4989707d36d67f7995a19a"
+    },
+    {
+      "name": "hevc-1080p-hlg10.mov",
+      "bytes": 159029,
+      "sha256": "f3e301a9fc04e514411b4b00c7129a579d0aff412f870e86e55204a2b45ae60e"
+    },
+    {
+      "name": "hevc-1080p-rot270.mp4",
+      "bytes": 354895,
+      "sha256": "1f9dedb05340ee7b909dfdf5ae29f190bfe5aed674859c02e31ece7b66a26b7d"
+    },
+    {
+      "name": "hevc-4k30-audio.mp4",
+      "bytes": 777469,
+      "sha256": "ecd315232afec5b926c9ea654af8524b9cc774a7d2e5aef1d50a2b018d6328b8"
+    },
+    {
+      "name": "hevc-4k30.mp4",
+      "bytes": 878768,
+      "sha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae"
+    },
+    {
+      "name": "manifest.json",
+      "bytes": 4390,
+      "sha256": "019af1de956886ac1f17348f6623f941cf91bd023afa8b271aebc0950af2f764"
+    },
+    {
+      "name": "tone.m4a",
+      "bytes": 375489,
+      "sha256": "b6181ed864af7b5630b48a4053828ec2006af3c11894a9b4d42803b91100bfe1"
+    }
+  ],
+  "totals": {
+    "baseline": {
+      "declaredCases": 48,
+      "passed": 47,
+      "failed": 1,
+      "passedOutputProbes": 12
+    },
+    "candidate": {
+      "declaredCases": 48,
+      "passed": 48,
+      "failed": 0,
+      "passedOutputProbes": 12
+    }
+  },
+  "runs": [
+    {
+      "label": "iphone-a1-core-baseline-303",
+      "backend": "baseline",
+      "startedAt": "2026-10-07T07:44:15.822Z",
+      "finishedAt": "2026-10-07T07:46:27.608Z",
+      "resultSha256": "003d3f35182e1e065ed82a017495a4f8f1ee502cbfac71d812892e3ead83194e",
+      "executionEvidenceSha256": "c9fe6ea41eaf133f680c0f2adb51c1951d78a0e89f2995844bf73e9273fe2952",
+      "executableSha256": "cddc841ad87e85a504e7ab8bb35632bb805c7a93776827680371a95fb5555573",
+      "jsBundleSha256": "e3e30375b1d5809a768a7ab62315f3f362887818c771b21767502e138186cfef",
+      "statuses": {
+        "passed": 23,
+        "failed": 1
+      },
+      "failedCases": [
+        {
+          "id": "steady-playback-hevc-4k30",
+          "repetition": 2,
+          "reason": "Playback measurement has no valid settled frames"
+        }
+      ],
+      "sampleCount": 811,
+      "thermalSamples": {
+        "nominal": 78,
+        "fair": 733
+      },
+      "allSamplesActiveNormal": true,
+      "memorySources": {
+        "rssBytes": "iOS mach task_info resident_size",
+        "physicalFootprintBytes": "iOS task_vm_info phys_footprint"
+      },
+      "allPhysicalMemoryReadingsPresent": true,
+      "samplesDropped": 0,
+      "passedOutputProbes": 6,
+      "invalidOutputProbes": 0,
+      "unavailableScenarioValidations": {
+        "pixels:unavailable": 6,
+        "presentation-timestamps:unavailable": 6,
+        "actual-codec:unavailable": 6
+      },
+      "ownedCounterFinalStatus": "Unavailable, never substituted with zero"
+    },
+    {
+      "label": "iphone-b1-core-candidate-303",
+      "backend": "candidate",
+      "startedAt": "2026-10-07T07:51:39.291Z",
+      "finishedAt": "2026-10-07T07:53:51.311Z",
+      "resultSha256": "7238e44ccf7bf1806df6f9de032d312a53dd75f959e3d29f4f214d4aecce0ba1",
+      "executionEvidenceSha256": "5448b557a54f9f94d3288c99d4d11a6f55f092eb6dbff5e073c4d90d3a097b51",
+      "executableSha256": "b829983937bb0a1e092a40c78ab2b9e4753af72aee86c6007ffeae1698aa2d38",
+      "jsBundleSha256": "a967d60fb422ca6b307df0be19c3fafe3ec66187ec9c95c73bfc3f0038a7506a",
+      "statuses": {
+        "passed": 24
+      },
+      "failedCases": [],
+      "sampleCount": 809,
+      "thermalSamples": {
+        "nominal": 809
+      },
+      "allSamplesActiveNormal": true,
+      "memorySources": {
+        "rssBytes": "iOS mach task_info resident_size",
+        "physicalFootprintBytes": "iOS task_vm_info phys_footprint"
+      },
+      "allPhysicalMemoryReadingsPresent": true,
+      "samplesDropped": 0,
+      "passedOutputProbes": 6,
+      "invalidOutputProbes": 0,
+      "unavailableScenarioValidations": {
+        "pixels:unavailable": 6,
+        "presentation-timestamps:unavailable": 6,
+        "actual-codec:unavailable": 6
+      },
+      "ownedCounterFinalStatus": "Measured zero on all final settled readings"
+    },
+    {
+      "label": "iphone-b2-core-candidate-303",
+      "backend": "candidate",
+      "startedAt": "2026-10-07T07:54:39.689Z",
+      "finishedAt": "2026-10-07T07:56:51.876Z",
+      "resultSha256": "810c896c05ac7ebe0bcec50887b54155ab5a9e0bf6ba0035dffe3660725b37fa",
+      "executionEvidenceSha256": "8c8465ded906e0ba381999bf813eec92a0cdada6bb62c9fd648c0297217b34d3",
+      "executableSha256": "b829983937bb0a1e092a40c78ab2b9e4753af72aee86c6007ffeae1698aa2d38",
+      "jsBundleSha256": "a967d60fb422ca6b307df0be19c3fafe3ec66187ec9c95c73bfc3f0038a7506a",
+      "statuses": {
+        "passed": 24
+      },
+      "failedCases": [],
+      "sampleCount": 813,
+      "thermalSamples": {
+        "nominal": 813
+      },
+      "allSamplesActiveNormal": true,
+      "memorySources": {
+        "rssBytes": "iOS mach task_info resident_size",
+        "physicalFootprintBytes": "iOS task_vm_info phys_footprint"
+      },
+      "allPhysicalMemoryReadingsPresent": true,
+      "samplesDropped": 0,
+      "passedOutputProbes": 6,
+      "invalidOutputProbes": 0,
+      "unavailableScenarioValidations": {
+        "pixels:unavailable": 6,
+        "presentation-timestamps:unavailable": 6,
+        "actual-codec:unavailable": 6
+      },
+      "ownedCounterFinalStatus": "Measured zero on all final settled readings"
+    },
+    {
+      "label": "iphone-a2-core-baseline-303",
+      "backend": "baseline",
+      "startedAt": "2026-10-07T07:57:33.980Z",
+      "finishedAt": "2026-10-07T07:59:45.784Z",
+      "resultSha256": "31f5251e0b2b396cc507253cc93398379cc6b06010c4bb2ac6a75f26ac91b1d1",
+      "executionEvidenceSha256": "cc16816d1c6f4c9fc4493c7b780f5ea92010df7c825108c51ca31a44a597df52",
+      "executableSha256": "cddc841ad87e85a504e7ab8bb35632bb805c7a93776827680371a95fb5555573",
+      "jsBundleSha256": "e3e30375b1d5809a768a7ab62315f3f362887818c771b21767502e138186cfef",
+      "statuses": {
+        "passed": 24
+      },
+      "failedCases": [],
+      "sampleCount": 808,
+      "thermalSamples": {
+        "nominal": 808
+      },
+      "allSamplesActiveNormal": true,
+      "memorySources": {
+        "rssBytes": "iOS mach task_info resident_size",
+        "physicalFootprintBytes": "iOS task_vm_info phys_footprint"
+      },
+      "allPhysicalMemoryReadingsPresent": true,
+      "samplesDropped": 0,
+      "passedOutputProbes": 6,
+      "invalidOutputProbes": 0,
+      "unavailableScenarioValidations": {
+        "pixels:unavailable": 6,
+        "presentation-timestamps:unavailable": 6,
+        "actual-codec:unavailable": 6
+      },
+      "ownedCounterFinalStatus": "Unavailable, never substituted with zero"
+    }
+  ],
+  "strictAssessment": {
+    "overall": "failed",
+    "AB": "failed",
+    "BA": "failed",
+    "unchanged": true
+  },
+  "qualification": {
+    "preferredPair": "BA: all samples nominal; AB baseline has fair samples and one failed HEVC playback case",
+    "outputProbeContract": "Each successful export probe: nonempty H.264 640x360, 60 frames, 30 fps, 2s within one-frame tolerance, monotonic and exact presentation timestamps",
+    "unavailableFunctionalValidation": "Pixel validator and scenario validation callbacks remain unavailable; successful metadata probes do not validate pixels.",
+    "memory": "RSS and phys_footprint are independent observed metrics. Native heap and total GPU allocations are unavailable. Internal owned counters are not total process memory.",
+    "order": "Copy/direct cases run in fixed order within one process. Cache carryover prevents a causal copy/direct mode comparison.",
+    "routes": "Candidate direct API request still uses bounded CPU readback; this is not a matched true-GPU-direct implementation.",
+    "timing": "Draw histograms measure CPU callback duration, not GPU time or displayed frames. Approximately 60 callbacks/s does not validate 120fps.",
+    "excludedRuns": "The full-nine-case baseline crash and 27/27 candidate run are separate evidence; mixed exports are excluded from these eight-case pair medians."
+  }
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">React Native Skia WebGPU Video</title>
+  <desc id="desc">Play, compose, and export. Layered video frames on a dark blue background.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0b1225"/><stop offset="1" stop-color="#17233b"/></linearGradient>
+    <linearGradient id="accent" x2="1" y2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#334155" stroke-opacity=".28"/></pattern>
+  </defs>
+  <rect width="1200" height="300" rx="22" fill="url(#bg)"/>
+  <rect width="1200" height="300" rx="22" fill="url(#grid)"/>
+  <rect x="54" y="54" width="5" height="192" rx="2.5" fill="url(#accent)"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+    <text x="82" y="87" fill="#7dd3fc" font-size="16" font-weight="600" letter-spacing="3">REACT NATIVE · SKIA 3</text>
+    <text x="79" y="157" fill="#f8fafc" font-size="55" font-weight="700" letter-spacing="-1.8">WebGPU Video</text>
+    <text x="82" y="206" fill="#cbd5e1" font-size="24">Play. Compose. Export.</text>
+    <text x="82" y="242" fill="#94a3b8" font-size="16">One timeline. Your Skia canvas.</text>
+  </g>
+  <g transform="translate(835 51)">
+    <rect x="60" y="0" width="214" height="132" rx="14" fill="#172b44" stroke="#38bdf8" stroke-opacity=".45"/>
+    <rect x="30" y="34" width="214" height="132" rx="14" fill="#1b2947" stroke="#818cf8" stroke-opacity=".65"/>
+    <rect y="68" width="214" height="132" rx="14" fill="#0f172a" stroke="url(#accent)" stroke-width="2"/>
+    <path d="m88 104 50 30-50 30z" fill="url(#accent)"/>
+    <path d="M21 179h51m10 0h30m10 0h72" stroke="#475569" stroke-width="4" stroke-linecap="round"/>
+    <path d="M21 179h51" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

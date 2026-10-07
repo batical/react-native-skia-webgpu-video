@@ -1,0 +1,471 @@
+{
+  "schema": 1,
+  "completedAt": "2026-10-06T16:38:40.022Z",
+  "executionEnvironment": "macOS host: actual JSC, CoreVideo, AVFoundation/VideoToolbox; Android compiler/JVM host; actual arm64 iOS Simulator Release XCTest/Hermes",
+  "productionSourceSha256": {
+    "cpp/RNSVCheckedSizes.h": "1e06c34b096e74863f20bc8a5eeba086a910f45ca982a56476663b5d921488ea",
+    "cpp/RNSVEventEmitter.cpp": "85108c326725b1558fe99dea5ab78e85be26de846719a9b0f7db95d2be77e2f4",
+    "cpp/RNSVEventEmitter.h": "910fcbd39598d33efc4ef9506e629709b1747627d63df9fb62fc89204109f63b",
+    "cpp/RNSVHostObject.cpp": "eb469ef7636ebf383a297d66bf1500db764b9f8b96f3bf3da78361e77355baa3",
+    "cpp/RNSVHostObject.h": "5f6ed363cd036e6e6da0511f2ba5323fbd6f15aea7ba8797c3b17c30b9088c7e",
+    "cpp/RNSVMemoryBudget.cpp": "471cc61294e762f0184bda822257a65c4bf4e93d19739e4eb4648a0018c42f45",
+    "cpp/RNSVMemoryBudget.h": "53fa50436b0263dacd4a8a196074430d4fee0559f166a46cc6a85f7e76bb7933",
+    "cpp/RNSVRuntimeLifecycleMonitor.cpp": "7d1eccc3182fef89d0e8d3cfdbe4bb40b2e93d01722125216e5f65b88f56695f",
+    "cpp/RNSVRuntimeLifecycleMonitor.h": "61c9b87288e2ebea3ef7685351dcda820ec505370089af5b99680ffe0e5a4ae9",
+    "ios/AVAssetTrackUtils.h": "52a05e76bc9d35652f239d671f341d8ee4774460a329326350d18d72c30786f7",
+    "ios/AudioCompositionUtils.h": "97e0598475217463a35b5d2f206efb51eacbef4da97951d49460ba0214ee97bd",
+    "ios/AudioCompositionUtils.mm": "1a0983e46c01155e4ba825ccdb591c3e3149ee61d55fb584288f0c646e5b3994",
+    "ios/DecoderWindow.h": "ace048d897190b80ac00e55d39e0fa39a43aabf1178f85adcfcf2d67aed88351",
+    "ios/NativeResourceStats.h": "8e374180a0421764fcd3f2e8132119d322bbdf0cd4a837b66e7b8d8deac30b66",
+    "ios/RNSVColorSpace.h": "3560e750ef3e987f539792e4fba7c36eb7f9d9d5769e96824463683c2d3521ea",
+    "ios/RNSVJSIUtils.h": "4c144fb06bb1c0dab547438d3a2da48f3ad34012a981c51d7f112b84d21e0074",
+    "ios/RNSVScopedPixelBuffer.h": "cd8c05c3da1672af38aea8531c4c03172f095d264383f77308f2ebb9bc751b7f",
+    "ios/RNSVVideoPlayer.h": "d79591775397d18185ab98cf48195d5d96e81f1de8f0ca502d964699bb18618d",
+    "ios/RNSVVideoPlayer.mm": "9e0ddf8238962f30d6efb58880655be41f1010d925f14135419d963520e02b1f",
+    "ios/ReactNativeSkiaVideo.h": "5256f7cf05ad8734a759cdbe1b4f594248d1e7384a9478707830df49e84c3902",
+    "ios/ReactNativeSkiaVideo.mm": "d6d13120296fc2a7d817e990f9706b831dc61a7b1d4b07b9910601a6a15dd94c",
+    "ios/SeekPolicy.h": "e3403d4fd02085bd649685487d15b528c132b21ed9c7019d9ae58c0e9d30b67c",
+    "ios/VideoComposition.h": "d319ff868b02da3136bfdced39d625ab931661253f66d7024da92a9d5ca6d606",
+    "ios/VideoCompositionFramesExtractorHostObject.h": "4c8fcda5e2d7ba7d7a760934c32363bac633ca5878913dc4b5ad67a5a498f61c",
+    "ios/VideoCompositionFramesExtractorHostObject.mm": "6082c9dcabae6bf645e843cc1ad15fc29a181ca061d501e73731149e15b12f38",
+    "ios/VideoCompositionFramesExtractorSyncHostObject.h": "b39faf6dfb107df3693ce0aeb167b07d0c316b42eebe077c826b8b6d51a79c44",
+    "ios/VideoCompositionFramesExtractorSyncHostObject.mm": "b3f122c7820c23de48a50ec7784e6680fb4fe514700127d548d050ce478fe285",
+    "ios/VideoCompositionItemDecoder.h": "a23faec780e81cd7ba43ca16cad31f076346b662ad862065a9af3a8cfcf465f4",
+    "ios/VideoCompositionItemDecoder.mm": "f5148801479bb6aeb3487828cc2dc2debb18cf8a4e2dc56702279e927ac97f4c",
+    "ios/VideoEncoderHostObject.h": "32e9525e4a1c7f13d9814e3d3553f2c87d3a2a8f98c05c2a1f6d6133c3922ab4",
+    "ios/VideoEncoderHostObject.mm": "c291d449ed34b15ac5935cdc7c298183078be344b113ca363c542307ce2500b0",
+    "ios/VideoFrame.h": "50229697b35bdfc548d2bc68b74824fa299219e61db428230056da8acf44ea53",
+    "ios/VideoFrame.mm": "2b53c49407bf20d2258cc443f9784aabea584f60ca3f1369ce9106efacd6a192",
+    "ios/VideoPlayerHostObject.h": "cc84bfb11c7b01f9f36b21593fc242e3ea22040eb660e979b94b91b571150292",
+    "ios/VideoPlayerHostObject.mm": "d74958e1c78023492ede5f04a5e2b9df238455921258d271f8777715d5b3f836",
+    "android/cpp/JNIHelpers.cpp": "a7d8ac2cf3996053b89249d979dd5ec35ced3c9ecce6adb743d63092bf1ac5eb",
+    "android/cpp/JNIHelpers.h": "64c9e28dd204f5e028f699115e2501999f0f0f54c8b6560555f9ce06fb16b238",
+    "android/cpp/NativeEventDispatcher.cpp": "8c737aa0c825c3c215a210843c19d64be1ba500d909da566e0b3324764b7f1a7",
+    "android/cpp/NativeEventDispatcher.h": "c2b59c59ec353c1e3df24f61e0b5b38cd68e9bba634abd4c9f78e120c4a75feb",
+    "android/cpp/VideoCapabilities.cpp": "232bf9b1680e6312febe958dbec57eae298667ef3930a56613208f025114087e",
+    "android/cpp/VideoCapabilities.h": "0904670d31d7f30b910f87dcf9c08f627095b4f545f1e6525e97c033593951eb",
+    "android/cpp/VideoComposition.cpp": "7ff046c04721e75298418afcdb5b1214fc2c69d08ff0cb7b42fc75d543729b2e",
+    "android/cpp/VideoComposition.h": "d6c17bd93c319fff49fc0f35c3fa0fe6a72d45fad793e845c682091c5973aa39",
+    "android/cpp/VideoCompositionFramesExtractor.cpp": "201b75377cb50e011217355c67f4c15b7570e8dd59e7dd735181962f2adeed52",
+    "android/cpp/VideoCompositionFramesExtractor.h": "81fe940205c438db93ce3946ee148337f81452ae52aa9e076152cac691f08c85",
+    "android/cpp/VideoCompositionFramesExtractorHostObject.cpp": "2022cf4e98b8bdaec27803181d67ac1bdf92a243d52d0c51967603916a9e9884",
+    "android/cpp/VideoCompositionFramesExtractorHostObject.h": "b694c73c9ad6e1b9d3b12cfe86ba178f630136fef6d0524b0b7a4f21b8534797",
+    "android/cpp/VideoCompositionFramesExtractorSyncHostObject.cpp": "40483bd59a1a994b249c6097b15a9e1438c515b603f778a92074c57ee3c70d9a",
+    "android/cpp/VideoCompositionFramesExtractorSyncHostObject.h": "a63ec691ff0afaae4f841e21a5a8eb000102e4866b36d1ed81951c7743ddeea6",
+    "android/cpp/VideoEncoderHostObject.cpp": "974b52256f4a62615915c9640e93898dd48568a1b8ee803ce0087608914515b6",
+    "android/cpp/VideoEncoderHostObject.h": "198a34b2bd2ecf60949aaa2c96a0a6373d19b5cfe3f79dd37bc43573044fb109",
+    "android/cpp/VideoFrame.cpp": "a917565739f503aca9cf1688a8ebfbc438a93f3c64b0e8383f1dccf8aa73d2cf",
+    "android/cpp/VideoFrame.h": "40a69974b56d3ba2e1785e31522beec7eba4f7160fcd6588dd3fbaff1d8564df",
+    "android/cpp/VideoPlayer.cpp": "0690a25d3d3cb92343602a7086ecf4983ad86acb3f390968282a3833d2a6248b",
+    "android/cpp/VideoPlayer.h": "96eb25249a7a00d9a4e596d3aebe0bc2ba918bfb23bdcf13000025707b96087b",
+    "android/cpp/VideoPlayerHostObject.cpp": "28b9d1d21b6bfb703904a52eaf7018a77daab0728bcb690bb99d2f3076abe8c3",
+    "android/cpp/VideoPlayerHostObject.h": "56c13d55b2d002ffa6b3d7107d7809fc6ff3c01f34fc11e46b17cfc76f2058b0",
+    "android/cpp/cpp-adapter.cpp": "5a6b0223ad04da6cfcb349e199142619a14b1f283a07832d036d2d00d011181c",
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionExporter.java": "f88677b933c7a08012190144ccb6cae7672e88b140579b8b7deb65085d3b395a",
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionPlayer.java": "b9633e23a1244103a4cc61e9379572892e800860e307e9fb935a8f5636ad466f",
+    "android/src/main/java/com/azzapp/rnskv/DecodeRequests.java": "18ddabfa8556dce051bb23da16edf45d9e846287bd34c70b6c78eae9c565b153",
+    "android/src/main/java/com/azzapp/rnskv/DecoderWindow.java": "c31565ca278342657895d52ae02a79903487f0f19d15c3677ac1b9c942ef0666",
+    "android/src/main/java/com/azzapp/rnskv/EGLResourcesHolder.java": "210038c00b747d18ce059b3f90e9dd561b6d0159ffc37e966a0ccedb2658359d",
+    "android/src/main/java/com/azzapp/rnskv/EGLUtils.java": "353be2d1bb2c93b74855d84a851e08eb57063626f91f4437e90e99afbc169a44",
+    "android/src/main/java/com/azzapp/rnskv/FrameSize.java": "c23b35630e9e9c8a1b45e99c314f35f5a1170df51aa7624eec466e752762b0f7",
+    "android/src/main/java/com/azzapp/rnskv/GLFrameExtractor.java": "ffcd1588783c6f33b345fa96e40366ae6054dd84334e509acd43f55907118b39",
+    "android/src/main/java/com/azzapp/rnskv/JNIHelpers.java": "36a3121f1198b780214a26641c5f9a65221957865d6f03a9e3ea6fe7a8b10a35",
+    "android/src/main/java/com/azzapp/rnskv/NativeEventDispatcher.java": "38258ea4e495b0fcf94191592e3a6c116a210c3e227968190adb7ba3b30f2f33",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoModule.java": "d80d12f865b1c65b3658a01742c75d47d4ebd3f52d5639b66c8d816641244b7f",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoPackage.java": "5ee788c23d80111b5582d92fe468fb993181caa93db2f7121c3e287d066ee126",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoSpec.java": "0e0d5b0f0a78d35894edaf114f119e60625fe792bbb060c73bf3e9c579874963",
+    "android/src/main/java/com/azzapp/rnskv/RgbaLayout.java": "8d3809ccfa60993b5c174d52e0a65f61a2ecea3935c6f85464d21a2186d89abc",
+    "android/src/main/java/com/azzapp/rnskv/TextureRenderer.java": "c5fd5ee2957b7ad01d7c4a7f285c82fb6338b6dd56e555da7d5ed0d294d2f508",
+    "android/src/main/java/com/azzapp/rnskv/TimeHelpers.java": "dc554a6b7cee28f5537bad60aef5b939c911886499fc6aea4cc4bc9cddeae393",
+    "android/src/main/java/com/azzapp/rnskv/VideoCapabilities.java": "99ddf5dd614ef48724fba5a84bceab1f54af67ffe802c415e70853d8fcaa1f09",
+    "android/src/main/java/com/azzapp/rnskv/VideoComposition.java": "5870bb0aff68ae992da0c02688acb2da16f8e6055f7c62e121e52b94dbf853fd",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionDecoder.java": "ec1063002784416660f44f4575f68e51e1ec8ab916d9dbe1f30e4273ef348b37",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractor.java": "3370fddb949f288cf7cacff8cba9759225b5a5061e37b4e14748e838800bf198",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractorSync.java": "a5500525a9819ce6bd3c493685010bd20f1f36c2ab6aace1f871ea49e94f0b73",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionItemDecoder.java": "19cc0ae227d91395944666457ee77a881312f7f5df5c066305c46892d39ac836",
+    "android/src/main/java/com/azzapp/rnskv/VideoEncoder.java": "c0837ac058b9515af87be4188814a617c21f281c2971c5632ee2c6d0190a76e6",
+    "android/src/main/java/com/azzapp/rnskv/VideoFrame.java": "63e5867c7f2f6da11f3321fe6a7051915903a145c7a3a9f6548dd92e10879ddf",
+    "android/src/main/java/com/azzapp/rnskv/VideoPlayer.java": "3b5daee2af075711e7da2457e0c8fcbed74a8ad84ae1aeabee937b06caf5c807"
+  },
+  "confirmedProblems": [
+    {
+      "failure": "Unchecked double→size_t and wrapped rowBytes*height bypassed iOS encoder storage validation; RGBA descriptor dimensions ignored.",
+      "before": "Actual JSC call with BGRA/RGBA stride2**58,height64,one-byte data reached encodePixels and returned Encoder not prepared rather than storage rejection. Wrong RGBA dimensions also reached encodePixels.",
+      "after": "Finite exactly representable integers, checked products, exact dimensions/ArrayBuffer views and nanosecond timestamp bounds;100k randomized valid layouts and extreme invalid cases pass."
+    },
+    {
+      "failure": "Disposed sync extractor and decoder could restart a reader through decode/start/seek.",
+      "before": "Actual local 10-frame H264 fixture: start→dispose→decode(0) reopened decoder and allocated owned samples; closed decoder seek→advance returned a new frame.",
+      "after": "Serialized monotonic closed state, idempotent start, disposed extractor rejection, closed decoder no-op and stale in-flight batches dropped."
+    },
+    {
+      "failure": "AVPlayer copied pixel buffer leaked and frame timestamp advanced if constructing a frame lease threw.",
+      "evidence": "copyPixelBuffer supplied+1 and CVPixelBufferRelease followed the throwing MemoryBudget/frame construction.",
+      "after": "Scoped adopting CoreVideo owner releases on every exception; lastFrameDrawn changes only after success.1000 budget-refusal cycles on an actual two-buffer pool do not exhaust it."
+    },
+    {
+      "failure": "Encoder preparation started writer/audio before reserving pool and failures left partial resources until disposal. Logical packed strides undercounted padded CoreVideo allocation.",
+      "after": "Transactional preparation reserves/probes/resizes actual three-buffer capacity before writer creation, rolls back on every failure. Real34x34 pool reservation equals actual CoreVideo storage×3; budget refusal creates no output file."
+    },
+    {
+      "failure": "Concurrent encode/finish and disposal could free pool/writer resources in use.",
+      "after": "Serialized operations, cancellation announced before lock acquisition, interruptible bounded waits;30 real encode/dispose races return reservations promptly. Async completion uses explicit strongly owned NSError storage."
+    },
+    {
+      "failure": "Preview/player metadata, clock, prepare/dispose and frame timestamps accessed shared state without consistent locking; late seeks could reopen released decoder.",
+      "after": "Shared state serialization, atomic closure announced first, weak pending seek/track-load callbacks and explicit cancelPendingSeeks/cancelLoading. Real iOS SDK compilation passed; full physical-device player stress still requires execution."
+    },
+    {
+      "failure": "A short forward seek discarded prefetched samples while keeping their already-advanced reader.",
+      "before": "Actual iPhone XCTest:seek0.1s kept frame0 instead of frame3.",
+      "after": "Forward read-on retains queued samples and generation; real host H264 preview regression9 successive tenth-second seeks returns exact alternating colors under ASan/UBSan."
+    },
+    {
+      "failure": "Preview seeks replaced a reader on the caller thread while a stale decoder tick advanced it; paused seeks relied solely on display-link delivery.",
+      "before": "Actual iPhone:paused seek0.5s stayed frame0 instead of15; final scrub4.2s had no c frame.",
+      "after": "Desired clock and generation update immediately; one coalesced serial decoder task applies reader seek and advancement, explicitly scheduled by seek/frame polling. Stale generations cannot publish new acquired frames. All50 current-source XCTest cases passed on the actual iOS Simulator, including paused seeks and scrubs."
+    },
+    {
+      "failure": "Slow-motion parity test retained consumed native leases; odd-size H264 test source was silently encoded with even dimensions.",
+      "before": "Actual iPhone slow-motion stopped at frame1 on its third request. Local AVFoundation probe:H264 requested1279x719 but coded/decoded1278x718; JPEG movie coded/decoded1279x719.",
+      "after": "Slow-motion returns each consumed lease after CPU snapshot while retaining every one of270 exact timeline frame assertions. The locally generated JPEG1279x719 movie is bundled with XCTest; its coded dimensions and all30 requested-frame pixel/index/dimension checks pass on Simulator. Host AVFoundation independently validated its30 exact sample PTS. No production assertion weakened."
+    },
+    {
+      "failure": "Decoder release/seek could call AVAssetReader.cancelReading concurrently with copyNextSampleBuffer, contrary to Apple SDK contract. RN preview teardown exposed SIGSEGV in FigVisualContext on Simulator.",
+      "evidence": "Actual Simulator crash report ReactNativeSkiaWebGPUVideoExample-2026-10-06-165906.ips; AVAssetReader.h lines215-223 explicitly forbid this concurrency. The same4K movie decodes correctly with all exact production output options in an isolated Simulator executable.",
+      "after": "Dedicated mutex serializes reader reads/seeks/cancellation; atomic closure announcement interrupts read-on batches between samples before waiting for currentcopy.30 actual host decode/scaling1280x720/dispose races pass ASan/UBSan, bounded closure and final zero reservations. canAddOutput/startReading failures checked; valid empty/past-end ranges return no reader without an initialization error."
+    },
+    {
+      "failure": "Completed preview clock reverted to its previous paused position, usually zero, when isPlaying became false.",
+      "evidence": "The completed branch changed isPlaying without updating pausePosition; getCurrentTime uses pausePosition while paused.",
+      "after": "Non-loop completion preserves composition.duration as pausePosition. The existing eager playback XCTest awaits complete, asserts isPlaying=false and duration, and checks that clock again after 100 ms. play() at completion restarts via seekTo(0); repeated play during playback is idempotent. The same concrete XCTest verifies progressing replay clock, frames from the first clip, and continuity after repeated play; final Simulator run passed."
+    },
+    {
+      "failure": "Restarting playback at completion without audio used the preserved end position, and repeated play during active playback reset its clock.",
+      "evidence": "play() used pausePosition as its start offset, cleared it, and had no isPlaying guard. Only its audio branch sought to zero at the end.",
+      "after": "Already-playing calls return without rewinding; completed playback calls seekTo(0) so its clock, decoder generation and pending seek all restart together. The strengthened existing eager playback XCTest passed on Simulator."
+    },
+    {
+      "failure": "Synchronous Skia export setup, native-image import and cleanup were outside the drawing autorelease pool on a persistent Worklets background thread.",
+      "evidence": "Worklets0.11.3 AsyncQueueImpl.cpp runs job() on a detached std::thread without an Apple autorelease pool; export previously pooled only draw. Native encoder/decoder methods already use their own runPooled wrapper.",
+      "after": "All synchronous setup/decode/import/draw/finalize/cleanup operations have explicit scopes. No await or async processor continuation runs inside a scope. Six real Babel serialized-worklet regressions verify depth, balanced errors/cancellation and async boundaries. The actual RSS effect requires post-fix app measurement."
+    }
+  ],
+  "checks": {
+    "asanUbsanNative": {
+      "command": "node scripts/test-native.mjs --asan",
+      "passed": true,
+      "pureCppLegacyAssertions": 20,
+      "concurrentBudgetReservations": 40000,
+      "randomCheckedLayouts": 100000,
+      "actualCoreVideoOwnershipCycles": 10000,
+      "actualCoreVideoBudgetFailureCycles": 1000,
+      "actualH264DecodedColorFrames": 120,
+      "sourcePixelLayouts": [
+        "BGRA",
+        "RGBA"
+      ],
+      "exactPresentationTimestamps": true,
+      "actualNativeSeeks": 100,
+      "loopParity": true,
+      "concurrentEncodeDisposeIterations": 30,
+      "jscValidationAssertions": "passed",
+      "finalTrackedBytes": 0,
+      "prefetchedForwardSeeks": 9,
+      "concurrentDecodeDisposeIterations": 30
+    },
+    "iOSTranslationUnits": {
+      "sdk": "iPhoneSimulator27",
+      "target": "arm64-apple-ios16.4-simulator",
+      "passed": true,
+      "count": 6
+    },
+    "iOSLegacyParitySource": {
+      "actualSDKCompilation": "passed",
+      "deviceExecution": "Historical pre-fix physical run:45 passed,5 failed; current source qualification on physical iOS remains pending",
+      "testSourceSha256": "6c2d99ea066247b119ab5f605c6fe5e4c12dd393e71a41c154e5d27889348321",
+      "simulatorExecution": {
+        "report": "benchmark/ios-simulator-verification.json",
+        "passedTestCases": 50,
+        "failedTestCases": 0,
+        "skippedTestCases": 0,
+        "sdk": "iphonesimulator27.0",
+        "configuration": "Release",
+        "sourceIdentityVerified": true,
+        "namedCaseVerification": true,
+        "testFinishedAt": "2026-10-06T16:36:31.073Z",
+        "completionReplayAndIdempotenceRegression": "PreviewExtractorTests.testAnEagerMontagePlaysThrough passed"
+      },
+      "testCases": 50
+    },
+    "androidCpp": {
+      "ndk": "27.1.12297006",
+      "target": "arm64 API28",
+      "productionTranslationUnits": 16,
+      "passed": true
+    },
+    "androidJava": {
+      "productionAndTestSources": 42,
+      "reactNative": "0.86.2",
+      "media3": "1.10.1",
+      "turboModuleSpec": "actually generated from current src/NativeReactNativeSkiaVideo.ts with package com.azzapp.rnskv",
+      "buildConfig": "standard temporary DEBUG=false constant",
+      "passed": true
+    },
+    "jvm": {
+      "assertions": 21,
+      "legacyAssertions": 12,
+      "passed": true
+    },
+    "oddFixture": {
+      "file": "ios/tests/fixtures/legacy-odd1279x719.mov",
+      "metadata": "ios/tests/fixtures/legacy-odd1279x719.json",
+      "macOSDecodedIndexedFrames": 30,
+      "exactIndicesAndPTS": true,
+      "width": 1279,
+      "height": 719,
+      "simulatorDecodedIndexedFrames": 30,
+      "simulatorCorrectFramesAtEveryPresentationRequest": true,
+      "simulatorExecutionEvidence": "MediaTests.testOddDimensions in benchmark/ios-simulator-verification.json"
+    },
+    "iOSSimulatorFullBuild": {
+      "passed": true,
+      "configuration": "Release",
+      "sdk": "iphonesimulator27.0",
+      "reactNative": "0.86.2",
+      "skia": "3.0.3",
+      "webgpu": "0.11.0",
+      "evidence": "benchmark/ios-simulator-verification.json",
+      "runtimeWarnings": 29
+    },
+    "simulatorEvidenceRecorder": {
+      "command": "node scripts/benchmark-record-ios-simulator-verification.mjs --self-test",
+      "passed": true,
+      "negativeAndPositiveAssertions": 24,
+      "realStaleRunRefused": "15:15 run refused because PreviewHost source was edited after its build invocation",
+      "exactCaseNamesRequired": true,
+      "failureOrSkipRejected": true,
+      "sourcesModifiedDuringReadingRejected": true,
+      "fixtureHashRequired": true,
+      "publicDeviceIdsRedacted": true,
+      "currentRecordedRun": "<temporary-directory>/skia-webgpu-simulator-2026-10-06T16-35-21-776Z/NativeTests.xcresult",
+      "sourceIdentityVerified": true
+    },
+    "lifecycleTracing": {
+      "flag": "RNSV_TRACE_LIFECYCLE=1",
+      "defaultEnabled": false,
+      "guardedCalls": 4,
+      "logicOrQueueChanges": false,
+      "simulatorSyntax": {
+        "sdk": "iphonesimulator27.0",
+        "target": "arm64-apple-ios16.4-simulator",
+        "translationUnits": 2,
+        "configurations": [
+          "flag not defined",
+          "-DRNSV_TRACE_LIFECYCLE=1"
+        ],
+        "passedChecks": 4
+      },
+      "currentSimulatorExecution": "All50 named XCTest cases passed after the trace guards were compiled;0 failures,0 skips."
+    },
+    "currentHostVerification": {
+      "report": "benchmark/host-verification.json",
+      "completedAt": "2026-10-06T16:36:02.537Z",
+      "dependencyFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+      "passedAssertions": 170,
+      "jestAssertions": 138,
+      "pureCppLegacyAssertions": 20,
+      "jvmAssertions": 21,
+      "jvmLegacyAssertionsCounted": 12
+    },
+    "exportSynchronousAutoreleaseScopes": {
+      "file": "src/exportVideoComposition.ts",
+      "sha256": "024a76e1f475d94904c76414436faffb6cd6bc67f362be0dd1ec17c10f43b9c4",
+      "scopeSites": 5,
+      "synchronousWork": [
+        "setup native/Skia resources",
+        "decode and import frames; retire replaced images",
+        "draw/readback",
+        "finishWriting",
+        "each safe cleanup operation"
+      ],
+      "asyncProcessorWaitsOutsidePools": true,
+      "interfaceUnchanged": true,
+      "workletBabelTransformation": "passed",
+      "typecheck": "passed",
+      "hostScopeRegressions": 6,
+      "hostEvidence": "benchmark/host-verification.json",
+      "nativeEntryPointsAlreadyUseRunPooled": true,
+      "attribution": "This closes a proved gap in autorelease scope coverage on a persistent Worklets std::thread. The initial RSS observations do not establish how many bytes came from this gap."
+    },
+    "prePoolSimulatorMemoryObservation": {
+      "report": "benchmark/results/simulator-mixed-soak-before-pools.local.json",
+      "sha256": "2aefd9cd36d2422d1e76a2165520194159dcaa04d1b26037f7269e33eb8b289c",
+      "sourceDependencyFingerprint": "621c20f63ff056996abd2beb22e107527ae3bbe4259252380680ff30eeeafd7c",
+      "exports": 300,
+      "repetitions": [
+        {
+          "repetition": 0,
+          "status": "passed",
+          "exports": 100,
+          "settledRssMiB": 350.375,
+          "sampledPeakRssMiB": 716.5625,
+          "finalOwnedBytes": 0,
+          "droppedMemorySamples": 0
+        },
+        {
+          "repetition": 1,
+          "status": "passed",
+          "exports": 100,
+          "settledRssMiB": 317.234375,
+          "sampledPeakRssMiB": 679.515625,
+          "finalOwnedBytes": 0,
+          "droppedMemorySamples": 0
+        },
+        {
+          "repetition": 2,
+          "status": "passed",
+          "exports": 100,
+          "settledRssMiB": 294.203125,
+          "sampledPeakRssMiB": 703.640625,
+          "finalOwnedBytes": 0,
+          "droppedMemorySamples": 0
+        }
+      ],
+      "idle": {
+        "report": "benchmark/results/mixed-soak-idle-observations.local.json",
+        "sha256": "9399bfa3bdfcf9a9a1d23d8b3614b5bd612a3a03c37675096e884222d4a5d4c0",
+        "measurementWindow": {
+          "before": "2026-10-06 16:32:49 UTC",
+          "after": "2026-10-06 16:32:52 UTC"
+        },
+        "rssMiB": 85.234375,
+        "source": "ps, resident size in KiB; same idle process after the 300-export run"
+      },
+      "conclusion": "Continual RSS growth was not confirmed in this scenario; delayed reclamation/cache/GC attribution remains unknown. These measurements used the pre-pool-fix source and do not qualify physical iOS/Android memory."
+    }
+  },
+  "limits": [
+    "All 50 current-source native XCTest cases passed on arm64 iOS Simulator 27.0, 0 failures/0 skips, including preserved completion clock, restart and repeated-play continuity. This does not qualify physical iOS or Android hardware. The historical phone 45/50 run used older sources and remains separate.",
+    "No A/B memory/performance comparison result is inferred; comparison was deferred by the user. Simulator XCTest duration is diagnostic execution timing, not a physical-device performance result.",
+    "XCTest recorded 29 QoS priority-inversion warnings involving synchronous AVFoundation reads/test writers. Functional assertions passed; warnings remain visible in the Simulator report and no latency claim is inferred.",
+    "JSI explicitly permits managed value destructors on arbitrary threads; actual JSC teardown passed. Current50 XCTest used Hermes on Simulator.",
+    "Configured reservation budget is not total process RSS. Android Java scratch ByteBuffer/byte[] staging, EGL textures and codec/driver caches are outside tracked C++/JS reservations. Physical memory profiling remains pending.",
+    "Actual native buffer descriptors are borrowed CVPixelBuffer handles; callers must preserve the frame lease through sampling/encoding. Tests cover producer teardown preserving consumers and explicit disposal after completed consumption.",
+    "Independent ARC probe showed std::promise<NSError*> retains the error under this Clang/libc++ runtime; the more explicit completion holder is not counted as a previously proved use-after-free.",
+    "Simulator source identity uses the runner invocation timestamp, conservative file modification times and content/dependency/fixture hashes; later changes invalidate the inventory labels."
+  ],
+  "historicalBeforeSeekFix": {
+    "completedAt": "2026-10-06T14:31:46.496738+00:00",
+    "productionSourceSha256": {
+      "android/cpp/JNIHelpers.cpp": "a7d8ac2cf3996053b89249d979dd5ec35ced3c9ecce6adb743d63092bf1ac5eb",
+      "android/cpp/JNIHelpers.h": "64c9e28dd204f5e028f699115e2501999f0f0f54c8b6560555f9ce06fb16b238",
+      "android/cpp/NativeEventDispatcher.cpp": "8c737aa0c825c3c215a210843c19d64be1ba500d909da566e0b3324764b7f1a7",
+      "android/cpp/NativeEventDispatcher.h": "c2b59c59ec353c1e3df24f61e0b5b38cd68e9bba634abd4c9f78e120c4a75feb",
+      "android/cpp/VideoCapabilities.cpp": "232bf9b1680e6312febe958dbec57eae298667ef3930a56613208f025114087e",
+      "android/cpp/VideoCapabilities.h": "0904670d31d7f30b910f87dcf9c08f627095b4f545f1e6525e97c033593951eb",
+      "android/cpp/VideoComposition.cpp": "7ff046c04721e75298418afcdb5b1214fc2c69d08ff0cb7b42fc75d543729b2e",
+      "android/cpp/VideoComposition.h": "d6c17bd93c319fff49fc0f35c3fa0fe6a72d45fad793e845c682091c5973aa39",
+      "android/cpp/VideoCompositionFramesExtractor.cpp": "201b75377cb50e011217355c67f4c15b7570e8dd59e7dd735181962f2adeed52",
+      "android/cpp/VideoCompositionFramesExtractor.h": "81fe940205c438db93ce3946ee148337f81452ae52aa9e076152cac691f08c85",
+      "android/cpp/VideoCompositionFramesExtractorHostObject.cpp": "2022cf4e98b8bdaec27803181d67ac1bdf92a243d52d0c51967603916a9e9884",
+      "android/cpp/VideoCompositionFramesExtractorHostObject.h": "b694c73c9ad6e1b9d3b12cfe86ba178f630136fef6d0524b0b7a4f21b8534797",
+      "android/cpp/VideoCompositionFramesExtractorSyncHostObject.cpp": "40483bd59a1a994b249c6097b15a9e1438c515b603f778a92074c57ee3c70d9a",
+      "android/cpp/VideoCompositionFramesExtractorSyncHostObject.h": "a63ec691ff0afaae4f841e21a5a8eb000102e4866b36d1ed81951c7743ddeea6",
+      "android/cpp/VideoEncoderHostObject.cpp": "974b52256f4a62615915c9640e93898dd48568a1b8ee803ce0087608914515b6",
+      "android/cpp/VideoEncoderHostObject.h": "198a34b2bd2ecf60949aaa2c96a0a6373d19b5cfe3f79dd37bc43573044fb109",
+      "android/cpp/VideoFrame.cpp": "a917565739f503aca9cf1688a8ebfbc438a93f3c64b0e8383f1dccf8aa73d2cf",
+      "android/cpp/VideoFrame.h": "40a69974b56d3ba2e1785e31522beec7eba4f7160fcd6588dd3fbaff1d8564df",
+      "android/cpp/VideoPlayer.cpp": "0690a25d3d3cb92343602a7086ecf4983ad86acb3f390968282a3833d2a6248b",
+      "android/cpp/VideoPlayer.h": "96eb25249a7a00d9a4e596d3aebe0bc2ba918bfb23bdcf13000025707b96087b",
+      "android/cpp/VideoPlayerHostObject.cpp": "28b9d1d21b6bfb703904a52eaf7018a77daab0728bcb690bb99d2f3076abe8c3",
+      "android/cpp/VideoPlayerHostObject.h": "56c13d55b2d002ffa6b3d7107d7809fc6ff3c01f34fc11e46b17cfc76f2058b0",
+      "android/cpp/cpp-adapter.cpp": "5a6b0223ad04da6cfcb349e199142619a14b1f283a07832d036d2d00d011181c",
+      "android/src/main/java/com/azzapp/rnskv/AudioCompositionExporter.java": "f88677b933c7a08012190144ccb6cae7672e88b140579b8b7deb65085d3b395a",
+      "android/src/main/java/com/azzapp/rnskv/AudioCompositionPlayer.java": "b9633e23a1244103a4cc61e9379572892e800860e307e9fb935a8f5636ad466f",
+      "android/src/main/java/com/azzapp/rnskv/DecodeRequests.java": "18ddabfa8556dce051bb23da16edf45d9e846287bd34c70b6c78eae9c565b153",
+      "android/src/main/java/com/azzapp/rnskv/DecoderWindow.java": "c31565ca278342657895d52ae02a79903487f0f19d15c3677ac1b9c942ef0666",
+      "android/src/main/java/com/azzapp/rnskv/EGLResourcesHolder.java": "210038c00b747d18ce059b3f90e9dd561b6d0159ffc37e966a0ccedb2658359d",
+      "android/src/main/java/com/azzapp/rnskv/EGLUtils.java": "353be2d1bb2c93b74855d84a851e08eb57063626f91f4437e90e99afbc169a44",
+      "android/src/main/java/com/azzapp/rnskv/FrameSize.java": "c23b35630e9e9c8a1b45e99c314f35f5a1170df51aa7624eec466e752762b0f7",
+      "android/src/main/java/com/azzapp/rnskv/GLFrameExtractor.java": "ffcd1588783c6f33b345fa96e40366ae6054dd84334e509acd43f55907118b39",
+      "android/src/main/java/com/azzapp/rnskv/JNIHelpers.java": "36a3121f1198b780214a26641c5f9a65221957865d6f03a9e3ea6fe7a8b10a35",
+      "android/src/main/java/com/azzapp/rnskv/NativeEventDispatcher.java": "38258ea4e495b0fcf94191592e3a6c116a210c3e227968190adb7ba3b30f2f33",
+      "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoModule.java": "d80d12f865b1c65b3658a01742c75d47d4ebd3f52d5639b66c8d816641244b7f",
+      "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoPackage.java": "5ee788c23d80111b5582d92fe468fb993181caa93db2f7121c3e287d066ee126",
+      "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoSpec.java": "0e0d5b0f0a78d35894edaf114f119e60625fe792bbb060c73bf3e9c579874963",
+      "android/src/main/java/com/azzapp/rnskv/RgbaLayout.java": "8d3809ccfa60993b5c174d52e0a65f61a2ecea3935c6f85464d21a2186d89abc",
+      "android/src/main/java/com/azzapp/rnskv/TextureRenderer.java": "c5fd5ee2957b7ad01d7c4a7f285c82fb6338b6dd56e555da7d5ed0d294d2f508",
+      "android/src/main/java/com/azzapp/rnskv/TimeHelpers.java": "dc554a6b7cee28f5537bad60aef5b939c911886499fc6aea4cc4bc9cddeae393",
+      "android/src/main/java/com/azzapp/rnskv/VideoCapabilities.java": "99ddf5dd614ef48724fba5a84bceab1f54af67ffe802c415e70853d8fcaa1f09",
+      "android/src/main/java/com/azzapp/rnskv/VideoComposition.java": "5870bb0aff68ae992da0c02688acb2da16f8e6055f7c62e121e52b94dbf853fd",
+      "android/src/main/java/com/azzapp/rnskv/VideoCompositionDecoder.java": "ec1063002784416660f44f4575f68e51e1ec8ab916d9dbe1f30e4273ef348b37",
+      "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractor.java": "3370fddb949f288cf7cacff8cba9759225b5a5061e37b4e14748e838800bf198",
+      "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractorSync.java": "a5500525a9819ce6bd3c493685010bd20f1f36c2ab6aace1f871ea49e94f0b73",
+      "android/src/main/java/com/azzapp/rnskv/VideoCompositionItemDecoder.java": "19cc0ae227d91395944666457ee77a881312f7f5df5c066305c46892d39ac836",
+      "android/src/main/java/com/azzapp/rnskv/VideoEncoder.java": "c0837ac058b9515af87be4188814a617c21f281c2971c5632ee2c6d0190a76e6",
+      "android/src/main/java/com/azzapp/rnskv/VideoFrame.java": "63e5867c7f2f6da11f3321fe6a7051915903a145c7a3a9f6548dd92e10879ddf",
+      "android/src/main/java/com/azzapp/rnskv/VideoPlayer.java": "3b5daee2af075711e7da2457e0c8fcbed74a8ad84ae1aeabee937b06caf5c807",
+      "cpp/RNSVCheckedSizes.h": "1e06c34b096e74863f20bc8a5eeba086a910f45ca982a56476663b5d921488ea",
+      "cpp/RNSVEventEmitter.cpp": "85108c326725b1558fe99dea5ab78e85be26de846719a9b0f7db95d2be77e2f4",
+      "cpp/RNSVEventEmitter.h": "910fcbd39598d33efc4ef9506e629709b1747627d63df9fb62fc89204109f63b",
+      "cpp/RNSVHostObject.cpp": "eb469ef7636ebf383a297d66bf1500db764b9f8b96f3bf3da78361e77355baa3",
+      "cpp/RNSVHostObject.h": "5f6ed363cd036e6e6da0511f2ba5323fbd6f15aea7ba8797c3b17c30b9088c7e",
+      "cpp/RNSVMemoryBudget.cpp": "471cc61294e762f0184bda822257a65c4bf4e93d19739e4eb4648a0018c42f45",
+      "cpp/RNSVMemoryBudget.h": "53fa50436b0263dacd4a8a196074430d4fee0559f166a46cc6a85f7e76bb7933",
+      "cpp/RNSVRuntimeLifecycleMonitor.cpp": "7d1eccc3182fef89d0e8d3cfdbe4bb40b2e93d01722125216e5f65b88f56695f",
+      "cpp/RNSVRuntimeLifecycleMonitor.h": "61c9b87288e2ebea3ef7685351dcda820ec505370089af5b99680ffe0e5a4ae9",
+      "ios/AVAssetTrackUtils.h": "52a05e76bc9d35652f239d671f341d8ee4774460a329326350d18d72c30786f7",
+      "ios/AudioCompositionUtils.h": "97e0598475217463a35b5d2f206efb51eacbef4da97951d49460ba0214ee97bd",
+      "ios/AudioCompositionUtils.mm": "1a0983e46c01155e4ba825ccdb591c3e3149ee61d55fb584288f0c646e5b3994",
+      "ios/DecoderWindow.h": "ace048d897190b80ac00e55d39e0fa39a43aabf1178f85adcfcf2d67aed88351",
+      "ios/NativeResourceStats.h": "8e374180a0421764fcd3f2e8132119d322bbdf0cd4a837b66e7b8d8deac30b66",
+      "ios/RNSVColorSpace.h": "3560e750ef3e987f539792e4fba7c36eb7f9d9d5769e96824463683c2d3521ea",
+      "ios/RNSVJSIUtils.h": "4c144fb06bb1c0dab547438d3a2da48f3ad34012a981c51d7f112b84d21e0074",
+      "ios/RNSVScopedPixelBuffer.h": "cd8c05c3da1672af38aea8531c4c03172f095d264383f77308f2ebb9bc751b7f",
+      "ios/RNSVVideoPlayer.h": "d79591775397d18185ab98cf48195d5d96e81f1de8f0ca502d964699bb18618d",
+      "ios/RNSVVideoPlayer.mm": "9e0ddf8238962f30d6efb58880655be41f1010d925f14135419d963520e02b1f",
+      "ios/ReactNativeSkiaVideo.h": "5256f7cf05ad8734a759cdbe1b4f594248d1e7384a9478707830df49e84c3902",
+      "ios/ReactNativeSkiaVideo.mm": "d6d13120296fc2a7d817e990f9706b831dc61a7b1d4b07b9910601a6a15dd94c",
+      "ios/SeekPolicy.h": "e3403d4fd02085bd649685487d15b528c132b21ed9c7019d9ae58c0e9d30b67c",
+      "ios/VideoComposition.h": "d319ff868b02da3136bfdced39d625ab931661253f66d7024da92a9d5ca6d606",
+      "ios/VideoCompositionFramesExtractorHostObject.h": "46d3a1f8f7bcf18bcd4d27312dcbb6bdf4e242b83cb5dbd48a6d5ae7f05f60c6",
+      "ios/VideoCompositionFramesExtractorHostObject.mm": "7b28ea6f3eea8ba04cfbd4130e4e7483d33366e26da58b66cdb3c58b39936173",
+      "ios/VideoCompositionFramesExtractorSyncHostObject.h": "b39faf6dfb107df3693ce0aeb167b07d0c316b42eebe077c826b8b6d51a79c44",
+      "ios/VideoCompositionFramesExtractorSyncHostObject.mm": "730131afeb918f6bc8bb37d98836625ef68f780241eba09f7d811b0fbdd2f09f",
+      "ios/VideoCompositionItemDecoder.h": "bad53aebf8d64a123881617e9ea4d10d0e28fba585d7b3dee58c8117fc9966e9",
+      "ios/VideoCompositionItemDecoder.mm": "4fbdc2f37f6ee9db4bdccc72eb45cf5c174a0217a57708f824b887ad7513a16f",
+      "ios/VideoEncoderHostObject.h": "32e9525e4a1c7f13d9814e3d3553f2c87d3a2a8f98c05c2a1f6d6133c3922ab4",
+      "ios/VideoEncoderHostObject.mm": "c291d449ed34b15ac5935cdc7c298183078be344b113ca363c542307ce2500b0",
+      "ios/VideoFrame.h": "50229697b35bdfc548d2bc68b74824fa299219e61db428230056da8acf44ea53",
+      "ios/VideoFrame.mm": "2b53c49407bf20d2258cc443f9784aabea584f60ca3f1369ce9106efacd6a192",
+      "ios/VideoPlayerHostObject.h": "cc84bfb11c7b01f9f36b21593fc242e3ea22040eb660e979b94b91b571150292",
+      "ios/VideoPlayerHostObject.mm": "d74958e1c78023492ede5f04a5e2b9df238455921258d271f8777715d5b3f836"
+    },
+    "physicalXCTestSummary": "benchmark/ios-native-device-attempt.json",
+    "result": "45 passed / 5 failed / 0 skipped, before current corrections; not a performance measurement"
+  },
+  "historicalClockFixBeforeReplay": {
+    "resultBundle": "<temporary-directory>/skia-webgpu-simulator-2026-10-06T15-23-12-575Z/NativeTests.xcresult",
+    "result": "50 passed / 0 failed / 0 skipped, before the additional replay/idempotence assertions",
+    "previewSourceSha256": "128b6a5eb9c6561674b2192c7fac1a17cd1cf3f244b2b8393f4b9b8ca2713ac2",
+    "testSourceSha256": "d4b9eaa639b8fd811991d69122bc19a20fa94bce019c4e8e2ca6c050c3e9c3a7"
+  },
+  "historicalBeforeLifecycleTrace": {
+    "resultBundle": "<temporary-directory>/skia-webgpu-simulator-2026-10-06T15-51-16-960Z/NativeTests.xcresult",
+    "testFinishedAt": "2026-10-06T15:52:32.462Z",
+    "modifiedFileHashes": {
+      "ios/VideoCompositionFramesExtractorHostObject.mm": "4fcdb289767ecac90510191d762e7deb487cbb07ce1543fca4a1ab6fb548d209",
+      "ios/VideoCompositionFramesExtractorSyncHostObject.mm": "730131afeb918f6bc8bb37d98836625ef68f780241eba09f7d811b0fbdd2f09f"
+    },
+    "scope": "The detailed macOS AVFoundation/CoreVideo/JSC sanitizer stress was executed before these four conditional NSLog guards. All other production hashes remain identical; the current host recorder reran pure C++ ASan/UBSan and JVM checks, and the current full Simulator XCTest reran all50 named cases."
+  },
+  "historicalBeforeExportPools": {
+    "report": "benchmark/results/ios-simulator-before-pools.local.json",
+    "dependencyFingerprint": "621c20f63ff056996abd2beb22e107527ae3bbe4259252380680ff30eeeafd7c",
+    "hostAssertionCount": 164,
+    "nativeTestCases": 50,
+    "scope": "Before extending export autorelease scopes; both original proof and raw performance/soak reports are preserved in ignored local snapshots."
+  },
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

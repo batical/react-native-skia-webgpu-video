@@ -1,0 +1,40 @@
+# Android validation and frame ownership
+
+The Android example in `../example/android` pins React Native 0.86.2, Skia 3.0.6, WebGPU 0.12.1, Dawn chrome-m154a and Graphite Android 154.1.0. It uses Java 17, Gradle 9.3.1, Android SDK 36 and NDK 27.1.12297006. The library requires API 28; a consuming application with a lower minimum receives an explicit Gradle configuration error. The default example ABI is arm64-v8a; `RNSKV_ANDROID_ABI` selects another ABI for the validation script.
+
+Run `android/scripts/validate.sh build` from the repository. It assembles the example Debug and unsigned Release APKs, library AAR, standalone instrumentation APK and JVM tests. Release uses the installed `hermes-compiler` package, and both native and Metro build concurrency are bounded to two workers. The Release APK is unsigned: device installation requires signing a separate local qualification artifact. The project supplies no publishing or release signing configuration.
+
+Run `android/scripts/validate.sh instrument DEVICE_SERIAL` to execute the native cases on an explicitly selected connected device. `instrumentation-inventory.json` records the 40 original named cases / 86 parameterized executions and eight additional ownership executions, for 44 named cases / 94 planned executions. Unsupported hardware codecs produce JUnit assumption skips, never passes. The library's AndroidTest variant packages its own React JNI dependencies; its AAR keeps the original dependency exclusions.
+
+## Verified build evidence
+
+`build-validation.json` records hashes of produced artifacts, source fingerprints and the actual JVM results. These are compilation and host-test results. No Android device was attached during this validation: no instrumentation, ART lifetime, codec/Surface orientation, physical memory, GPU timing or A/B performance result is claimed.
+
+The initial successful full Debug build, before the direct-buffer optimization, was preserved at `/private/tmp/rnskwgpu-android-baseline-20261007` with the APK, AAR, test APK, source archive, fingerprints and build logs. This is a candidate implementation checkpoint, not the original Skia 2 reference. The original repository remains the separate benchmark reference.
+
+## Decode transport
+
+A decoder owns an isolated EGL context and SurfaceTexture. It normalizes its external codec texture into a packed RGBA framebuffer at the requested output dimensions, then reads pixels once into a distinct owned direct buffer. It does not expose an OpenGL texture from another graphics context, share Skia EGL state, or recycle a frame by its age.
+
+The former staging path retained a reusable readback buffer, copied into a Java byte array and copied again into a C++ vector. The new path removes the reusable CPU scratch and both full-frame memcpy operations. Java and JSI view the same owned storage. This is a structural reduction in copies, not a measured millisecond or process-memory improvement. GPU-to-CPU readback, Skia's pixel import and its GPU upload still occur; `getBackendInfo()` continues to report `cpu-rgba-readback`, `cpu-rgba-upload` and `zeroCopyDecode: false`.
+
+The RGBA backing is allocated through Android's `ByteBuffer.allocateDirect`, so ART sees real allocation pressure. A native memory-budget token is reserved before allocating pixels, including the seven bytes used by Android's alignment. An allocation owner and its phantom cleanup are registered before allocating the backing. A JNI-created buffer points to those pixels; its tracked root holds the owner. Android's JNI buffer implementation preserves that root through slices, duplicates and read-only views. A JSI MutableBuffer holds a global reference to a view, and attaches its finalizer thread before deleting that reference. No second reservation is made for additional Java/JS aliases.
+
+When all exposed Java/JS buffers die, the first phantom reference drops the allocation owner. Only after the owner and its backing are collected does its pre-registered phantom return the budget token. The reaper allocates no cleanup trackers. Allocation/alias-registration failures after the backing exists remain conservatively accounted; the token is released immediately only if registration failed before any pixel backing was allocated. `frame.dispose()` drops that frame's JSI ArrayBuffer reference. Existing ArrayBuffer aliases and retained Java frames remain valid and retain the reservation. Cleanup therefore need not immediately return to zero after disposing a reader; a tight budget may reject another frame while GC cleanup remains pending.
+
+Each producer writes a buffer once and never mutates it for a later frame. Java consumers receive read-only views. Consumers of the raw JSI ArrayBuffer should treat it as source pixels; ordinary rendering copies them through the public frame helper before releasing its reference.
+
+Device tests additionally retain a read-only slice after dropping its VideoFrame, verify unchanged bytes and a retained reservation, and require bounded GC cleanup before accepting return to the baseline. JVM tests cover pre-allocation rejection, failure after backing allocation, idempotent cleanup and both lifetime stages independently of GC timing. They do not replace the device tests.
+
+The Surface decoder output callback queues its output index and presentation time directly. Android documents that `MediaCodec.getOutputBuffer()` returns null for an output Surface; querying it had prevented valid frames from being queued. Empty non-EOS Surface outputs are accepted, while empty EOS and codec-configuration buffers are not treated as frames.
+
+## Example measurements
+
+The Android-only `VideoBenchmarkHarness` streams bundled verified fixtures into the application files directory before timed work, creates scoped export/result files, and supplies Android device metadata. It records actual `/proc/self/status` RSS, `Debug.MemoryInfo` total PSS and native-heap PSS. Complete process GPU allocation is unavailable and remains explicitly unavailable. It reports Android power/thermal state and React foreground lifecycle.
+
+Export verification decodes the output with MediaCodec, counts decoded frames and checks presentation timestamps. It releases the codec and extractor on success or failure and bounds stalled verification. JSON results live in the application's `files/benchmark-results` directory. The shared example screen selects the real platform and Android helper; it no longer assumes the iOS helper or an iPhone identifier.
+
+## Primary ownership/API evidence
+
+- [AOSP Android 8.1 DirectByteBuffer](https://android.googlesource.com/platform/libcore/+/android-8.1.0_r2/ojluni/src/main/java/java/nio/DirectByteBuffer.java): JNI roots retained through shared MemoryRef; non-moving Java backing and alignment. The behavior predates the library's API 28 minimum.
+- [Android MediaCodec.getOutputBuffer](https://developer.android.com/reference/android/media/MediaCodec#getOutputBuffer(int)): output Surface contract.

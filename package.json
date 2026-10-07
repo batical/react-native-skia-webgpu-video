@@ -1,0 +1,154 @@
+{
+  "name": "react-native-skia-webgpu-video",
+  "version": "0.1.0-alpha.0",
+  "description": "Bounded video composition, playback and export for React Native Skia 3 / Graphite",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/src/index.d.ts",
+      "react-native": "./src/index.tsx",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json",
+    "./gpu": {
+      "types": "./lib/typescript/src/gpu.d.ts",
+      "react-native": "./src/gpu.ts",
+      "default": "./lib/module/gpu.js"
+    },
+    "./apply-skia-canvas-patch": "./scripts/apply-skia-canvas-patch.mjs"
+  },
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "cpp",
+    "*.podspec",
+    "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
+    "!android/src/test",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*",
+    "scripts/apply-skia-canvas-patch.mjs",
+    "scripts/skia-canvas-patch.json",
+    "patches/react-native-skia+3.0.6.patch",
+    "docs/UPSTREAM_NOTES.md",
+    "!ios/tests",
+    "!android/src/androidTest",
+    "!cpp/tests",
+    "docs",
+    "examples"
+  ],
+  "scripts": {
+    "test": "jest --runInBand",
+    "typecheck": "tsc --noEmit",
+    "build": "bob build",
+    "check-package": "publint --strict",
+    "test:native": "node scripts/test-native.mjs",
+    "prebuild": "node scripts/apply-skia-canvas-patch.mjs",
+    "benchmark:test": "node --test test/comparison/*.test.mjs",
+    "benchmark:compare": "node scripts/benchmark-compare.mjs",
+    "benchmark:inventory": "node scripts/benchmark-inventory.mjs",
+    "benchmark:fixtures": "node scripts/benchmark-fixture-manifest.mjs",
+    "test:package": "node --test test/package/*.test.mjs"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "skia",
+    "video",
+    "react-native-skia",
+    "video-composition"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/batical/react-native-skia-webgpu-video.git"
+  },
+  "author": "Sebastien Hecart (https://github.com/batical)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/batical/react-native-skia-webgpu-video/issues"
+  },
+  "homepage": "https://github.com/batical/react-native-skia-webgpu-video#readme",
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@react-native-community/cli": "^20.2.0",
+    "@react-native-community/cli-platform-ios": "^20.2.0",
+    "@react-native/babel-preset": "0.86.2",
+    "@react-native/jest-preset": "0.86.2",
+    "@react-native/metro-config": "^0.86.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.19.11",
+    "@types/react": "^19.2.18",
+    "@types/react-test-renderer": "^19",
+    "jest": "^29.7.0",
+    "prettier": "^3.9.6",
+    "publint": "^0.3.22",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-builder-bob": "^0.43.0",
+    "react-native-reanimated": "4.5.3",
+    "react-native-skia": "3.0.6",
+    "react-native-webgpu": "0.12.1",
+    "react-native-worklets": "0.11.3",
+    "react-test-renderer": "19.2.3",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-native": ">=0.83 <0.87",
+    "react-native-reanimated": "4.5.3",
+    "react-native-skia": "3.0.6",
+    "react-native-webgpu": "0.12.1",
+    "react-native-worklets": "0.11.3"
+  },
+  "jest": {
+    "preset": "@react-native/jest-preset",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/lib/",
+      "<rootDir>/benchmark/"
+    ]
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "codegenConfig": {
+    "name": "RNReactNativeSkiaVideoSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  },
+  "react-native": "./src/index.tsx",
+  "bin": {
+    "skia-video-patch-canvas": "./scripts/apply-skia-canvas-patch.mjs"
+  },
+  "dependencies": {
+    "@webgpu/types": "^0.1.65"
+  },
+  "type": "commonjs",
+  "contributors": [
+    "Azzapp <contact@azzapp.com> (https://www.azzapp.com)"
+  ]
+}

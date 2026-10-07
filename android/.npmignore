@@ -1,0 +1,2 @@
+# Keep local build evidence out of the published library.
+verified-gradle.log

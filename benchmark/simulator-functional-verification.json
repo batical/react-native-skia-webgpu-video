@@ -1,0 +1,938 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-06T16:41:03.515Z",
+  "executionTarget": "iOS Simulator",
+  "assessment": "Seven functional scenarios passed on the current post-pool build; historical full and pre-pool confirmations are retained separately.",
+  "currentSource": {
+    "currentSource": true,
+    "productionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+    "capturedAt": "2026-10-06T16:36:11.317Z",
+    "sourceEvidence": {
+      "path": "benchmark/results/final-functional-source-pooled.local.json",
+      "sha256": "108be2c3032d9d073c9136109002e5550f6c02907aa6f3dc69eda81ab9eca55c"
+    },
+    "harnessFilesSHA256": {
+      "example/App.tsx": "dc4d5a39659ddad19435bb69f82ec42e968c164bc95baacbafffa7dc64375cbf",
+      "benchmark/cases.mjs": "1856c720219a6a25b0f92fc896e404c9edb2f2df65c4b6324cae235f9c0f71f0",
+      "benchmark/screen.mjs": "ab97e9d5932ba45a22924e7ae66f73427672b35137f9c9b205652f452c1dd43d",
+      "benchmark/runner.mjs": "0b0a692995f13bf1eeeed6b8fb15930c9c62e400f69e3142069043c891905416",
+      "benchmark/playing-seek.mjs": "1d3be249a331c3a508535b8048c7a575b12d72c3d8a7f00ca717bc6a5bd4e2ab",
+      "benchmark/public-api-adapter.mjs": "f045d0585495f848769380ede4a5c40b117bce702f1dbb6ed566e47f25451688"
+    },
+    "productionFilesSHA256": {
+      "src/exportVideoComposition.ts": "024a76e1f475d94904c76414436faffb6cd6bc67f362be0dd1ec17c10f43b9c4"
+    },
+    "builtArtifactSHA256": {
+      "main.jsbundle": {
+        "sha256": "eb434d2ac98eb0246a25a7a05256f409caaf4ccfc484399c11f1653cd94ba878",
+        "mtime": "2026-10-06T16:35:44.162Z"
+      },
+      "ReactNativeSkiaWebGPUVideoExample": {
+        "sha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+        "mtime": "2026-10-06T16:12:48.337Z"
+      }
+    }
+  },
+  "currentHarnessCoverage": {
+    "workloadVersion": "2026-10-06.4",
+    "fullCatalogSize": 59,
+    "fullCatalogRunOnCurrentCode": false,
+    "distinctScenariosExecuted": 7,
+    "distinctScenariosPassed": 7,
+    "scenarioIds": [
+      "4k-x8-lazy-maxLongSide1280",
+      "cancel-before-export",
+      "encode-h264-copy",
+      "scrub-while-playing",
+      "seek-past-end-resume",
+      "seek-while-playing",
+      "single-h264-638x358.mp4"
+    ],
+    "scope": "Current post-pool functional confirmation run listed in this report; historical confirmations and performance measurements are distinct runs."
+  },
+  "nativeXCTest": {
+    "evidence": "benchmark/ios-simulator-verification.json",
+    "sha256": "8cad052fccc9542d56dcff66fc505bfc56213e4dd161c3d2781625d673f62bfd",
+    "productionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+    "testStartedAt": "2026-10-06T16:35:24.898Z",
+    "testFinishedAt": "2026-10-06T16:36:31.073Z",
+    "namedSourceCases": 50,
+    "summary": {
+      "result": "Passed",
+      "totalTestCount": 50,
+      "passedTests": 50,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "expectedFailures": 0
+    },
+    "qualification": "Native decoder/encoder/frame/pixel/lifetime XCTest on simulator; not Graphite-composited GPU pixel validation."
+  },
+  "runs": [
+    {
+      "id": "historical-full-v3",
+      "provenance": {
+        "currentSource": false,
+        "productionFingerprint": "4a08740033a789594e5865c5d848e6012238be0869623c349ba43aafa7dd737d",
+        "capturedAt": "2026-10-06T15:28:54.950Z",
+        "captureTiming": "During the full run while the source tree was frozen; this is not the current fingerprint.",
+        "harnessFilesSHA256": null,
+        "builtArtifactSHA256": null
+      },
+      "result": {
+        "path": "benchmark/results/simulator-full-first.local.json",
+        "sha256": "21ab11cd033f707b49c3f6a145a531f79f44fc9bf3841604e30e4d8d6d6897aa"
+      },
+      "workloadVersion": "2026-10-06.3",
+      "profile": "full",
+      "repetitions": 1,
+      "startedAt": "2026-10-06T15:25:19.163Z",
+      "finishedAt": "2026-10-06T15:40:56.301Z",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "thermalState": "nominal",
+        "powerMode": "normal",
+        "pixelRatio": 3
+      },
+      "memorySamplePeriodsMs": [
+        1000
+      ],
+      "caseCount": 59,
+      "counts": {
+        "passed": 50,
+        "failed": 2,
+        "resource-limit": 3,
+        "skipped": 4
+      },
+      "cases": [
+        {
+          "id": "montage-all-crossfade-eager",
+          "repetition": 0,
+          "status": "resource-limit",
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        {
+          "id": "montage-all-crossfade-lazy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "montage-all-crossfade-lazy-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "4k-x8-lazy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "4k-x8-lazy-maxLongSide1280",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "4k-x8-eager",
+          "repetition": 0,
+          "status": "resource-limit",
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        {
+          "id": "4k-x3-simultaneous",
+          "repetition": 0,
+          "status": "resource-limit",
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        {
+          "id": "shorts-x20-lazy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080p30-audio.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080p30-audio.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-4k30.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-4k30.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-4k30.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-4k30.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-1080p-hlg10.mov",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-1080p-hlg10.mov-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-720p60.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-720p60.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080p-rot90.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080p-rot90.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080x1920.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-1080x1920.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-638x358.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-638x358.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-720p-short.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-720p-short.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-4k30-audio.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-hevc-4k30-audio.mp4-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "audio-lazy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "start-past-file-end",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "native-h264-720p-rot180",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "native-hevc-1080p-rot270",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "native-h264-slow-motion",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-h264-copy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-hevc-copy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-unknown-fallback-copy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-h264-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-hevc-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-unknown-fallback-direct",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "cancel-before-export",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "cancel-mid-export",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "repeated-mixed-size-exports",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-past-end-resume",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-before-ready",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "paused-clock-and-resume",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-while-playing",
+          "repetition": 0,
+          "status": "failed",
+          "reason": "Preview operation timed out"
+        },
+        {
+          "id": "scrub-while-playing",
+          "repetition": 0,
+          "status": "failed",
+          "reason": "Preview operation timed out"
+        },
+        {
+          "id": "closed-item-leaves-frame-map",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "held-image-survives-seek",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "audio-track-absent-does-not-hang",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "forward-scrub-threshold",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "missing-file",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "explicit-resolution-wins",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "long-montage-120-clips",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "extension-lut",
+          "repetition": null,
+          "status": "skipped",
+          "reason": "Renderer extension lut is not installed"
+        },
+        {
+          "id": "extension-compute",
+          "repetition": null,
+          "status": "skipped",
+          "reason": "Renderer extension compute is not installed"
+        },
+        {
+          "id": "extension-three",
+          "repetition": null,
+          "status": "skipped",
+          "reason": "Renderer extension three is not installed"
+        },
+        {
+          "id": "extension-coreml",
+          "repetition": null,
+          "status": "skipped",
+          "reason": "Renderer extension coreml is not installed"
+        }
+      ],
+      "cleanup": {
+        "activeCases": 55,
+        "checks": {
+          "ownedBytes": {
+            "zero": 55,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "ownedResources": {
+            "zero": 55,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "decoderCount": {
+            "zero": 55,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "inFlightFrames": {
+            "zero": 55,
+            "nonzero": 0,
+            "unavailable": 0
+          }
+        },
+        "allActiveCasesReleaseTrackedResources": true,
+        "cleanupErrors": [],
+        "unsafeToContinue": []
+      },
+      "requestedValidationCounts": {
+        "unavailable": 33
+      },
+      "nativeExportMetadata": {
+        "exportedFilesProbed": 40,
+        "matched": {
+          "dimensions": 40,
+          "fps": 40,
+          "frameCount": 40,
+          "codec": 40,
+          "timestampsMonotonic": 40,
+          "presentationTimesExact": 40
+        },
+        "allProbedRequestedMetadataMatches": true,
+        "gpuPixelsValidated": false
+      },
+      "seekSummary": {
+        "count": 0,
+        "settlements": {},
+        "identities": {},
+        "nativeFramePTSAvailable": false
+      }
+    },
+    {
+      "id": "historical-pre-pool-targeted-seek-v4",
+      "provenance": {
+        "currentSource": false,
+        "productionFingerprint": "621c20f63ff056996abd2beb22e107527ae3bbe4259252380680ff30eeeafd7c",
+        "capturedAt": "2026-10-06T16:13:49.158Z",
+        "harnessFilesSHA256": {
+          "example/App.tsx": "dc4d5a39659ddad19435bb69f82ec42e968c164bc95baacbafffa7dc64375cbf",
+          "benchmark/cases.mjs": "1856c720219a6a25b0f92fc896e404c9edb2f2df65c4b6324cae235f9c0f71f0",
+          "benchmark/screen.mjs": "ab97e9d5932ba45a22924e7ae66f73427672b35137f9c9b205652f452c1dd43d",
+          "benchmark/runner.mjs": "0b0a692995f13bf1eeeed6b8fb15930c9c62e400f69e3142069043c891905416",
+          "benchmark/playing-seek.mjs": "1d3be249a331c3a508535b8048c7a575b12d72c3d8a7f00ca717bc6a5bd4e2ab",
+          "benchmark/public-api-adapter.mjs": "f045d0585495f848769380ede4a5c40b117bce702f1dbb6ed566e47f25451688"
+        },
+        "builtArtifactSHA256": {
+          "main.jsbundle": {
+            "sha256": "5883d967064c8de054199e87df1567942bfa335f867a528daf4cbf3f2061cfe2",
+            "mtime": "2026-10-06T16:13:02.555Z"
+          },
+          "ReactNativeSkiaWebGPUVideoExample": {
+            "sha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+            "mtime": "2026-10-06T16:12:48.337Z"
+          }
+        },
+        "qualification": "Functional confirmation before adding synchronous export autorelease scopes; not a run of the current post-pool bundle."
+      },
+      "result": {
+        "path": "benchmark/results/simulator-seek-final.local.json",
+        "sha256": "ed98bf4fd6c797c89cbbff7f4a85fa228a758d9972a67051956a8d477d99c566"
+      },
+      "workloadVersion": "2026-10-06.4",
+      "profile": "full",
+      "repetitions": 1,
+      "startedAt": "2026-10-06T16:14:20.007Z",
+      "finishedAt": "2026-10-06T16:14:28.684Z",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "measurementClock": "performance.now",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "thermalState": "nominal",
+        "powerMode": "normal",
+        "pixelRatio": 3
+      },
+      "memorySamplePeriodsMs": [
+        100
+      ],
+      "caseCount": 2,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "resource-limit": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "id": "seek-while-playing",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "scrub-while-playing",
+          "repetition": 0,
+          "status": "passed"
+        }
+      ],
+      "cleanup": {
+        "activeCases": 2,
+        "checks": {
+          "ownedBytes": {
+            "zero": 2,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "ownedResources": {
+            "zero": 2,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "decoderCount": {
+            "zero": 2,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "inFlightFrames": {
+            "zero": 2,
+            "nonzero": 0,
+            "unavailable": 0
+          }
+        },
+        "allActiveCasesReleaseTrackedResources": true,
+        "cleanupErrors": [],
+        "unsafeToContinue": []
+      },
+      "requestedValidationCounts": {
+        "unavailable": 3
+      },
+      "nativeExportMetadata": {
+        "exportedFilesProbed": 0,
+        "matched": {
+          "dimensions": 0,
+          "fps": 0,
+          "frameCount": 0,
+          "codec": 0,
+          "timestampsMonotonic": 0,
+          "presentationTimesExact": 0
+        },
+        "allProbedRequestedMetadataMatches": null,
+        "gpuPixelsValidated": false,
+        "reason": "No exported files in this run."
+      },
+      "seekSummary": {
+        "count": 11,
+        "settlements": {
+          "frame-and-clock": 11
+        },
+        "identities": {
+          "uncompared": 5,
+          "verified": 6
+        },
+        "nativeFramePTSAvailable": false
+      }
+    },
+    {
+      "id": "historical-pre-pool-smoke-v4",
+      "provenance": {
+        "currentSource": false,
+        "productionFingerprint": "621c20f63ff056996abd2beb22e107527ae3bbe4259252380680ff30eeeafd7c",
+        "capturedAt": "2026-10-06T16:13:49.158Z",
+        "harnessFilesSHA256": {
+          "example/App.tsx": "dc4d5a39659ddad19435bb69f82ec42e968c164bc95baacbafffa7dc64375cbf",
+          "benchmark/cases.mjs": "1856c720219a6a25b0f92fc896e404c9edb2f2df65c4b6324cae235f9c0f71f0",
+          "benchmark/screen.mjs": "ab97e9d5932ba45a22924e7ae66f73427672b35137f9c9b205652f452c1dd43d",
+          "benchmark/runner.mjs": "0b0a692995f13bf1eeeed6b8fb15930c9c62e400f69e3142069043c891905416",
+          "benchmark/playing-seek.mjs": "1d3be249a331c3a508535b8048c7a575b12d72c3d8a7f00ca717bc6a5bd4e2ab",
+          "benchmark/public-api-adapter.mjs": "f045d0585495f848769380ede4a5c40b117bce702f1dbb6ed566e47f25451688"
+        },
+        "builtArtifactSHA256": {
+          "main.jsbundle": {
+            "sha256": "5883d967064c8de054199e87df1567942bfa335f867a528daf4cbf3f2061cfe2",
+            "mtime": "2026-10-06T16:13:02.555Z"
+          },
+          "ReactNativeSkiaWebGPUVideoExample": {
+            "sha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+            "mtime": "2026-10-06T16:12:48.337Z"
+          }
+        },
+        "qualification": "Functional confirmation before adding synchronous export autorelease scopes; not a run of the current post-pool bundle."
+      },
+      "result": {
+        "path": "benchmark/results/simulator-smoke-final.local.json",
+        "sha256": "94430f98dfea259e5e93bdc902869d517443385e0314456f34a18b91bd17d4c4"
+      },
+      "workloadVersion": "2026-10-06.4",
+      "profile": "smoke",
+      "repetitions": 1,
+      "startedAt": "2026-10-06T16:15:10.835Z",
+      "finishedAt": "2026-10-06T16:15:59.231Z",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "measurementClock": "performance.now",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "thermalState": "nominal",
+        "powerMode": "normal",
+        "pixelRatio": 3
+      },
+      "memorySamplePeriodsMs": [
+        100
+      ],
+      "caseCount": 5,
+      "counts": {
+        "passed": 5,
+        "failed": 0,
+        "resource-limit": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-maxLongSide1280",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-638x358.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-h264-copy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "cancel-before-export",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-past-end-resume",
+          "repetition": 0,
+          "status": "passed"
+        }
+      ],
+      "cleanup": {
+        "activeCases": 5,
+        "checks": {
+          "ownedBytes": {
+            "zero": 5,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "ownedResources": {
+            "zero": 5,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "decoderCount": {
+            "zero": 5,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "inFlightFrames": {
+            "zero": 5,
+            "nonzero": 0,
+            "unavailable": 0
+          }
+        },
+        "allActiveCasesReleaseTrackedResources": true,
+        "cleanupErrors": [],
+        "unsafeToContinue": []
+      },
+      "requestedValidationCounts": {
+        "unavailable": 3
+      },
+      "nativeExportMetadata": {
+        "exportedFilesProbed": 2,
+        "matched": {
+          "dimensions": 2,
+          "fps": 2,
+          "frameCount": 2,
+          "codec": 2,
+          "timestampsMonotonic": 2,
+          "presentationTimesExact": 2
+        },
+        "allProbedRequestedMetadataMatches": true,
+        "gpuPixelsValidated": false
+      },
+      "seekSummary": {
+        "count": 16,
+        "settlements": {
+          "paused-clock-and-item-ids": 16
+        },
+        "identities": {
+          "unavailable": 16
+        },
+        "nativeFramePTSAvailable": false
+      }
+    },
+    {
+      "id": "current-functional-pooled-v4",
+      "provenance": {
+        "currentSource": true,
+        "productionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+        "capturedAt": "2026-10-06T16:36:11.317Z",
+        "sourceEvidence": {
+          "path": "benchmark/results/final-functional-source-pooled.local.json",
+          "sha256": "108be2c3032d9d073c9136109002e5550f6c02907aa6f3dc69eda81ab9eca55c"
+        },
+        "harnessFilesSHA256": {
+          "example/App.tsx": "dc4d5a39659ddad19435bb69f82ec42e968c164bc95baacbafffa7dc64375cbf",
+          "benchmark/cases.mjs": "1856c720219a6a25b0f92fc896e404c9edb2f2df65c4b6324cae235f9c0f71f0",
+          "benchmark/screen.mjs": "ab97e9d5932ba45a22924e7ae66f73427672b35137f9c9b205652f452c1dd43d",
+          "benchmark/runner.mjs": "0b0a692995f13bf1eeeed6b8fb15930c9c62e400f69e3142069043c891905416",
+          "benchmark/playing-seek.mjs": "1d3be249a331c3a508535b8048c7a575b12d72c3d8a7f00ca717bc6a5bd4e2ab",
+          "benchmark/public-api-adapter.mjs": "f045d0585495f848769380ede4a5c40b117bce702f1dbb6ed566e47f25451688"
+        },
+        "productionFilesSHA256": {
+          "src/exportVideoComposition.ts": "024a76e1f475d94904c76414436faffb6cd6bc67f362be0dd1ec17c10f43b9c4"
+        },
+        "builtArtifactSHA256": {
+          "main.jsbundle": {
+            "sha256": "eb434d2ac98eb0246a25a7a05256f409caaf4ccfc484399c11f1653cd94ba878",
+            "mtime": "2026-10-06T16:35:44.162Z"
+          },
+          "ReactNativeSkiaWebGPUVideoExample": {
+            "sha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+            "mtime": "2026-10-06T16:12:48.337Z"
+          }
+        }
+      },
+      "result": {
+        "path": "benchmark/results/simulator-functional-pooled.local.json",
+        "sha256": "bc4f5af6c71ef22b3e8f1f3ba9be8c9a2854efed1dbc9f90044044f897b0a51e"
+      },
+      "workloadVersion": "2026-10-06.4",
+      "profile": "full",
+      "repetitions": 1,
+      "startedAt": "2026-10-06T16:37:45.909Z",
+      "finishedAt": "2026-10-06T16:38:43.339Z",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "measurementClock": "performance.now",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "thermalState": "nominal",
+        "powerMode": "normal",
+        "pixelRatio": 3
+      },
+      "memorySamplePeriodsMs": [
+        100
+      ],
+      "caseCount": 7,
+      "counts": {
+        "passed": 7,
+        "failed": 0,
+        "resource-limit": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-maxLongSide1280",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "single-h264-638x358.mp4",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "encode-h264-copy",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "cancel-before-export",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-past-end-resume",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "seek-while-playing",
+          "repetition": 0,
+          "status": "passed"
+        },
+        {
+          "id": "scrub-while-playing",
+          "repetition": 0,
+          "status": "passed"
+        }
+      ],
+      "cleanup": {
+        "activeCases": 7,
+        "checks": {
+          "ownedBytes": {
+            "zero": 7,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "ownedResources": {
+            "zero": 7,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "decoderCount": {
+            "zero": 7,
+            "nonzero": 0,
+            "unavailable": 0
+          },
+          "inFlightFrames": {
+            "zero": 7,
+            "nonzero": 0,
+            "unavailable": 0
+          }
+        },
+        "allActiveCasesReleaseTrackedResources": true,
+        "cleanupErrors": [],
+        "unsafeToContinue": []
+      },
+      "requestedValidationCounts": {
+        "unavailable": 6
+      },
+      "nativeExportMetadata": {
+        "exportedFilesProbed": 2,
+        "matched": {
+          "dimensions": 2,
+          "fps": 2,
+          "frameCount": 2,
+          "codec": 2,
+          "timestampsMonotonic": 2,
+          "presentationTimesExact": 2
+        },
+        "allProbedRequestedMetadataMatches": true,
+        "nominalFrameRateToleranceFPS": 0.01,
+        "gpuPixelsValidated": false
+      },
+      "seekSummary": {
+        "count": 27,
+        "settlements": {
+          "paused-clock-and-item-ids": 16,
+          "frame-and-clock": 10,
+          "terminal-completion-only": 1
+        },
+        "identities": {
+          "unavailable": 17,
+          "uncompared": 4,
+          "verified": 6
+        },
+        "nativeFramePTSAvailable": false
+      }
+    }
+  ],
+  "diagnosticEvidence": {
+    "path": "benchmark/results/simulator-seek-diagnostics.local.json",
+    "sha256": "315b8b2a429c4d22cfc9b295609a2ea804f3c09fcbf693a06bcb263529a7648d",
+    "workloadVersion": "2026-10-06.3",
+    "currentSource": false,
+    "cause": "A fixed target clock and its item IDs timed out while playback advanced. Scrub player/drawn clocks matched the moving target; seek reached natural completion.",
+    "productionFingerprint": null,
+    "harnessFilesSHA256": null,
+    "provenanceReason": "No dedicated source capture is linked to this historical diagnostic JSON; the current hashes are not assigned retroactively."
+  },
+  "limitations": [
+    "The historical 59-scenario run and pre-pool targeted/smoke confirmations are distinct executions of their recorded fingerprints. The current post-pool functional confirmation covers seven selected scenarios; no performance metrics are merged.",
+    "Scenario passed means its functional operations completed. Unavailable requested pixel/audio/presentation-time validators remain unavailable.",
+    "Native exported-file metadata is measured separately from Graphite-composited GPU pixels. VideoFrame exposes no native presentation timestamp.",
+    "A terminal-completion-only seek validates the moving clock, fresh terminal render and completion; it does not validate a video frame before end.",
+    "Zero owned counters demonstrate release of tracked reservations/decoders/buffers, not zero process RSS or total GPU memory.",
+    "The three historical resource-limit cases were clean budget stops; four extension renderers were absent. Neither status is a passed scenario.",
+    "Physical iOS/Android hardware, 3D/CoreML extension execution, full GPU pixel correctness and an A/B memory/performance comparison remain unqualified.",
+    "The current post-pool 300-export soak releases tracked resources but does not establish an immediate process-RSS plateau or certify absence of a memory leak. Deferred recovery and native/JS/driver allocation attribution require separate qualification."
+  ],
+  "sourceTransition": {
+    "fromProductionFingerprint": "621c20f63ff056996abd2beb22e107527ae3bbe4259252380680ff30eeeafd7c",
+    "toProductionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+    "change": "Synchronous native/Skia export setup, frame import/drawing and cleanup use Apple autorelease scopes. Asynchronous processor initialization, preparation and disposal are awaited outside those scopes.",
+    "sameHarnessFiles": true,
+    "qualification": "The earlier performance15 and mixed-soak300 measurements belong to the pre-pool build. They do not measure this post-pool code or establish an A/B gain."
+  },
+  "currentMemoryQualification": {
+    "scope": "Separate export-soak evidence; these repetitions are not added to the seven distinct functional scenarios or merged with performance runs.",
+    "productionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+    "evidence": {
+      "path": "benchmark/results/simulator-mixed-soak-pooled.local.json",
+      "sha256": "eb71a035d28b0edd507b48ce6eddf49a2d7836ec8bd73bc96ff050910dfe5e65"
+    },
+    "startedAt": "2026-10-06T16:44:32.449Z",
+    "finishedAt": "2026-10-06T16:47:41.140Z",
+    "completedExports": 300,
+    "trackedCleanup": "All final owned byte/reservation/decoder/in-flight counters are zero in all three repetitions.",
+    "processMemoryQualification": "An immediate RSS plateau and absence of a process-memory leak are not established. RSS grows across the three batches despite intermittent drops; idle recovery observations and allocation attribution are separate evidence."
+  }
+}

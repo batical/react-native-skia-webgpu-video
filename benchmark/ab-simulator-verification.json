@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-06T20:42:54.230Z",
+  "scope": "Simulator comparison; not physical-device or production qualification",
+  "oldGitHead": "334348ffeee8a4f6887fd1f663f8cf584f579911",
+  "candidateProductionFingerprint": "486b12a722d317dd6bc5db720c1bb63e31c4ede7a2c07b5d19fa83422c1e78e8",
+  "workloadVersion": "2026-10-06.5",
+  "host": "MacBookPro18,3 / M1 Pro / 16 GiB / macOS 27.0.1",
+  "simulator": "iPhone 18 Pro / iOS 27.0 / arm64",
+  "harnessTests": {
+    "passed": 91,
+    "failed": 0
+  },
+  "unchangedHistoricalBackend": true,
+  "runs": [
+    {
+      "name": "ab-a1-baseline",
+      "rawSha256": "577dec3b0de510c329bde0ead6120c52be98713ff0912d3689215a7c899d641d",
+      "bundleSha256": "7a4a895d147c8ba9588a11feae0f60f6d71ad9c585d17580dd0e5a5807c86be2",
+      "executableSha256": "84b3d546e71d04fcc7764cf488f6a4edaa324430b57732fa3b80865e2d9bf1b3",
+      "startedAt": "2026-10-06T17:15:50.672Z",
+      "finishedAt": "2026-10-06T17:17:48.817Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "full",
+      "caseCount": 15,
+      "passed": 15,
+      "exportProbes": 63,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    },
+    {
+      "name": "ab-b1-candidate",
+      "rawSha256": "bcd7a67e7e0e8d26ff44573cde1d7f7c8254ae8636974cd7b535f5644506f893",
+      "bundleSha256": "a180e864487fc4058f2c8ffefbe6f8d01679bdb9528f0b7622b2809355b2f1a4",
+      "executableSha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+      "startedAt": "2026-10-06T17:18:37.600Z",
+      "finishedAt": "2026-10-06T17:20:36.017Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "full",
+      "caseCount": 15,
+      "passed": 15,
+      "exportProbes": 63,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    },
+    {
+      "name": "ab-b2-candidate",
+      "rawSha256": "b947db3c8910abed4ea0f89e16164d9597a3fd94fe92121b376aff631ec6e167",
+      "bundleSha256": "a180e864487fc4058f2c8ffefbe6f8d01679bdb9528f0b7622b2809355b2f1a4",
+      "executableSha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+      "startedAt": "2026-10-06T20:21:06.503Z",
+      "finishedAt": "2026-10-06T20:23:08.558Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "full",
+      "caseCount": 15,
+      "passed": 15,
+      "exportProbes": 63,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    },
+    {
+      "name": "ab-a2-baseline",
+      "rawSha256": "d15ab1f1c5cce937515dcad8af8a1438aacc69619d4df14782c042d1acbf86d2",
+      "bundleSha256": "7a4a895d147c8ba9588a11feae0f60f6d71ad9c585d17580dd0e5a5807c86be2",
+      "executableSha256": "84b3d546e71d04fcc7764cf488f6a4edaa324430b57732fa3b80865e2d9bf1b3",
+      "startedAt": "2026-10-06T20:24:18.113Z",
+      "finishedAt": "2026-10-06T20:26:26.476Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "full",
+      "caseCount": 15,
+      "passed": 15,
+      "exportProbes": 63,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    },
+    {
+      "name": "ab-soak-baseline",
+      "rawSha256": "bc1d3d168dad39860ab318fd711d46006f0883137dc4f01ef474d9437022051f",
+      "bundleSha256": "7a4a895d147c8ba9588a11feae0f60f6d71ad9c585d17580dd0e5a5807c86be2",
+      "executableSha256": "84b3d546e71d04fcc7764cf488f6a4edaa324430b57732fa3b80865e2d9bf1b3",
+      "startedAt": "2026-10-06T20:26:49.570Z",
+      "finishedAt": "2026-10-06T20:30:14.811Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "soak",
+      "caseCount": 3,
+      "passed": 3,
+      "exportProbes": 300,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    },
+    {
+      "name": "ab-soak-candidate",
+      "rawSha256": "e3b712bc0d98fee161bd54ddd89ba36562ca81b1b643c37c116aa12f4d829ba5",
+      "bundleSha256": "a180e864487fc4058f2c8ffefbe6f8d01679bdb9528f0b7622b2809355b2f1a4",
+      "executableSha256": "0f9ceb1b115ed08f0156fcf3e2dde2f35a93c773bc3a8f6b826e90459d71e966",
+      "startedAt": "2026-10-06T20:34:48.228Z",
+      "finishedAt": "2026-10-06T20:38:01.662Z",
+      "workloadVersion": "2026-10-06.5",
+      "profile": "soak",
+      "caseCount": 3,
+      "passed": 3,
+      "exportProbes": 300,
+      "memorySamplesDropped": 0,
+      "conditions": [
+        "nominal/normal"
+      ]
+    }
+  ],
+  "qualification": "failed-memory-regression; extra pixel validators unavailable; no overall export speed gain established",
+  "historicalCrash": {
+    "scenario": "single-h264-1080p30-audio.mp4 (seek)",
+    "fault": "Concurrent AVAssetReader copyNextSampleBuffer / cancelReading in original decoder",
+    "source": "results/baseline-crash-analysis.local.json"
+  },
+  "idle": {
+    "seconds": 180,
+    "source": "macOS ps RSS",
+    "baselineBytes": 139673600,
+    "candidateBytes": 458620928
+  },
+  "reports": [
+    "../docs/PERFORMANCE_AB_SIMULATOR.md",
+    "../docs/PERFORMANCE_AB_SOAK_SIMULATOR.md",
+    "../docs/MIGRATION.md"
+  ],
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

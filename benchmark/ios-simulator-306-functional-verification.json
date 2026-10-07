@@ -1,0 +1,1158 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-07T08:53:09.897Z",
+  "qualificationScope": "Selected functional JavaScript/Skia preview and export workloads on iOS Simulator Release; not physical iPhone or performance qualification",
+  "versions": {
+    "reactNativeSkia": "3.0.6",
+    "reactNativeWebgpu": "0.12.1"
+  },
+  "workloadVersion": "2026-10-07.1",
+  "summary": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "repetitionsPerCase": 1,
+    "distinctCases": 14,
+    "completedExportsProbed": 27,
+    "exportedFramesProbed": 1320
+  },
+  "provenance": "Run journals verify the installed executable/bundle and result bytes; their identical hashes identify the optimized simulator build. No pre-build source fingerprint was captured here and no current source qualification is fabricated.",
+  "runs": [
+    {
+      "name": "simulator-smoke-306-optimized",
+      "rawSha256": "b71a89c764e6459854f21391ae8fee35db808a8cb03277d820b9a0640e46093d",
+      "executionJournalSha256": "fe1449ea8e85fd36f599813b98258b4d4c6fab80f388a44e6afbaf91ca7babde",
+      "localRaw": "benchmark/results/simulator-smoke-306-optimized.local.json",
+      "localExecutionJournal": "benchmark/results/simulator-smoke-306-optimized-execution.local.json",
+      "startedAt": "2026-10-07T08:43:35.525Z",
+      "finishedAt": "2026-10-07T08:44:31.192Z",
+      "profile": "smoke",
+      "repetitions": 1,
+      "caseCount": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "executableSha256": "e1849519d46808ca34368fb240d556e8a22ad35db654e177314ba74dd1270509",
+      "bundleSha256": "cdba6a85d901ab3a954cf5745c028ca34aeb49bd174dd96571d04916624a8d32",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "measurementClock": "performance.now",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "pixelRatio": 3
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1017.2162089943886,
+        "waitedMs": 1219.3460839986801,
+        "observations": 10,
+        "initialState": "active",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "ios",
+          "frameTransport": "cvpixelbuffer-bgra",
+          "preview": "webgpu-native-blit+gpu-owned-snapshot",
+          "gpuUploadScratchCapacityPerRuntime": 1,
+          "export": "cpu-readback-bounded-pixelbuffer-pool",
+          "nativeFrameCapacity": 2,
+          "encoderPoolCapacity": 3,
+          "gpuDirectExport": false
+        }
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-maxLongSide1280",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "play",
+            "seek",
+            "scrub",
+            "loop",
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 1080,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30.000001907348633,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              }
+            }
+          ],
+          "validations": []
+        },
+        {
+          "id": "single-h264-638x358.mp4",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "play",
+            "seek",
+            "loop",
+            "hold"
+          ],
+          "settledSamples": 1,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": []
+        },
+        {
+          "id": "encode-h264-copy",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 2000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 60,
+                "height": 360,
+                "duration": 2,
+                "codec": "h264",
+                "lastPresentationTime": 1.9666666666666666
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "actual-codec",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "cancel-before-export",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "cancel-before"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": []
+        },
+        {
+          "id": "seek-past-end-resume",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "seek-past-end",
+            "play"
+          ],
+          "settledSamples": 1,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": []
+        }
+      ]
+    },
+    {
+      "name": "simulator-regression-306-optimized",
+      "rawSha256": "0499dc5839db19d9761506c74117a14362d04ee4044f571e721742fc25962e11",
+      "executionJournalSha256": "dca6d00ef0def70c36f3328ebd74603d87869cd56b3d8680b672fe5012ca8402",
+      "localRaw": "benchmark/results/simulator-regression-306-optimized.local.json",
+      "localExecutionJournal": "benchmark/results/simulator-regression-306-optimized-execution.local.json",
+      "startedAt": "2026-10-07T08:45:10.147Z",
+      "finishedAt": "2026-10-07T08:47:20.277Z",
+      "profile": "full",
+      "repetitions": 1,
+      "caseCount": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "executableSha256": "e1849519d46808ca34368fb240d556e8a22ad35db654e177314ba74dd1270509",
+      "bundleSha256": "cdba6a85d901ab3a954cf5745c028ca34aeb49bd174dd96571d04916624a8d32",
+      "environment": {
+        "deviceModel": "iPhone19,2",
+        "executionTarget": "simulator",
+        "platform": "ios",
+        "osVersion": "27.0",
+        "reactNativeVersion": "0.86.2",
+        "measurementClock": "performance.now",
+        "buildMode": "release",
+        "displayRefreshRate": 60,
+        "pixelRatio": 3
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1009.7662079930305,
+        "waitedMs": 1011.0922500044107,
+        "observations": 10,
+        "initialState": "active",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "ios",
+          "frameTransport": "cvpixelbuffer-bgra",
+          "preview": "webgpu-native-blit+gpu-owned-snapshot",
+          "gpuUploadScratchCapacityPerRuntime": 1,
+          "export": "cpu-readback-bounded-pixelbuffer-pool",
+          "nativeFrameCapacity": 2,
+          "encoderPoolCapacity": 3,
+          "gpuDirectExport": false
+        }
+      },
+      "cases": [
+        {
+          "id": "single-h264-1080p-rot90.mp4-direct",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "play",
+            "seek",
+            "loop",
+            "hold"
+          ],
+          "settledSamples": 1,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": []
+        },
+        {
+          "id": "native-h264-720p-rot180",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "play",
+            "seek",
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 1080,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 180,
+                "height": 1080,
+                "duration": 6,
+                "codec": "h264",
+                "lastPresentationTime": 5.966666666666667
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "orientation",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "native-hevc-1080p-rot270",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "play",
+            "seek",
+            "export"
+          ],
+          "settledSamples": 3,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 1080,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 180,
+                "height": 1080,
+                "duration": 6,
+                "codec": "h264",
+                "lastPresentationTime": 5.966666666666667
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "orientation",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "encode-hevc-copy",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 2000000,
+                "codec": "hevc",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 60,
+                "height": 360,
+                "duration": 2,
+                "codec": "hevc",
+                "lastPresentationTime": 1.9666666666666666
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "actual-codec",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "encode-h264-direct",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 2000000,
+                "codec": "h264",
+                "encoderMode": "direct"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 60,
+                "height": 360,
+                "duration": 2,
+                "codec": "h264",
+                "lastPresentationTime": 1.9666666666666666
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "actual-codec",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "encode-hevc-direct",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "export"
+          ],
+          "settledSamples": 2,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 2000000,
+                "codec": "hevc",
+                "encoderMode": "direct"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 60,
+                "height": 360,
+                "duration": 2,
+                "codec": "hevc",
+                "lastPresentationTime": 1.9666666666666666
+              }
+            }
+          ],
+          "validations": [
+            {
+              "check": "pixels",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "presentation-timestamps",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            },
+            {
+              "check": "actual-codec",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        },
+        {
+          "id": "cancel-mid-export",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "cancel-export",
+            "leak"
+          ],
+          "settledSamples": 9,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": []
+        },
+        {
+          "id": "repeated-mixed-size-exports",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "mixed-exports"
+          ],
+          "settledSamples": 8,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 720,
+                "height": 1280,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 720,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1280,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 640,
+                "height": 360,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 640,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 360,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            },
+            {
+              "requestedOutput": {
+                "width": 1920,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              },
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1920,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 18,
+                "height": 1080,
+                "duration": 0.6,
+                "codec": "h264",
+                "lastPresentationTime": 0.5666666666666667
+              }
+            }
+          ],
+          "validations": []
+        },
+        {
+          "id": "held-image-survives-seek",
+          "status": "passed",
+          "repetition": 0,
+          "operations": [
+            "hold",
+            "seek"
+          ],
+          "settledSamples": 1,
+          "finalTrackedResources": {
+            "ownedBytes": 0,
+            "ownedResources": 0,
+            "decoderCount": 0,
+            "inFlightFrames": 0
+          },
+          "outputs": [],
+          "validations": [
+            {
+              "check": "held-image-immutable-after-seek",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "The initial 50 native physical XCTest result is a separate earlier build proof; it does not qualify these optimized JavaScript/native changes.",
+    "The optimized physical build compiled but its smoke did not start while the iPhone was locked. These fourteen simulator executions are not physical-device results.",
+    "Each selected case ran once; this is not an A/B speed benchmark, full65 qualification, sustained-memory plateau or proof of no leak.",
+    "Export metadata/frame counts and exact presentation timestamps were probed; actual pixels, orientation pixels, color accuracy and audio correctness were not validated.",
+    "held-image-survives-seek retains an unavailable visual immutability validation; mocked host tests are not real GPU pixel validation.",
+    "Zero settled owned bytes/reservations/decoders/in-flight frames measures only tracked resources; process RSS, caches, opaque codec allocations and total GPU memory are separate.",
+    "Persistent simulator identifier, process identifiers, app-container paths and complete raw measurements stay only in ignored local JSON files."
+  ]
+}

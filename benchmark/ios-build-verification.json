@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "configuration": "Release",
+  "target": "iphoneos27.0-arm64",
+  "device": {
+    "name": "iPhone 15 Pro",
+    "udid": "redacted-physical-device-id"
+  },
+  "bundleIdentifiers": {
+    "app": "com.seb.skiawebgpuvideo.test",
+    "tests": "com.seb.skiawebgpuvideo.test.tests"
+  },
+  "buildForTesting": "passed",
+  "codeSigningAllowed": false,
+  "compiledIosLegacyAssertions": 50,
+  "linkedDependencies": {
+    "reactNative": "0.86.2",
+    "skia": "3.0.3",
+    "webgpu": "0.11.0",
+    "reanimated": "4.5.3",
+    "worklets": "0.11.3"
+  },
+  "app": "<temporary-directory>/rnskv-webgpu-device-build/Build/Products/Release-iphoneos/ReactNativeSkiaWebGPUVideoExample.app",
+  "testRun": "<temporary-directory>/rnskv-webgpu-device-build/Build/Products/ReactNativeSkiaWebGPUVideoExample_iphoneos27.0-arm64.xctestrun",
+  "log": "<temporary-directory>/rnskv-webgpu-device-build.log",
+  "bundledFixtures": 13,
+  "bundledFixtureHashes": "all verified against example/fixtures/manifest.json",
+  "deviceExecution": "pending",
+  "refreshBundleBeforeSignedBuild": true,
+  "limits": [
+    "The app and test bundle compiled and linked; this does not record XCTest or GPU execution.",
+    "A valid development profile for the distinct app and test bundle is required before device installation.",
+    "The development team was selected locally; no other app bundle identifier or profile was reused. The team identifier is omitted from this public record."
+  ],
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

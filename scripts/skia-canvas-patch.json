@@ -1,0 +1,271 @@
+{
+  "version": "3.0.6",
+  "files": {
+    "cpp/api/JsiSkCanvas.h": {
+      "before": "a9b8d2552df8ba3c073c32d8e811945986ef8342fdcbfea168249cf0234e2dd1",
+      "after": "2758ab28fbc73fd59923720ba8594796d3e80a987adfd12bd59c16590797af13",
+      "edits": [
+        {
+          "before": "    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);",
+          "after": "    installMethod(runtime, prototype, \"dispose\", &JsiSkCanvas::dispose);\n    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);"
+        },
+        {
+          "before": "  SkCanvas *getCanvas() { return _canvas; }",
+          "after": "  SkCanvas *getCanvas() {\n    if (!_canvas) throw std::runtime_error(\"Canvas has been disposed\");\n    return _canvas;\n  }\n  // Release the owning surface deterministically on the creator runtime.\n  // The caller must submit/wait for its recording before disposal.\n  void dispose() {\n    _canvas = nullptr;\n    _surface.reset();\n  }"
+        },
+        {
+          "before": "  SkCanvas *_canvas;",
+          "after": "  SkCanvas *_canvas = nullptr;"
+        },
+        {
+          "before": "#include <memory>",
+          "after": "#include <memory>\n#include <stdexcept>"
+        },
+        {
+          "before": "  void drawPaint(std::shared_ptr<SkPaint> paint) { _canvas->drawPaint(*paint); }\n",
+          "after": "  void drawPaint(std::shared_ptr<SkPaint> paint) { getCanvas()->drawPaint(*paint); }\n"
+        },
+        {
+          "before": "    _canvas->drawLine(x1, y1, x2, y2, *paint);\n",
+          "after": "    getCanvas()->drawLine(x1, y1, x2, y2, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawRect(*rect, *paint);\n",
+          "after": "    getCanvas()->drawRect(*rect, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawImage(image, x, y, SkSamplingOptions(), paint.get());\n",
+          "after": "    getCanvas()->drawImage(image, x, y, SkSamplingOptions(), paint.get());\n"
+        },
+        {
+          "before": "    _canvas->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),\n",
+          "after": "    getCanvas()->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),\n"
+        },
+        {
+          "before": "    _canvas->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());\n",
+          "after": "    getCanvas()->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());\n"
+        },
+        {
+          "before": "    _canvas->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());\n",
+          "after": "    getCanvas()->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());\n"
+        },
+        {
+          "before": "    _canvas->drawImageNine(image.get(), center->round(), *dest, fm,\n",
+          "after": "    getCanvas()->drawImageNine(image.get(), center->round(), *dest, fm,\n"
+        },
+        {
+          "before": "    _canvas->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),\n",
+          "after": "    getCanvas()->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),\n"
+        },
+        {
+          "before": "    _canvas->drawImageRect(image.get(), *src, *dest, {filter, mipmap},\n",
+          "after": "    getCanvas()->drawImageRect(image.get(), *src, *dest, {filter, mipmap},\n"
+        },
+        {
+          "before": "    _canvas->drawCircle(cx, cy, radius, *paint);\n",
+          "after": "    getCanvas()->drawCircle(cx, cy, radius, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);\n",
+          "after": "    getCanvas()->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawRRect(*rect, *paint);\n",
+          "after": "    getCanvas()->drawRRect(*rect, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawDRRect(*outer, *inner, *paint);\n",
+          "after": "    getCanvas()->drawDRRect(*outer, *inner, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawOval(*rect, *paint);\n",
+          "after": "    getCanvas()->drawOval(*rect, *paint);\n"
+        },
+        {
+          "before": "  void restoreToCount(double c) { _canvas->restoreToCount(c); }\n",
+          "after": "  void restoreToCount(double c) { getCanvas()->restoreToCount(c); }\n"
+        },
+        {
+          "before": "  int getSaveCount() { return static_cast<int>(_canvas->getSaveCount()); }\n",
+          "after": "  int getSaveCount() { return static_cast<int>(getCanvas()->getSaveCount()); }\n"
+        },
+        {
+          "before": "                                         _canvas->getTotalMatrix());\n",
+          "after": "                                         getCanvas()->getTotalMatrix());\n"
+        },
+        {
+          "before": "    _canvas->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);\n",
+          "after": "    getCanvas()->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawVertices(vertices, toBlendMode(blendMode), *paint);\n",
+          "after": "    getCanvas()->drawVertices(vertices, toBlendMode(blendMode), *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),\n",
+          "after": "    getCanvas()->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),\n"
+        },
+        {
+          "before": "    _canvas->drawPath(path->snapshot(), *paint);\n",
+          "after": "    getCanvas()->drawPath(path->snapshot(), *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,\n",
+          "after": "    getCanvas()->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,\n"
+        },
+        {
+          "before": "    _canvas->drawTextBlob(blob, x, y, *paint);\n",
+          "after": "    getCanvas()->drawTextBlob(blob, x, y, *paint);\n"
+        },
+        {
+          "before": "    _canvas->drawGlyphs(g, p, origin, *font, *paint);\n",
+          "after": "    getCanvas()->drawGlyphs(g, p, origin, *font, *paint);\n"
+        },
+        {
+          "before": "      auto canvasSize = _canvas->getBaseLayerSize();\n",
+          "after": "      auto canvasSize = getCanvas()->getBaseLayerSize();\n"
+        },
+        {
+          "before": "    svgdom->render(_canvas);\n",
+          "after": "    svgdom->render(getCanvas());\n"
+        },
+        {
+          "before": "    _canvas->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);\n",
+          "after": "    getCanvas()->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);\n"
+        },
+        {
+          "before": "    _canvas->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);\n",
+          "after": "    getCanvas()->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);\n"
+        },
+        {
+          "before": "    _canvas->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);\n",
+          "after": "    getCanvas()->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);\n"
+        },
+        {
+          "before": "  int save() { return _canvas->save(); }\n",
+          "after": "  int save() { return getCanvas()->save(); }\n"
+        },
+        {
+          "before": "    return jsi::Value(_canvas->saveLayer(\n",
+          "after": "    return jsi::Value(getCanvas()->saveLayer(\n"
+        },
+        {
+          "before": "  void restore() { _canvas->restore(); }\n",
+          "after": "  void restore() { getCanvas()->restore(); }\n"
+        },
+        {
+          "before": "    _canvas->rotate(degrees, rx, ry);\n",
+          "after": "    getCanvas()->rotate(degrees, rx, ry);\n"
+        },
+        {
+          "before": "  void translate(double dx, double dy) { _canvas->translate(dx, dy); }\n",
+          "after": "  void translate(double dx, double dy) { getCanvas()->translate(dx, dy); }\n"
+        },
+        {
+          "before": "  void scale(double sx, double sy) { _canvas->scale(sx, sy); }\n",
+          "after": "  void scale(double sx, double sy) { getCanvas()->scale(sx, sy); }\n"
+        },
+        {
+          "before": "  void skew(double sx, double sy) { _canvas->skew(sx, sy); }\n",
+          "after": "  void skew(double sx, double sy) { getCanvas()->skew(sx, sy); }\n"
+        },
+        {
+          "before": "      _canvas->drawColor(cl, toBlendMode(*mode));\n",
+          "after": "      getCanvas()->drawColor(cl, toBlendMode(*mode));\n"
+        },
+        {
+          "before": "      _canvas->drawColor(cl);\n",
+          "after": "      getCanvas()->drawColor(cl);\n"
+        },
+        {
+          "before": "  void clear(JsiColor cl) { _canvas->clear(cl); }\n",
+          "after": "  void clear(JsiColor cl) { getCanvas()->clear(cl); }\n"
+        },
+        {
+          "before": "  void concat(std::shared_ptr<SkMatrix> matrix) { _canvas->concat(*matrix); }\n",
+          "after": "  void concat(std::shared_ptr<SkMatrix> matrix) { getCanvas()->concat(*matrix); }\n"
+        },
+        {
+          "before": "  void drawPicture(sk_sp<SkPicture> picture) { _canvas->drawPicture(picture); }\n",
+          "after": "  void drawPicture(sk_sp<SkPicture> picture) { getCanvas()->drawPicture(picture); }\n"
+        },
+        {
+          "before": "    _canvas->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,\n",
+          "after": "    getCanvas()->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,\n"
+        },
+        {
+          "before": "    if (!_canvas->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {\n",
+          "after": "    if (!getCanvas()->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {\n"
+        },
+        {
+          "before": "  JSI_HOST_FUNCTION(readPixels) {",
+          "after": "  JSI_HOST_FUNCTION(readPixels) {\n    getCanvas(); // Validate before allocating a readback buffer."
+        }
+      ]
+    },
+    "src/skia/types/Canvas.ts": {
+      "before": "a9c2abc2f79de8ce16497dd693e7ff96b9be93fa33dff6f1b513259af780d8d1",
+      "after": "226b25b561ad39a6812c8d5f8990e5ac9c078d3283f2bad90e725f077d84efd7",
+      "edits": [
+        {
+          "before": "export interface SkCanvas {",
+          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;"
+        }
+      ]
+    },
+    "lib/typescript/src/skia/types/Canvas.d.ts": {
+      "before": "ca8ce8e58c1fc94508fd9d298c038316409734cef2b39ac6b7281b2c3958150a",
+      "after": "b1878eafa831d6c3d7a47f4329a94dd64cef4bae5281cc144d3258a5c4a1021c",
+      "edits": [
+        {
+          "before": "export interface SkCanvas {",
+          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;"
+        }
+      ]
+    },
+    "cpp/api/JsiSkSurface.h": {
+      "before": "35d21a97e8ad91761da1553613ce9d52e153c4bede935dab2dfba4bcbbb425d1",
+      "after": "d619664807dc6f9fbbaf8814db05f3b6e8d41ae755b2c09a281c6a2be5bc2b0c",
+      "edits": [
+        {
+          "before": "    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n",
+          "after": "    // Preserve the previously published image if snapshot allocation failed.\n    if (!image) {\n      throw jsi::JSError(runtime, \"Cannot allocate Skia surface snapshot\");\n    }\n    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n"
+        },
+        {
+          "before": "  std::shared_ptr<Dispatcher> _dispatcher;",
+          "after": "  std::shared_ptr<Dispatcher> _dispatcher;\n  bool _checkedSubmissions = false;"
+        },
+        {
+          "before": "  void flush(JsiOptional<bool> syncParam) {",
+          "after": "  // Opt-in for consumers that release native buffers after GPU completion.\n  // Other Skia surfaces preserve their existing flush/snapshot behavior.\n  void enableCheckedSubmissions() {\n    if (!getObject()->recorder()) {\n      throw std::runtime_error(\"Checked GPU submissions require a Graphite surface\");\n    }\n    _checkedSubmissions = true;\n  }\n\n  void submitRecording(skgpu::graphite::Recording *recording,\n                       skgpu::graphite::SyncToCpu syncToCpu =\n                           skgpu::graphite::SyncToCpu::kNo) {\n    if (_checkedSubmissions) {\n      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);\n    } else {\n      DawnContext::getInstance().submitRecording(recording, syncToCpu);\n    }\n  }\n\n  void flush(JsiOptional<bool> syncParam) {"
+        },
+        {
+          "before": "      DawnContext::getInstance().submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes",
+          "after": "      submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes"
+        },
+        {
+          "before": "      DawnContext::getInstance().submitRecording(recording.get());",
+          "after": "      submitRecording(recording.get());"
+        },
+        {
+          "before": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);",
+          "after": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);\n    installMethod(runtime, prototype, \"enableCheckedSubmissions\",\n                  &JsiSkSurface::enableCheckedSubmissions);"
+        }
+      ]
+    },
+    "cpp/rnskia/RNDawnContext.h": {
+      "edits": [
+        {
+          "before": "#include <mutex>",
+          "after": "#include <mutex>\n#include <stdexcept>"
+        },
+        {
+          "before": "  // Create offscreen surface",
+          "after": "  // Checked only for surfaces that explicitly opt into this contract. A valid\n  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.\n  void submitRecordingChecked(\n      skgpu::graphite::Recording *recording,\n      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {\n    std::lock_guard<std::mutex> lock(_mutex);\n    if (!recording) {\n      throw std::runtime_error(\"Cannot create checked Graphite recording\");\n    }\n    skgpu::graphite::InsertRecordingInfo info;\n    info.fRecording = recording;\n    auto status = fGraphiteContext->insertRecording(info);\n    if (!static_cast<bool>(status)) {\n      throw std::runtime_error(\"Graphite rejected a checked recording: \" +\n                               status.message());\n    }\n    if (!fGraphiteContext->submit(syncToCpu)) {\n      throw std::runtime_error(\"Graphite checked submission failed\");\n    }\n  }\n\n  // Create offscreen surface"
+        }
+      ],
+      "before": "0db452abdcad7baa2c1d76fa0a81ebec47a447bfe9a706c13ac8d2ed08e4f4f0",
+      "after": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476"
+    }
+  }
+}

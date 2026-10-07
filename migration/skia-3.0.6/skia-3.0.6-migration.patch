@@ -1,0 +1,1648 @@
+--- a/ios/ReactNativeSkiaVideo.mm
++++ b/ios/ReactNativeSkiaVideo.mm
+@@ -285,7 +285,8 @@
+             auto result = jsi::Object(rt);
+             result.setProperty(rt, "platform", "ios");
+             result.setProperty(rt, "frameTransport", "cvpixelbuffer-bgra");
+-            result.setProperty(rt, "preview", "gpu-stage-synchronous-copy");
++            result.setProperty(rt, "preview", "webgpu-native-blit+gpu-stage-synchronous-copy");
++            result.setProperty(rt, "gpuUploadScratchCapacityPerRuntime", 1);
+             result.setProperty(rt, "export", "cpu-readback-bounded-pixelbuffer-pool");
+             result.setProperty(rt, "nativeFrameCapacity", 2);
+             result.setProperty(rt, "encoderPoolCapacity", 3);
+--- a/package.json
++++ b/package.json
+@@ -38,7 +38,7 @@
+     "!**/.*",
+     "scripts/apply-skia-canvas-patch.mjs",
+     "scripts/skia-canvas-patch.json",
+-    "patches/react-native-skia+3.0.3.patch",
++    "patches/react-native-skia+3.0.6.patch",
+     "docs/UPSTREAM_NOTES.md",
+     "!ios/tests",
+     "!android/src/androidTest",
+@@ -96,8 +96,8 @@
+     "react-native": "0.86.2",
+     "react-native-builder-bob": "^0.43.0",
+     "react-native-reanimated": "4.5.3",
+-    "react-native-skia": "3.0.3",
+-    "react-native-webgpu": "0.11.0",
++    "react-native-skia": "3.0.6",
++    "react-native-webgpu": "0.12.1",
+     "react-native-worklets": "0.11.3",
+     "react-test-renderer": "19.2.3",
+     "typescript": "^6.0.3"
+@@ -106,8 +106,8 @@
+     "react": ">=19",
+     "react-native": ">=0.83 <0.87",
+     "react-native-reanimated": "4.5.3",
+-    "react-native-skia": "3.0.3",
+-    "react-native-webgpu": "0.11.0",
++    "react-native-skia": "3.0.6",
++    "react-native-webgpu": "0.12.1",
+     "react-native-worklets": "0.11.3"
+   },
+   "jest": {
+--- /dev/null
++++ b/patches/react-native-skia+3.0.6.patch
+@@ -0,0 +1,477 @@
++--- a/node_modules/react-native-skia/cpp/api/JsiSkCanvas.h
+++++ b/node_modules/react-native-skia/cpp/api/JsiSkCanvas.h
++@@ -1,6 +1,7 @@
++ #pragma once
++ 
++ #include <memory>
+++#include <stdexcept>
++ #include <string>
++ #include <utility>
++ #include <vector>
++@@ -50,15 +51,15 @@
++ public:
++   static constexpr const char *CLASS_NAME = "Canvas";
++ 
++-  void drawPaint(std::shared_ptr<SkPaint> paint) { _canvas->drawPaint(*paint); }
+++  void drawPaint(std::shared_ptr<SkPaint> paint) { getCanvas()->drawPaint(*paint); }
++ 
++   void drawLine(double x1, double y1, double x2, double y2,
++                 std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawLine(x1, y1, x2, y2, *paint);
+++    getCanvas()->drawLine(x1, y1, x2, y2, *paint);
++   }
++ 
++   void drawRect(std::shared_ptr<SkRect> rect, std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawRect(*rect, *paint);
+++    getCanvas()->drawRect(*rect, *paint);
++   }
++ 
++   // The drawImage* variants stay raw: they dispatch on exact argument counts
++@@ -71,7 +72,7 @@
++     if (count == 4) {
++       paint = JsiSkPaint::fromValue(runtime, arguments[3]);
++     }
++-    _canvas->drawImage(image, x, y, SkSamplingOptions(), paint.get());
+++    getCanvas()->drawImage(image, x, y, SkSamplingOptions(), paint.get());
++     return jsi::Value::undefined();
++   }
++ 
++@@ -81,7 +82,7 @@
++     auto dest = JsiSkRect::fromValue(runtime, arguments[2]);
++     auto paint = JsiSkPaint::fromValue(runtime, arguments[3]);
++     auto fastSample = count >= 5 && arguments[4].getBool();
++-    _canvas->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),
+++    getCanvas()->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),
++                            fastSample ? SkCanvas::kFast_SrcRectConstraint
++                                       : SkCanvas::kStrict_SrcRectConstraint);
++     return jsi::Value::undefined();
++@@ -99,7 +100,7 @@
++         paint = JsiSkPaint::fromValue(runtime, arguments[5]);
++       }
++     }
++-    _canvas->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());
+++    getCanvas()->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());
++     return jsi::Value::undefined();
++   }
++ 
++@@ -115,7 +116,7 @@
++         paint = JsiSkPaint::fromValue(runtime, arguments[5]);
++       }
++     }
++-    _canvas->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());
+++    getCanvas()->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());
++     return jsi::Value::undefined();
++   }
++ 
++@@ -130,7 +131,7 @@
++         paint = JsiSkPaint::fromValue(runtime, arguments[4]);
++       }
++     }
++-    _canvas->drawImageNine(image.get(), center->round(), *dest, fm,
+++    getCanvas()->drawImageNine(image.get(), center->round(), *dest, fm,
++                            paint.get());
++     return jsi::Value::undefined();
++   }
++@@ -149,7 +150,7 @@
++     }
++     auto constraint =
++         SkCanvas::kStrict_SrcRectConstraint; // TODO: get from caller
++-    _canvas->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),
+++    getCanvas()->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),
++                            paint.get(), constraint);
++     return jsi::Value::undefined();
++   }
++@@ -167,44 +168,44 @@
++       }
++     }
++     auto constraint = SkCanvas::kStrict_SrcRectConstraint;
++-    _canvas->drawImageRect(image.get(), *src, *dest, {filter, mipmap},
+++    getCanvas()->drawImageRect(image.get(), *src, *dest, {filter, mipmap},
++                            paint.get(), constraint);
++     return jsi::Value::undefined();
++   }
++ 
++   void drawCircle(double cx, double cy, double radius,
++                   std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawCircle(cx, cy, radius, *paint);
+++    getCanvas()->drawCircle(cx, cy, radius, *paint);
++   }
++ 
++   void drawArc(std::shared_ptr<SkRect> oval, double startAngle,
++                double sweepAngle, bool useCenter,
++                std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);
+++    getCanvas()->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);
++   }
++ 
++   void drawRRect(std::shared_ptr<SkRRect> rect,
++                  std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawRRect(*rect, *paint);
+++    getCanvas()->drawRRect(*rect, *paint);
++   }
++ 
++   void drawDRRect(std::shared_ptr<SkRRect> outer,
++                   std::shared_ptr<SkRRect> inner,
++                   std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawDRRect(*outer, *inner, *paint);
+++    getCanvas()->drawDRRect(*outer, *inner, *paint);
++   }
++ 
++   void drawOval(std::shared_ptr<SkRect> rect, std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawOval(*rect, *paint);
++-  }
++-
++-  void restoreToCount(double c) { _canvas->restoreToCount(c); }
++-
++-  int getSaveCount() { return static_cast<int>(_canvas->getSaveCount()); }
+++    getCanvas()->drawOval(*rect, *paint);
+++  }
+++
+++  void restoreToCount(double c) { getCanvas()->restoreToCount(c); }
+++
+++  int getSaveCount() { return static_cast<int>(getCanvas()->getSaveCount()); }
++ 
++   std::shared_ptr<JsiSkMatrix> getTotalMatrix() {
++     return std::make_shared<JsiSkMatrix>(getContext(),
++-                                         _canvas->getTotalMatrix());
+++                                         getCanvas()->getTotalMatrix());
++   }
++ 
++   void drawPoints(double pointMode, std::vector<SkPoint> points,
++@@ -214,12 +215,12 @@
++       throw std::invalid_argument("Points array must not be empty");
++     }
++     auto p = SkSpan(points.data(), points.size());
++-    _canvas->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);
+++    getCanvas()->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);
++   }
++ 
++   void drawVertices(sk_sp<SkVertices> vertices, double blendMode,
++                     std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawVertices(vertices, toBlendMode(blendMode), *paint);
+++    getCanvas()->drawVertices(vertices, toBlendMode(blendMode), *paint);
++   }
++ 
++   JSI_HOST_FUNCTION(drawPatch) {
++@@ -289,7 +290,7 @@
++       paint = JsiSkPaint::fromValue(runtime, arguments[4]);
++     }
++     SkPaint defaultPaint;
++-    _canvas->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),
+++    getCanvas()->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),
++                        texs.empty() ? nullptr : texs.data(), blendMode,
++                        paint ? *paint : defaultPaint);
++     return jsi::Value::undefined();
++@@ -297,19 +298,19 @@
++ 
++   void drawPath(std::shared_ptr<SkPathBuilder> path,
++                 std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawPath(path->snapshot(), *paint);
+++    getCanvas()->drawPath(path->snapshot(), *paint);
++   }
++ 
++   void drawText(std::string textVal, double x, double y,
++                 std::shared_ptr<SkPaint> paint, std::shared_ptr<SkFont> font) {
++     auto text = textVal.c_str();
++-    _canvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,
+++    getCanvas()->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,
++                             *font, *paint);
++   }
++ 
++   void drawTextBlob(sk_sp<SkTextBlob> blob, double x, double y,
++                     std::shared_ptr<SkPaint> paint) {
++-    _canvas->drawTextBlob(blob, x, y, *paint);
+++    getCanvas()->drawTextBlob(blob, x, y, *paint);
++   }
++ 
++   void drawGlyphs(std::vector<int> glyphIds, std::vector<SkPoint> positions,
++@@ -331,7 +332,7 @@
++ 
++     auto g = SkSpan(glyphs.data(), glyphs.size());
++     auto p = SkSpan(positions.data(), positions.size());
++-    _canvas->drawGlyphs(g, p, origin, *font, *paint);
+++    getCanvas()->drawGlyphs(g, p, origin, *font, *paint);
++   }
++ 
++   void drawSvg(sk_sp<SkSVGDOM> svgdom, JsiOptional<double> w,
++@@ -339,26 +340,26 @@
++     if (w.has_value() && h.has_value()) {
++       svgdom->setContainerSize(SkSize::Make(*w, *h));
++     } else {
++-      auto canvasSize = _canvas->getBaseLayerSize();
+++      auto canvasSize = getCanvas()->getBaseLayerSize();
++       svgdom->setContainerSize(SkSize::Make(canvasSize));
++     }
++-    svgdom->render(_canvas);
+++    svgdom->render(getCanvas());
++   }
++ 
++   void clipPath(std::shared_ptr<SkPathBuilder> path, double op,
++                 bool doAntiAlias) {
++-    _canvas->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);
+++    getCanvas()->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);
++   }
++ 
++   void clipRect(std::shared_ptr<SkRect> rect, double op, bool doAntiAlias) {
++-    _canvas->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);
+++    getCanvas()->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);
++   }
++ 
++   void clipRRect(std::shared_ptr<SkRRect> rrect, double op, bool doAntiAlias) {
++-    _canvas->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);
++-  }
++-
++-  int save() { return _canvas->save(); }
+++    getCanvas()->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);
+++  }
+++
+++  int save() { return getCanvas()->save(); }
++ 
++   JSI_HOST_FUNCTION(saveLayer) {
++     SkPaint *paint = (count >= 1 && !arguments[0].isUndefined())
++@@ -373,35 +374,35 @@
++             ? JsiSkImageFilter::fromValue(runtime, arguments[2]).get()
++             : nullptr;
++     SkCanvas::SaveLayerFlags flags = count >= 4 ? arguments[3].asNumber() : 0;
++-    return jsi::Value(_canvas->saveLayer(
+++    return jsi::Value(getCanvas()->saveLayer(
++         SkCanvas::SaveLayerRec(bounds, paint, backdrop, flags)));
++   }
++ 
++-  void restore() { _canvas->restore(); }
+++  void restore() { getCanvas()->restore(); }
++ 
++   void rotate(double degrees, double rx, double ry) {
++-    _canvas->rotate(degrees, rx, ry);
++-  }
++-
++-  void translate(double dx, double dy) { _canvas->translate(dx, dy); }
++-
++-  void scale(double sx, double sy) { _canvas->scale(sx, sy); }
++-
++-  void skew(double sx, double sy) { _canvas->skew(sx, sy); }
+++    getCanvas()->rotate(degrees, rx, ry);
+++  }
+++
+++  void translate(double dx, double dy) { getCanvas()->translate(dx, dy); }
+++
+++  void scale(double sx, double sy) { getCanvas()->scale(sx, sy); }
+++
+++  void skew(double sx, double sy) { getCanvas()->skew(sx, sy); }
++ 
++   void drawColor(JsiColor cl, JsiOptional<double> mode) {
++     if (mode.has_value()) {
++-      _canvas->drawColor(cl, toBlendMode(*mode));
+++      getCanvas()->drawColor(cl, toBlendMode(*mode));
++     } else {
++-      _canvas->drawColor(cl);
++-    }
++-  }
++-
++-  void clear(JsiColor cl) { _canvas->clear(cl); }
++-
++-  void concat(std::shared_ptr<SkMatrix> matrix) { _canvas->concat(*matrix); }
++-
++-  void drawPicture(sk_sp<SkPicture> picture) { _canvas->drawPicture(picture); }
+++      getCanvas()->drawColor(cl);
+++    }
+++  }
+++
+++  void clear(JsiColor cl) { getCanvas()->clear(cl); }
+++
+++  void concat(std::shared_ptr<SkMatrix> matrix) { getCanvas()->concat(*matrix); }
+++
+++  void drawPicture(sk_sp<SkPicture> picture) { getCanvas()->drawPicture(picture); }
++ 
++   JSI_HOST_FUNCTION(drawAtlas) {
++     auto atlas = JsiSkImage::fromValue(runtime, arguments[0]);
++@@ -474,13 +475,14 @@
++     auto x = SkSpan(xforms.data(), xforms.size());
++     auto t = SkSpan(skRects.data(), skRects.size());
++     auto c = SkSpan(colors.data(), colors.size());
++-    _canvas->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,
+++    getCanvas()->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,
++                        paint.get());
++ 
++     return jsi::Value::undefined();
++   }
++ 
++   JSI_HOST_FUNCTION(readPixels) {
+++    getCanvas(); // Validate before allocating a readback buffer.
++     auto srcX = static_cast<int>(arguments[0].asNumber());
++     auto srcY = static_cast<int>(arguments[1].asNumber());
++     auto info = JsiSkImageInfo::fromValue(runtime, arguments[2]);
++@@ -529,13 +531,14 @@
++       return dest;
++     }
++ 
++-    if (!_canvas->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {
+++    if (!getCanvas()->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {
++       return jsi::Value::null();
++     }
++     return dest;
++   }
++ 
++   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
+++    installMethod(runtime, prototype, "dispose", &JsiSkCanvas::dispose);
++     installMethod(runtime, prototype, "drawPaint", &JsiSkCanvas::drawPaint);
++     installMethod(runtime, prototype, "drawLine", &JsiSkCanvas::drawLine);
++     installMethod(runtime, prototype, "drawRect", &JsiSkCanvas::drawRect);
++@@ -603,7 +606,16 @@
++   }
++ 
++   void setCanvas(SkCanvas *canvas) { _canvas = canvas; }
++-  SkCanvas *getCanvas() { return _canvas; }
+++  SkCanvas *getCanvas() {
+++    if (!_canvas) throw std::runtime_error("Canvas has been disposed");
+++    return _canvas;
+++  }
+++  // Release the owning surface deterministically on the creator runtime.
+++  // The caller must submit/wait for its recording before disposal.
+++  void dispose() {
+++    _canvas = nullptr;
+++    _surface.reset();
+++  }
++ 
++   // Optionally associate the canvas with its owning surface. This lets
++   // readPixels fall back to a surface snapshot on Graphite, which has no
++@@ -611,7 +623,7 @@
++   void setSurface(sk_sp<SkSurface> surface) { _surface = std::move(surface); }
++ 
++ private:
++-  SkCanvas *_canvas;
+++  SkCanvas *_canvas = nullptr;
++   sk_sp<SkSurface> _surface;
++ };
++ } // namespace RNSkia
++--- a/node_modules/react-native-skia/src/skia/types/Canvas.ts
+++++ b/node_modules/react-native-skia/src/skia/types/Canvas.ts
++@@ -32,6 +32,8 @@
++ }
++ 
++ export interface SkCanvas {
+++  /** Release the owning surface after flushing; idempotent. */
+++  dispose(): void;
++   /**
++    * Draws the given image with its top-left corner at (left, top) using the current clip,
++    * the current matrix, and optionally-provided paint.
++--- a/node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts
+++++ b/node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts
++@@ -23,6 +23,8 @@
++     SaveLayerF16ColorType = 16
++ }
++ export interface SkCanvas {
+++  /** Release the owning surface after flushing; idempotent. */
+++  dispose(): void;
++     /**
++      * Draws the given image with its top-left corner at (left, top) using the current clip,
++      * the current matrix, and optionally-provided paint.
++--- a/node_modules/react-native-skia/cpp/api/JsiSkSurface.h
+++++ b/node_modules/react-native-skia/cpp/api/JsiSkSurface.h
++@@ -31,6 +31,7 @@
++     : public JsiSkWrappingSkPtrNativeObject<JsiSkSurface, SkSurface> {
++ private:
++   std::shared_ptr<Dispatcher> _dispatcher;
+++  bool _checkedSubmissions = false;
++ 
++ public:
++   static constexpr const char *CLASS_NAME = "Surface";
++@@ -77,6 +78,25 @@
++     return canvas;
++   }
++ 
+++  // Opt-in for consumers that release native buffers after GPU completion.
+++  // Other Skia surfaces preserve their existing flush/snapshot behavior.
+++  void enableCheckedSubmissions() {
+++    if (!getObject()->recorder()) {
+++      throw std::runtime_error("Checked GPU submissions require a Graphite surface");
+++    }
+++    _checkedSubmissions = true;
+++  }
+++
+++  void submitRecording(skgpu::graphite::Recording *recording,
+++                       skgpu::graphite::SyncToCpu syncToCpu =
+++                           skgpu::graphite::SyncToCpu::kNo) {
+++    if (_checkedSubmissions) {
+++      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);
+++    } else {
+++      DawnContext::getInstance().submitRecording(recording, syncToCpu);
+++    }
+++  }
+++
++   void flush(JsiOptional<bool> syncParam) {
++     auto surface = getObject();
++     // When `sync` is true, block until the GPU has finished executing the
++@@ -88,7 +108,7 @@
++     // only Graphite-backed surfaces need to snap and submit a recording.
++     if (auto *recorder = surface->recorder()) {
++       auto recording = recorder->snap();
++-      DawnContext::getInstance().submitRecording(
+++      submitRecording(
++           recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes
++                                 : skgpu::graphite::SyncToCpu::kNo);
++     }
++@@ -104,11 +124,15 @@
++     } else {
++       image = surface->makeImageSnapshot();
++     }
+++    // Preserve the previously published image if snapshot allocation failed.
+++    if (!image) {
+++      throw jsi::JSError(runtime, "Cannot allocate Skia surface snapshot");
+++    }
++     // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its
++     // snapshot is already a valid CPU image, so skip the recording submit.
++     if (auto *recorder = surface->recorder()) {
++       auto recording = recorder->snap();
++-      DawnContext::getInstance().submitRecording(recording.get());
+++      submitRecording(recording.get());
++     }
++     if (count > 1 && arguments[1].isObject()) {
++       auto jsiImage = getJsiObject<JsiSkImage>(runtime, arguments[1]);
++@@ -180,6 +204,8 @@
++     installHostMethod(runtime, prototype, "makeImageSnapshot",
++                       &JsiSkSurface::makeImageSnapshot);
++     installMethod(runtime, prototype, "flush", &JsiSkSurface::flush);
+++    installMethod(runtime, prototype, "enableCheckedSubmissions",
+++                  &JsiSkSurface::enableCheckedSubmissions);
++   }
++ };
++ 
++--- a/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
+++++ b/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
++@@ -2,6 +2,7 @@
++ 
++ #include <memory>
++ #include <mutex>
+++#include <stdexcept>
++ 
++ #include "RNDawnUtils.h"
++ #include "RNDawnWindowContext.h"
++@@ -128,6 +129,27 @@
++     fGraphiteContext->submit(syncToCpu);
++   }
++ 
+++  // Checked only for surfaces that explicitly opt into this contract. A valid
+++  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.
+++  void submitRecordingChecked(
+++      skgpu::graphite::Recording *recording,
+++      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {
+++    std::lock_guard<std::mutex> lock(_mutex);
+++    if (!recording) {
+++      throw std::runtime_error("Cannot create checked Graphite recording");
+++    }
+++    skgpu::graphite::InsertRecordingInfo info;
+++    info.fRecording = recording;
+++    auto status = fGraphiteContext->insertRecording(info);
+++    if (!static_cast<bool>(status)) {
+++      throw std::runtime_error("Graphite rejected a checked recording: " +
+++                               status.message());
+++    }
+++    if (!fGraphiteContext->submit(syncToCpu)) {
+++      throw std::runtime_error("Graphite checked submission failed");
+++    }
+++  }
+++
++   // Create offscreen surface
++   sk_sp<SkSurface> MakeOffscreen(int width, int height,
++                                  bool useP3ColorSpace = false) {
+--- a/scripts/skia-canvas-patch.json
++++ b/scripts/skia-canvas-patch.json
+@@ -1,5 +1,5 @@
+ {
+-  "version": "3.0.3",
++  "version": "3.0.6",
+   "files": {
+     "cpp/api/JsiSkCanvas.h": {
+       "before": "a9b8d2552df8ba3c073c32d8e811945986ef8342fdcbfea168249cf0234e2dd1",
+@@ -224,14 +224,48 @@
+       ]
+     },
+     "cpp/api/JsiSkSurface.h": {
+-      "before": "d8bdf89ae48d8aa41616691ae308051cab75a4a90eb7c633a37e4cd03e791a36",
+-      "after": "11140b83c0dbbf097fd79fb10556ca835ad529c39f665e4c6ff8c8c8a1253690",
++      "before": "35d21a97e8ad91761da1553613ce9d52e153c4bede935dab2dfba4bcbbb425d1",
++      "after": "d619664807dc6f9fbbaf8814db05f3b6e8d41ae755b2c09a281c6a2be5bc2b0c",
+       "edits": [
+         {
+           "before": "    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n",
+           "after": "    // Preserve the previously published image if snapshot allocation failed.\n    if (!image) {\n      throw jsi::JSError(runtime, \"Cannot allocate Skia surface snapshot\");\n    }\n    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n"
+-        }
+-      ]
++        },
++        {
++          "before": "  std::shared_ptr<Dispatcher> _dispatcher;",
++          "after": "  std::shared_ptr<Dispatcher> _dispatcher;\n  bool _checkedSubmissions = false;"
++        },
++        {
++          "before": "  void flush(JsiOptional<bool> syncParam) {",
++          "after": "  // Opt-in for consumers that release native buffers after GPU completion.\n  // Other Skia surfaces preserve their existing flush/snapshot behavior.\n  void enableCheckedSubmissions() {\n    if (!getObject()->recorder()) {\n      throw std::runtime_error(\"Checked GPU submissions require a Graphite surface\");\n    }\n    _checkedSubmissions = true;\n  }\n\n  void submitRecording(skgpu::graphite::Recording *recording,\n                       skgpu::graphite::SyncToCpu syncToCpu =\n                           skgpu::graphite::SyncToCpu::kNo) {\n    if (_checkedSubmissions) {\n      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);\n    } else {\n      DawnContext::getInstance().submitRecording(recording, syncToCpu);\n    }\n  }\n\n  void flush(JsiOptional<bool> syncParam) {"
++        },
++        {
++          "before": "      DawnContext::getInstance().submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes",
++          "after": "      submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes"
++        },
++        {
++          "before": "      DawnContext::getInstance().submitRecording(recording.get());",
++          "after": "      submitRecording(recording.get());"
++        },
++        {
++          "before": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);",
++          "after": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);\n    installMethod(runtime, prototype, \"enableCheckedSubmissions\",\n                  &JsiSkSurface::enableCheckedSubmissions);"
++        }
++      ]
++    },
++    "cpp/rnskia/RNDawnContext.h": {
++      "edits": [
++        {
++          "before": "#include <mutex>",
++          "after": "#include <mutex>\n#include <stdexcept>"
++        },
++        {
++          "before": "  // Create offscreen surface",
++          "after": "  // Checked only for surfaces that explicitly opt into this contract. A valid\n  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.\n  void submitRecordingChecked(\n      skgpu::graphite::Recording *recording,\n      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {\n    std::lock_guard<std::mutex> lock(_mutex);\n    if (!recording) {\n      throw std::runtime_error(\"Cannot create checked Graphite recording\");\n    }\n    skgpu::graphite::InsertRecordingInfo info;\n    info.fRecording = recording;\n    auto status = fGraphiteContext->insertRecording(info);\n    if (!static_cast<bool>(status)) {\n      throw std::runtime_error(\"Graphite rejected a checked recording: \" +\n                               status.message());\n    }\n    if (!fGraphiteContext->submit(syncToCpu)) {\n      throw std::runtime_error(\"Graphite checked submission failed\");\n    }\n  }\n\n  // Create offscreen surface"
++        }
++      ],
++      "before": "0db452abdcad7baa2c1d76fa0a81ebec47a447bfe9a706c13ac8d2ed08e4f4f0",
++      "after": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476"
+     }
+   }
+ }
+--- a/scripts/test-skia-patch-syntax.mjs
++++ b/scripts/test-skia-patch-syntax.mjs
+@@ -11,7 +11,7 @@
+ const skia = join(root, 'node_modules/react-native-skia');
+ const metadata = JSON.parse(readFileSync(join(root, 'scripts/skia-canvas-patch.json')));
+ const hashes = {};
+-for (const file of ['cpp/api/JsiSkCanvas.h', 'cpp/api/JsiSkSurface.h']) {
++for (const file of ['cpp/api/JsiSkCanvas.h', 'cpp/api/JsiSkSurface.h', 'cpp/rnskia/RNDawnContext.h']) {
+   const hash = createHash('sha256').update(readFileSync(join(skia, file))).digest('hex');
+   if (hash !== metadata.files[file].after) throw new Error(`Installed ${file} does not match the verified patch`);
+   hashes[file] = hash;
+--- /dev/null
++++ b/src/__tests__/canvas.test.ts
+@@ -0,0 +1,50 @@
++import type { SkSurface } from "react-native-skia";
++import { getVideoCanvas } from "../canvas";
++
++const asSurface = (value: unknown) => value as SkSurface;
++
++describe("video surface checked submission contract", () => {
++  it("activates checked submissions before handing out a video canvas", () => {
++    const canvas = { dispose: jest.fn() };
++    const surface = {
++      enableCheckedSubmissions: jest.fn(),
++      getCanvas: jest.fn(() => canvas),
++    };
++    expect(getVideoCanvas(asSurface(surface))).toBe(canvas);
++    expect(
++      surface.enableCheckedSubmissions.mock.invocationCallOrder[0]!,
++    ).toBeLessThan(surface.getCanvas.mock.invocationCallOrder[0]!);
++  });
++
++  it("rejects an old native binary before obtaining any canvas", () => {
++    const surface = { getCanvas: jest.fn() };
++    expect(() => getVideoCanvas(asSurface(surface))).toThrow(
++      "Skia checked submission patch is missing from the native binary",
++    );
++    expect(surface.getCanvas).not.toHaveBeenCalled();
++  });
++
++  it("propagates a failed native opt-in without falling back to unchecked rendering", () => {
++    const failure = new Error(
++      "Checked GPU submissions require a Graphite surface",
++    );
++    const surface = {
++      enableCheckedSubmissions: jest.fn(() => {
++        throw failure;
++      }),
++      getCanvas: jest.fn(),
++    };
++    expect(() => getVideoCanvas(asSurface(surface))).toThrow(failure);
++    expect(surface.getCanvas).not.toHaveBeenCalled();
++  });
++
++  it("also rejects a canvas whose native deterministic disposal method is absent", () => {
++    const surface = {
++      enableCheckedSubmissions: jest.fn(),
++      getCanvas: jest.fn(() => ({})),
++    };
++    expect(() => getVideoCanvas(asSurface(surface))).toThrow(
++      "Skia canvas lifecycle patch is missing from the native binary",
++    );
++  });
++});
+--- a/src/__tests__/export.test.ts
++++ b/src/__tests__/export.test.ts
+@@ -1,3 +1,11 @@
++jest.mock("../gpuDevice", () => ({
++  getVideoGpuDevice: jest.fn(() => {
++    throw new Error("Unexpected native import in this test");
++  }),
++  createNativeVideoGpuFrame: jest.fn(),
++  nativeVideoTextureUsage: 20,
++}));
++
+ import { Platform } from "react-native";
+ import { Skia } from "react-native-skia";
+ import RNSkiaVideoModule from "../RNSkiaVideoModule";
+@@ -59,6 +67,7 @@
+   };
+   return {
+     id,
++    enableCheckedSubmissions: jest.fn(),
+     getCanvas: jest.fn(() => canvas),
+     flush: jest.fn(),
+     dispose: jest.fn(),
+--- a/src/__tests__/frameInterop.test.ts
++++ b/src/__tests__/frameInterop.test.ts
+@@ -14,12 +14,31 @@
+   dispose: jest.fn(),
+ };
+ const mockSurface = {
++  enableCheckedSubmissions: jest.fn(),
+   getCanvas: jest.fn(() => mockCanvas),
+   makeImageSnapshot: jest.fn(() => ({ dispose: jest.fn() })),
+   flush: jest.fn(),
+   dispose: jest.fn(),
+ };
+ const mockBorrowed = { dispose: jest.fn() };
++const mockUploadTexture = { nativePointer: 456n, destroy: jest.fn() };
++const mockNativeSource = {
++  width: 4,
++  height: 2,
++  pixelFormat: "bgra8",
++  release: jest.fn(),
++};
++const mockCopy = jest.fn();
++const mockCreateTexture = jest.fn(() => mockUploadTexture);
++const mockWrapNative = jest.fn((_pointer: bigint) => mockNativeSource);
++jest.mock("../gpuDevice", () => ({
++  getVideoGpuDevice: () => ({
++    createTexture: mockCreateTexture,
++    queue: { copyExternalImageToTexture: mockCopy },
++  }),
++  createNativeVideoGpuFrame: (pointer: bigint) => mockWrapNative(pointer),
++  nativeVideoTextureUsage: 20,
++}));
+ jest.mock("react-native-skia", () => ({
+   Skia: {
+     Surface: { MakeOffscreen: jest.fn(() => mockSurface) },
+@@ -27,7 +46,7 @@
+     Data: { fromBytes: jest.fn(() => ({ dispose: jest.fn() })) },
+     Image: {
+       MakeImage: jest.fn(() => ({ dispose: jest.fn() })),
+-      MakeImageFromNativeBuffer: jest.fn(() => mockBorrowed),
++      MakeImageFromGPUTexture: jest.fn(() => mockBorrowed),
+     },
+   },
+   BlendMode: { Clear: 0 },
+@@ -95,10 +114,22 @@
+     };
+     const image = imageFromVideoFrame(frame);
+     expect(image).not.toBeNull();
+-    expect(Skia.Image.MakeImageFromNativeBuffer).toHaveBeenCalledWith(123n);
++    expect(mockWrapNative).toHaveBeenCalledWith(123n);
++    expect(mockCopy).toHaveBeenCalledWith(
++      { source: mockNativeSource, rotation: 0, mirrored: false, flipY: false },
++      { texture: mockUploadTexture, premultipliedAlpha: false },
++      { width: 4, height: 2 },
++    );
++    expect(Skia.Image.MakeImageFromGPUTexture).toHaveBeenCalledWith(
++      mockUploadTexture,
++    );
+     expect(mockCanvas.drawImage).toHaveBeenCalledWith(mockBorrowed, 0, 0);
+     expect(mockSurface.flush).toHaveBeenCalledWith(true);
+     const flushOrder = mockSurface.flush.mock.invocationCallOrder[0]!;
++    expect(mockCopy.mock.invocationCallOrder[0]!).toBeLessThan(flushOrder);
++    expect(flushOrder).toBeLessThan(
++      mockNativeSource.release.mock.invocationCallOrder[0]!,
++    );
+     expect(flushOrder).toBeLessThan(
+       mockBorrowed.dispose.mock.invocationCallOrder[0]!,
+     );
+@@ -156,7 +187,7 @@
+     expect(() => imageFromVideoFrame(frame)).toThrow("Staging budget exceeded");
+     expect(frame.dispose).toHaveBeenCalledTimes(1);
+     expect(release).toHaveBeenCalledTimes(1);
+-    expect(Skia.Image.MakeImageFromNativeBuffer).not.toHaveBeenCalled();
++    expect(Skia.Image.MakeImageFromGPUTexture).not.toHaveBeenCalled();
+   });
+ 
+   it("releases failed image creation storage, reservation, and native lease", () => {
+@@ -277,6 +308,7 @@
+     expect(() => ownVideoFrames({ pending })).toThrow("GPU fence failed");
+     const snapshot = mockSurface.makeImageSnapshot.mock.results[0]?.value;
+     expect(pending.dispose).not.toHaveBeenCalled();
++    expect(mockNativeSource.release).not.toHaveBeenCalled();
+     expect(mockBorrowed.dispose).not.toHaveBeenCalled();
+     expect(snapshot.dispose).not.toHaveBeenCalled();
+     expect(release).not.toHaveBeenCalled();
+@@ -288,7 +320,7 @@
+     expect(pending.dispose).toHaveBeenCalledTimes(1);
+     expect(mockBorrowed.dispose).toHaveBeenCalledTimes(1);
+     expect(snapshot.dispose).toHaveBeenCalledTimes(1);
+-    expect(release).toHaveBeenCalledTimes(2);
++    expect(release).toHaveBeenCalledTimes(3);
+     const successfulFence = mockSurface.flush.mock.invocationCallOrder[2]!;
+     expect(successfulFence).toBeLessThan(
+       (pending.dispose as jest.Mock).mock.invocationCallOrder[0]!,
+@@ -425,4 +457,216 @@
+     );
+     expect(alias.dispose).toHaveBeenCalledTimes(1);
+   });
++
++  it("reuses one bounded GPU upload target and preserves the previous immutable snapshot", () => {
++    const nativeFrame = (id: number): VideoFrame => ({
++      ...rgbaFrame(id),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    });
++    const first = imageFromVideoFrame(nativeFrame(1))!;
++    imageFromVideoFrame(nativeFrame(2));
++    expect(mockCreateTexture).toHaveBeenCalledTimes(1);
++    expect(mockCreateTexture).toHaveBeenCalledWith({
++      size: { width: 4, height: 2 },
++      format: "bgra8unorm",
++      usage: 20,
++      label: "video native frame upload",
++    });
++    expect(
++      reserve.mock.calls.filter(
++        (call) => call[1] === "native frame WebGPU upload texture",
++      ),
++    ).toEqual([[32, "native frame WebGPU upload texture"]]);
++    expect(mockCopy).toHaveBeenCalledTimes(2);
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(2);
++    expect(first.dispose).toHaveBeenCalledTimes(1);
++    expect(mockUploadTexture.destroy).not.toHaveBeenCalled();
++    clearVideoFrameImages(true);
++    expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(1);
++  });
++
++  it("releases the extra wrapper and original lease if a native copy throws after submission", () => {
++    const failure = new Error("Native blit failed");
++    mockCopy.mockImplementationOnce(() => {
++      throw failure;
++    });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(failure);
++    expect(mockSurface.flush).toHaveBeenCalledWith(true);
++    const fence = mockSurface.flush.mock.invocationCallOrder[0]!;
++    expect(fence).toBeLessThan(
++      mockNativeSource.release.mock.invocationCallOrder[0]!,
++    );
++    expect(fence).toBeLessThan(
++      (frame.dispose as jest.Mock).mock.invocationCallOrder[0]!,
++    );
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(1);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++  });
++
++  it("retains both native leases if a failed copy also cannot drain", () => {
++    mockCopy.mockImplementationOnce(() => {
++      throw new Error("Native blit failed");
++    });
++    mockSurface.flush.mockImplementationOnce(() => {
++      throw new Error("Drain failed");
++    });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow("Native blit failed");
++    expect(mockNativeSource.release).not.toHaveBeenCalled();
++    expect(frame.dispose).not.toHaveBeenCalled();
++    expect(mockUploadTexture.destroy).not.toHaveBeenCalled();
++    expect(() => imageFromVideoFrame(rgbaFrame(2))).toThrow("could not drain");
++    clearVideoFrameImages(true);
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(1);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++    expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(1);
++  });
++
++  it("rejects a mismatched native frame before submitting any copy and closes its wrapper", () => {
++    const mismatch = { ...mockNativeSource, width: 8, release: jest.fn() };
++    mockWrapNative.mockReturnValueOnce(mismatch);
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(
++      "dimensions or BGRA layout mismatch",
++    );
++    expect(mockCopy).not.toHaveBeenCalled();
++    expect(mismatch.release).toHaveBeenCalledTimes(1);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++  });
++
++  it("retains an unsuccessfully closed native wrapper without re-disposing its Skia image", () => {
++    const failure = new Error("Native wrapper release failed");
++    mockNativeSource.release
++      .mockImplementationOnce(() => {
++        throw failure;
++      })
++      .mockImplementationOnce(() => {
++        throw failure;
++      });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(failure);
++    expect(frame.dispose).not.toHaveBeenCalled();
++    expect(mockBorrowed.dispose).toHaveBeenCalledTimes(1);
++    clearVideoFrameImages(true);
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(3);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++    expect(mockBorrowed.dispose).toHaveBeenCalledTimes(1);
++  });
++
++  it("cleans staging allocations and the original lease if the upload texture allocation fails", () => {
++    mockCreateTexture.mockImplementationOnce(() => {
++      throw new Error("Texture allocation failed");
++    });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(
++      "Texture allocation failed",
++    );
++    expect(mockWrapNative).not.toHaveBeenCalled();
++    expect(mockNativeSource.release).not.toHaveBeenCalled();
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
++    expect(mockCanvas.dispose).toHaveBeenCalledTimes(1);
++    expect(release).toHaveBeenCalledTimes(3);
++  });
++
++  it("retries only unfinished scratch texture teardown when destroy fails", () => {
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    imageFromVideoFrame(frame);
++    mockUploadTexture.destroy.mockImplementationOnce(() => {
++      throw new Error("Texture destroy failed");
++    });
++    expect(() => clearVideoFrameImages(true)).toThrow("Texture destroy failed");
++    expect(release).toHaveBeenCalledTimes(2);
++    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
++    clearVideoFrameImages(true);
++    expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(2);
++    expect(release).toHaveBeenCalledTimes(3);
++    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
++  });
++
++  it("submits a Skia marker before the failure fence if native copying throws before any draw", () => {
++    mockCopy.mockImplementationOnce(() => {
++      throw new Error("Copy failed before drawing");
++    });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(
++      "Copy failed before drawing",
++    );
++    expect(mockCanvas.drawImage).not.toHaveBeenCalled();
++    expect(mockCanvas.drawColor).toHaveBeenCalledTimes(1);
++    const marker = mockCanvas.drawColor.mock.invocationCallOrder[0]!;
++    const fence = mockSurface.flush.mock.invocationCallOrder[0]!;
++    expect(mockCopy.mock.invocationCallOrder[0]!).toBeLessThan(marker);
++    expect(marker).toBeLessThan(fence);
++    expect(fence).toBeLessThan(
++      mockNativeSource.release.mock.invocationCallOrder[0]!,
++    );
++  });
++
++  it("retains native leases if both the initial draw and the explicit drain marker fail", () => {
++    const failure = new Error("Stage drawing failed");
++    mockCanvas.drawColor
++      .mockImplementationOnce(() => {
++        throw failure;
++      })
++      .mockImplementationOnce(() => {
++        throw new Error("Drain marker failed");
++      });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow(failure);
++    expect(mockCopy).toHaveBeenCalledTimes(1);
++    expect(mockSurface.flush).not.toHaveBeenCalled();
++    expect(mockNativeSource.release).not.toHaveBeenCalled();
++    expect(frame.dispose).not.toHaveBeenCalled();
++    clearVideoFrameImages(true);
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(1);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++  });
++
++  it("does not close either lease when the same pending native frame is imported again", () => {
++    mockSurface.flush
++      .mockImplementationOnce(() => {
++        throw new Error("GPU fence failed");
++      })
++      .mockImplementationOnce(() => {
++        throw new Error("GPU retry failed");
++      });
++    const frame: VideoFrame = {
++      ...rgbaFrame(),
++      texture: { kind: "native-buffer", nativeBuffer: 123n },
++    };
++    expect(() => imageFromVideoFrame(frame)).toThrow("GPU fence failed");
++    expect(() => imageFromVideoFrame(frame)).toThrow("could not drain");
++    expect(mockCopy).toHaveBeenCalledTimes(1);
++    expect(mockNativeSource.release).not.toHaveBeenCalled();
++    expect(frame.dispose).not.toHaveBeenCalled();
++    clearVideoFrameImages(true);
++    expect(mockNativeSource.release).toHaveBeenCalledTimes(1);
++    expect(frame.dispose).toHaveBeenCalledTimes(1);
++  });
+ });
+--- a/src/__tests__/gpu.test.ts
++++ b/src/__tests__/gpu.test.ts
+@@ -4,6 +4,7 @@
+ 
+ const mockCanvas = { dispose: jest.fn() };
+ const mockSurface = {
++  enableCheckedSubmissions: jest.fn(),
+   getCanvas: jest.fn(() => mockCanvas),
+   flush: jest.fn(),
+   dispose: jest.fn(),
+@@ -20,8 +21,8 @@
+ jest.mock("react-native-skia", () => ({
+   Skia: {
+     getNativeDevice: jest.fn(() => 99n),
+-    Surface: { MakeFromNativeTexture: jest.fn(() => mockSurface) },
+-    Image: { MakeImageFromNativeTexture: jest.fn(() => mockImage) },
++    Surface: { MakeFromGPUTexture: jest.fn(() => mockSurface) },
++    Image: { MakeImageFromGPUTexture: jest.fn(() => mockImage) },
+   },
+ }));
+ jest.mock("react-native-webgpu", () => ({
+@@ -62,10 +63,10 @@
+   mockDevice.createTexture.mockReset().mockImplementation(mockTexture);
+   mockDevice.createBuffer.mockReset().mockImplementation(mockBuffer);
+   mockDevice.queue.onSubmittedWorkDone.mockReset().mockResolvedValue(undefined);
+-  (Skia.Surface.MakeFromNativeTexture as jest.Mock)
++  (Skia.Surface.MakeFromGPUTexture as jest.Mock)
+     .mockReset()
+     .mockReturnValue(mockSurface);
+-  (Skia.Image.MakeImageFromNativeTexture as jest.Mock)
++  (Skia.Image.MakeImageFromGPUTexture as jest.Mock)
+     .mockReset()
+     .mockReturnValue(mockImage);
+   mockSurface.getCanvas.mockReset().mockReturnValue(mockCanvas);
+@@ -89,7 +90,9 @@
+         format: "rgba8unorm",
+       }),
+     );
+-    expect(Skia.Image.MakeImageFromNativeTexture).toHaveBeenCalledWith(123n);
++    expect(Skia.Image.MakeImageFromGPUTexture).toHaveBeenCalledWith(
++      expect.objectContaining({ nativePointer: 123n }),
++    );
+     expect(target.image).toBe(mockImage);
+     await scope.dispose();
+     await second.dispose();
+@@ -149,7 +152,9 @@
+       scope.createTexture({ width: 4, height: 2, skia: "surface" }),
+     ).toThrow("canvas creation failed");
+     const texture = mockDevice.createTexture.mock.results[0]?.value;
+-    expect(Skia.Surface.MakeFromNativeTexture).toHaveBeenCalledWith(123n);
++    expect(Skia.Surface.MakeFromGPUTexture).toHaveBeenCalledWith(
++      expect.objectContaining({ nativePointer: 123n }),
++    );
+     expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
+     expect(texture.destroy).toHaveBeenCalledTimes(1);
+     expect(release).toHaveBeenCalledTimes(1);
+@@ -265,7 +270,7 @@
+   it("retains only the remaining resources when failed construction cleanup needs a retry", async () => {
+     const scope = createVideoGpuScope();
+     const failure = new Error("Skia surface creation failed");
+-    (Skia.Surface.MakeFromNativeTexture as jest.Mock).mockImplementationOnce(
++    (Skia.Surface.MakeFromGPUTexture as jest.Mock).mockImplementationOnce(
+       () => {
+         throw failure;
+       },
+--- /dev/null
++++ b/src/__tests__/gpuDevice.test.ts
+@@ -0,0 +1,49 @@
++import { importDevice, installWebGPU } from "react-native-webgpu";
++
++const mockDevice = { destroy: jest.fn() };
++jest.mock("react-native-skia", () => ({
++  Skia: { getNativeDevice: jest.fn(() => 55n) },
++}));
++jest.mock("react-native-webgpu", () => ({
++  importDevice: jest.fn(() => mockDevice),
++  installWebGPU: jest.fn(),
++  GPUTextureUsage: { RENDER_ATTACHMENT: 16, TEXTURE_BINDING: 4 },
++}));
++
++afterEach(() => {
++  delete (globalThis as unknown as Record<string, unknown>).RNWebGPU;
++  jest.clearAllMocks();
++});
++
++describe("shared video GPU runtime inputs", () => {
++  it("keeps the RN native object captured even when the consuming runtime has no RNWebGPU global", () => {
++    const source = { release: jest.fn() };
++    const bridge = { createVideoFrameFromNativeBuffer: jest.fn(() => source) };
++    (globalThis as unknown as Record<string, unknown>).RNWebGPU = bridge;
++    jest.isolateModules(() => {
++      const gpu = require("../gpuDevice") as typeof import("../gpuDevice");
++      delete (globalThis as unknown as Record<string, unknown>).RNWebGPU;
++      expect(gpu.createNativeVideoGpuFrame(123n)).toBe(source);
++      expect(bridge.createVideoFrameFromNativeBuffer).toHaveBeenCalledWith(
++        123n,
++      );
++      expect(gpu.getVideoGpuDevice()).toBe(mockDevice);
++      expect(gpu.nativeVideoTextureUsage).toBe(20);
++      expect(importDevice).toHaveBeenCalledWith(55n);
++      expect(installWebGPU).toHaveBeenCalledTimes(1);
++      expect(mockDevice.destroy).not.toHaveBeenCalled();
++    });
++    // This checks JS capture only; native Worklets boxing/prototype restoration
++    // still requires an actual app runtime and is not claimed by this test.
++  });
++
++  it("fails clearly when the native wrapper bridge was unavailable at initialization", () => {
++    delete (globalThis as unknown as Record<string, unknown>).RNWebGPU;
++    jest.isolateModules(() => {
++      const gpu = require("../gpuDevice") as typeof import("../gpuDevice");
++      expect(() => gpu.createNativeVideoGpuFrame(123n)).toThrow(
++        "React Native WebGPU is missing from the native app",
++      );
++    });
++  });
++});
+--- a/src/__tests__/hooks.test.tsx
++++ b/src/__tests__/hooks.test.tsx
+@@ -1,3 +1,11 @@
++jest.mock("../gpuDevice", () => ({
++  getVideoGpuDevice: jest.fn(() => {
++    throw new Error("Unexpected native import in this test");
++  }),
++  createNativeVideoGpuFrame: jest.fn(),
++  nativeVideoTextureUsage: 20,
++}));
++
+ import { act, Suspense, type ReactNode } from "react";
+ import { PixelRatio } from "react-native";
+ import { create, type ReactTestRenderer } from "react-test-renderer";
+@@ -89,10 +97,10 @@
+ );
+ 
+ const mockSurface = {
++  enableCheckedSubmissions: jest.fn(),
+   getCanvas: jest.fn(() => mockCanvas),
+   flush: jest.fn(),
+   makeImageSnapshot: mockMakeSnapshot,
+-  getNativeTextureUnstable: jest.fn(() => ({ kind: "texture" })),
+   dispose: jest.fn(),
+ };
+ 
+@@ -110,7 +118,7 @@
+       ),
+     },
+     Image: {
+-      MakeImageFromNativeTextureUnstable: jest.fn(
++      MakeImageFromGPUTexture: jest.fn(
+         (
+           _texture: unknown,
+           _width: number,
+@@ -137,7 +145,7 @@
+ const createVideoPlayer = RNSkiaVideoModule.createVideoPlayer as jest.Mock;
+ const createFramesExtractor =
+   RNSkiaVideoModule.createVideoCompositionFramesExtractor as jest.Mock;
+-const makeImage = Skia.Image.MakeImageFromNativeTextureUnstable as jest.Mock;
++const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+ const makeOffscreen = Skia.Surface.MakeOffscreen as jest.Mock;
+ /** The player's own surfaces, without the warm-up one. */
+ const surfaceCalls = () =>
+--- a/src/__tests__/index.test.tsx
++++ b/src/__tests__/index.test.tsx
+@@ -1,25 +1,33 @@
+-import { Platform } from 'react-native';
+-import * as api from '../index';
++jest.mock("../gpuDevice", () => ({
++  getVideoGpuDevice: jest.fn(() => {
++    throw new Error("Unexpected native import in this test");
++  }),
++  createNativeVideoGpuFrame: jest.fn(),
++  nativeVideoTextureUsage: 20,
++}));
++
++import { Platform } from "react-native";
++import * as api from "../index";
+ 
+ // Only the module surface matters here: the hooks are not rendered.
+-jest.mock('react-native-reanimated', () => ({
++jest.mock("react-native-reanimated", () => ({
+   useSharedValue: jest.fn(),
+   useFrameCallback: jest.fn(),
+   runOnUI: jest.fn(),
+ }));
+-jest.mock('react-native-worklets', () => ({
++jest.mock("react-native-worklets", () => ({
+   createWorkletRuntime: jest.fn(),
+   runOnRuntime: jest.fn(),
+   scheduleOnRN: jest.fn(),
+   createSynchronizable: jest.fn(),
+ }));
+-jest.mock('react-native-skia', () => ({
++jest.mock("react-native-skia", () => ({
+   Skia: {},
+   BlendMode: {},
+   ColorType: { RGBA_8888: 4 },
+   AlphaType: { Premul: 1 },
+ }));
+-jest.mock('../RNSkiaVideoModule', () => ({
++jest.mock("../RNSkiaVideoModule", () => ({
+   __esModule: true,
+   default: {
+     frameProtocolVersion: 1,
+@@ -29,26 +37,26 @@
+   },
+ }));
+ 
+-describe('public API', () => {
+-  it('exposes the hooks and the export function', () => {
+-    expect(typeof api.useVideoPlayer).toBe('function');
+-    expect(typeof api.useVideoCompositionPlayer).toBe('function');
+-    expect(typeof api.exportVideoComposition).toBe('function');
+-    expect(typeof api.isEncodingSupported).toBe('function');
++describe("public API", () => {
++  it("exposes the hooks and the export function", () => {
++    expect(typeof api.useVideoPlayer).toBe("function");
++    expect(typeof api.useVideoCompositionPlayer).toBe("function");
++    expect(typeof api.exportVideoComposition).toBe("function");
++    expect(typeof api.isEncodingSupported).toBe("function");
+   });
+ 
+-  it('only offers the codec capability helpers on Android', () => {
++  it("only offers the codec capability helpers on Android", () => {
+     // The React Native jest preset runs as iOS.
+-    expect(Platform.OS).toBe('ios');
++    expect(Platform.OS).toBe("ios");
+     expect(() => api.getValidEncoderConfigurations(1920, 1080, 30, 1)).toThrow(
+-      'only available on Android'
++      "only available on Android",
+     );
+-    expect(() => api.getDecodingCapabilitiesFor('video/avc')).toThrow(
+-      'only available on Android'
++    expect(() => api.getDecodingCapabilitiesFor("video/avc")).toThrow(
++      "only available on Android",
+     );
+   });
+ 
+-  it('answers codec support on both platforms', () => {
+-    expect(api.isEncodingSupported('hevc')).toBe(true);
++  it("answers codec support on both platforms", () => {
++    expect(api.isEncodingSupported("hevc")).toBe(true);
+   });
+ });
+--- a/src/__tests__/videoFrameImage.test.ts
++++ b/src/__tests__/videoFrameImage.test.ts
+@@ -1,3 +1,11 @@
++jest.mock("../gpuDevice", () => ({
++  getVideoGpuDevice: jest.fn(() => {
++    throw new Error("Unexpected native import in this test");
++  }),
++  createNativeVideoGpuFrame: jest.fn(),
++  nativeVideoTextureUsage: 20,
++}));
++
+ import { Skia } from "react-native-skia";
+ import { drawVideoFrame, makeVideoFrameImage } from "../videoFrameImage";
+ import type { VideoFrame } from "../types";
+@@ -5,7 +13,7 @@
+ jest.mock("react-native-skia", () => ({
+   Skia: {
+     Image: {
+-      MakeImageFromNativeTextureUnstable: jest.fn(() => {
++      MakeImageFromGPUTexture: jest.fn(() => {
+         throw new Error("Legacy imports cannot run under Graphite");
+       }),
+     },
+@@ -18,7 +26,7 @@
+   default: { frameProtocolVersion: 1 },
+ }));
+ 
+-const makeImage = Skia.Image.MakeImageFromNativeTextureUnstable as jest.Mock;
++const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+ 
+ const canvas = () => {
+   const calls: unknown[][] = [];
+--- a/src/canvas.ts
++++ b/src/canvas.ts
+@@ -3,6 +3,15 @@
+ /** Fail early when JS was patched but the installed native binary was not rebuilt. */
+ export const getVideoCanvas = (surface: SkSurface): SkCanvas => {
+   "worklet";
++  const checked = surface as SkSurface & {
++    enableCheckedSubmissions?: () => void;
++  };
++  if (typeof checked.enableCheckedSubmissions !== "function") {
++    throw new Error(
++      "Skia checked submission patch is missing from the native binary. Apply the patch and rebuild the native app.",
++    );
++  }
++  checked.enableCheckedSubmissions();
+   const canvas = surface.getCanvas();
+   if (typeof canvas.dispose !== "function") {
+     throw new Error(
+--- a/src/exportVideoComposition.ts
++++ b/src/exportVideoComposition.ts
+@@ -68,7 +68,7 @@
+   }) => VideoFrameProcessor | Promise<VideoFrameProcessor>;
+ };
+ 
+-// Native Skia 3.0.3 already accepts destination/stride in readPixels; its
++// Native Skia 3.0.6 accepts destination/stride in readPixels; its
+ // published Canvas type currently omits these arguments. Use only a private,
+ // full-length, zero-offset Uint8Array (the native implementation ignores offsets).
+ type ReadbackCanvas = {
+@@ -358,7 +358,7 @@
+                     throw new Error("Video export pixel readback failed");
+                   }
+                   // The buffer is consumed synchronously by a bounded native
+-                  // pool. No Skia.NativeBuffer.MakeFromImage allocation/leak.
++                  // pool. Export continues to use readback, with no native-surface interop.
+                   const storage =
+                     pixels.byteOffset === 0 &&
+                     pixels.buffer.byteLength === pixels.byteLength
+--- a/src/frameInterop.ts
++++ b/src/frameInterop.ts
+@@ -2,6 +2,12 @@
+ import { AlphaType, BlendMode, ColorType, Skia } from "react-native-skia";
+ import type { SkCanvas, SkImage, SkSurface } from "react-native-skia";
+ import type { VideoFrame } from "./types";
++import type { NativeVideoFrame } from "react-native-webgpu";
++import {
++  getVideoGpuDevice,
++  createNativeVideoGpuFrame,
++  nativeVideoTextureUsage,
++} from "./gpuDevice";
+ import {
+   frameByteSize,
+   releaseVideoMemory,
+@@ -20,6 +26,7 @@
+   frame: VideoFrame;
+   needsDrain: boolean;
+   sourceReleased: boolean;
++  nativeSource?: NativeVideoFrame | null;
+ };
+ type Cache = {
+   images: Map<number, Entry>;
+@@ -28,6 +35,8 @@
+   width: number;
+   height: number;
+   stageReservation: number;
++  uploadTexture: GPUTexture | null;
++  uploadReservation: number;
+   pendingSources: PendingSource[];
+ };
+ 
+@@ -44,6 +53,8 @@
+       width: 0,
+       height: 0,
+       stageReservation: 0,
++      uploadTexture: null,
++      uploadReservation: 0,
+       pendingSources: [],
+     };
+   }
+@@ -70,7 +81,22 @@
+   cache.stage = null;
+   releaseVideoMemory(cache.stageReservation);
+   cache.stageReservation = 0;
++  cache.uploadTexture?.destroy();
++  cache.uploadTexture = null;
++  releaseVideoMemory(cache.uploadReservation);
++  cache.uploadReservation = 0;
+   cache.width = cache.height = 0;
++};
++
++/** Put a Graphite submission after a possibly submitted external WebGPU copy.
++ * A failing copy/draw may have recorded no Skia work, so flushing an otherwise
++ * idle surface alone is not a proof that the external queue work completed. */
++const drainNativeCopies = (cache: Cache): void => {
++  "worklet";
++  if (!cache.stage || !cache.canvas)
++    throw new Error("Video import drain surface is unavailable");
++  cache.canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
++  cache.stage.flush(true);
+ };
+ 
+ /** Clear a runtime's imported images after ending all its producers.
+@@ -82,9 +108,7 @@
+   if (cache.pendingSources.length) {
+     // A failed drain retains leases; only a successful fence can release them.
+     if (cache.pendingSources.some((source) => source.needsDrain)) {
+-      if (!cache.stage)
+-        throw new Error("Video import drain surface is unavailable");
+-      cache.stage.flush(true);
++      drainNativeCopies(cache);
+       for (const source of cache.pendingSources) source.needsDrain = false;
+     }
+     while (cache.pendingSources.length) {
+@@ -93,6 +117,8 @@
+       source.image = null;
+       source.owned?.dispose();
+       source.owned = null;
++      source.nativeSource?.release();
++      source.nativeSource = null;
+       if (!source.sourceReleased) {
+         source.frame.dispose?.();
+         source.sourceReleased = true;
+@@ -125,9 +151,10 @@
+   if (cache.images.size === 0) clearVideoFrameImages(true);
+ };
+ 
+-/** Returns immutable, owned pixels. Native-buffer imports are borrowed;
+- * copying on the GPU and waiting before releasing the source prevents the
+- * decoder from recycling an IOSurface under Graphite's deferred renderer. */
++/** Returns immutable, owned pixels. WebGPU copies native decoded buffers
++ * into one reusable GPU texture, then Skia snapshots an owned surface. Waiting
++ * for completion before releasing both native leases prevents the decoder from
++ * recycling its IOSurface underneath the submitted GPU work. */
+ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
+   "worklet";
+   const cache = getCache();
+@@ -139,14 +166,29 @@
+   let reservation = 0;
+   let image: SkImage | null = null;
+   let borrowed: SkImage | null = null;
++  let nativeSource: NativeVideoFrame | null = null;
+   let sourceDrained = false;
+   let releaseSource = true;
+   let importFailed = false;
+   try {
+-    if (cache.pendingSources.length)
++    if (cache.pendingSources.length) {
++      // A caller may retry the same native frame (or an alias of its stable
++      // identity). Its existing pending entry still owns both leases; do not
++      // let this rejected re-entry revoke the original decoder reservation.
++      if (
++        cache.pendingSources.some(
++          (source) =>
++            source.frame === frame ||
++            (frame.id !== undefined &&
++              source.frame.id === frame.id &&
++              source.frame.producerId === frame.producerId),
++        )
++      )
++        releaseSource = false;
+       throw new Error(
+         "Previous video import could not drain its GPU work; restart the native runtime",
+       );
++    }
+     const texture = frame.texture as FrameTexture | null | undefined;
+     if (!texture) return null;
+     if (texture.kind === "skia-image") return texture.image;
+@@ -198,6 +240,7 @@
+       if (
+         !cache.stage ||
+         !cache.canvas ||
++        !cache.uploadTexture ||
+         cache.width !== frame.width ||
+         cache.height !== frame.height
+       ) {
+@@ -212,6 +255,20 @@
+           if (!cache.stage)
+             throw new Error("Cannot allocate video staging surface");
+           cache.canvas = getVideoCanvas(cache.stage);
++          cache.uploadReservation = reserveVideoMemory(
++            bytes,
++            "native frame WebGPU upload texture",
++          );
++          // One scratch texture per runtime, reused only after the previous
++          // copy and immutable snapshot have completed on the shared queue.
++          // WebGPU .12's native-frame blit needs RENDER_ATTACHMENT; Skia samples
++          // it with TEXTURE_BINDING. No JS pixel storage is allocated.
++          cache.uploadTexture = getVideoGpuDevice().createTexture({
++            size: { width: frame.width, height: frame.height },
++            format: "bgra8unorm",
++            usage: nativeVideoTextureUsage,
++            label: "video native frame upload",
++          });
+           cache.width = frame.width;
+           cache.height = frame.height;
+         } catch (error) {
+@@ -225,7 +282,23 @@
+           throw error;
+         }
+       }
+-      borrowed = Skia.Image.MakeImageFromNativeBuffer(texture.nativeBuffer);
++      borrowed = Skia.Image.MakeImageFromGPUTexture(cache.uploadTexture!);
++      nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
++      if (
++        nativeSource.width !== frame.width ||
++        nativeSource.height !== frame.height ||
++        nativeSource.pixelFormat !== "bgra8"
++      ) {
++        throw new Error(
++          "Native video buffer dimensions or BGRA layout mismatch",
++        );
++      }
++      getVideoGpuDevice().queue.copyExternalImageToTexture(
++        // Keep decoded orientation: drawVideoFrame applies rotation once.
++        { source: nativeSource, rotation: 0, mirrored: false, flipY: false },
++        { texture: cache.uploadTexture!, premultipliedAlpha: false },
++        { width: frame.width, height: frame.height },
++      );
+       cache.canvas!.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
+       cache.canvas!.drawImage(borrowed, 0, 0);
+       // Snapshot submits the recording containing the imported source.
+@@ -239,6 +312,8 @@
+     // entry behind when the caller receives an import error.
+     borrowed?.dispose();
+     borrowed = null;
++    nativeSource?.release();
++    nativeSource = null;
+     frame.dispose?.();
+     releaseSource = false;
+     clearEntry(cache, key);
+@@ -248,9 +323,10 @@
+     importFailed = true;
+     if (borrowed && !sourceDrained) {
+       try {
+-        cache.stage?.flush(true);
++        drainNativeCopies(cache);
+       } catch {
+         cache.pendingSources.push({
++          nativeSource,
+           image: borrowed,
+           owned: image,
+           reservation,
+@@ -259,6 +335,7 @@
+           sourceReleased: false,
+         });
+         borrowed = null;
++        nativeSource = null;
+         image = null;
+         reservation = 0;
+         releaseSource = false;
+@@ -270,6 +347,7 @@
+       releaseVideoMemory(reservation);
+     } catch {
+       cache.pendingSources.push({
++        nativeSource,
+         image: borrowed,
+         owned: image,
+         reservation,
+@@ -278,6 +356,7 @@
+         sourceReleased: false,
+       });
+       borrowed = null;
++      nativeSource = null;
+       releaseSource = false;
+     }
+     throw error;
+@@ -286,9 +365,12 @@
+       try {
+         borrowed?.dispose();
+         borrowed = null;
++        nativeSource?.release();
++        nativeSource = null;
+         frame.dispose?.();
+       } catch (error) {
+         cache.pendingSources.push({
++          nativeSource,
+           image: borrowed,
+           owned: null,
+           reservation: 0,
+--- a/src/gpu.ts
++++ b/src/gpu.ts
+@@ -1,24 +1,11 @@
+ /// <reference types="@webgpu/types" />
+ import { Skia } from "react-native-skia";
+ import type { SkCanvas, SkImage, SkSurface } from "react-native-skia";
+-import {
+-  GPUTextureUsage,
+-  importDevice,
+-  installWebGPU,
+-} from "react-native-webgpu";
++import { GPUTextureUsage } from "react-native-webgpu";
+ import { getVideoCanvas } from "./canvas";
+ import { releaseVideoMemory, reserveVideoMemory } from "./memory";
+-
+-// This optional entry initializes on RN. GPUDevice's native Worklets serializer
+-// carries it into UI/export runtimes. Never destroy Skia's shared device and
+-// never share a command encoder between runtimes.
+-const sharedDevice = importDevice(Skia.getNativeDevice());
+-
+-export const getVideoGpuDevice = (): GPUDevice => {
+-  "worklet";
+-  installWebGPU();
+-  return sharedDevice;
+-};
++import { getVideoGpuDevice } from "./gpuDevice";
++export { getVideoGpuDevice } from "./gpuDevice";
+ 
+ export type VideoGpuTextureFormat =
+   | "rgba8unorm"
+@@ -176,14 +163,10 @@
+         label: opts.label,
+       });
+       if (skia === "surface") {
+-        resource.surface = Skia.Surface.MakeFromNativeTexture(
+-          resource.texture.nativePointer,
+-        );
++        resource.surface = Skia.Surface.MakeFromGPUTexture(resource.texture);
+         resource.canvas = getVideoCanvas(resource.surface);
+       } else if (skia === "image") {
+-        resource.image = Skia.Image.MakeImageFromNativeTexture(
+-          resource.texture.nativePointer,
+-        );
++        resource.image = Skia.Image.MakeImageFromGPUTexture(resource.texture);
+       }
+       resources.push(resource);
+       return {
+--- /dev/null
++++ b/src/gpuDevice.ts
+@@ -0,0 +1,33 @@
++/// <reference types="@webgpu/types" />
++import { Skia } from "react-native-skia";
++import {
++  GPUTextureUsage,
++  importDevice,
++  installWebGPU,
++} from "react-native-webgpu";
++import type { NativeVideoFrame } from "react-native-webgpu";
++
++// Evaluate on the RN runtime. NativeObject serializers carry these objects to
++// each consuming worklet; installWebGPU does not install RNWebGPU there.
++// Never destroy the shared Graphite device or call methods across runtimes on
++// a command encoder. Each caller owns its own per-runtime import resources.
++const sharedDevice = importDevice(Skia.getNativeDevice());
++const nativeWebGPU = globalThis.RNWebGPU;
++
++export const getVideoGpuDevice = (): GPUDevice => {
++  "worklet";
++  installWebGPU();
++  return sharedDevice;
++};
++
++export const createNativeVideoGpuFrame = (
++  pointer: bigint,
++): NativeVideoFrame => {
++  "worklet";
++  if (!nativeWebGPU)
++    throw new Error("React Native WebGPU is missing from the native app");
++  return nativeWebGPU.createVideoFrameFromNativeBuffer(pointer);
++};
++
++export const nativeVideoTextureUsage =
++  GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING;
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -40,7 +40,8 @@
+ export type BufferingRange = { start: number; duration: number };
+ 
+ /** Compatibility preference retained from Skia Video. This reference
+- * Graphite backend uses bounded, owned snapshots for both values. Neither
++ * Graphite backend uses bounded, owned snapshots for both values. Native
++ * buffers first pass through a reusable WebGPU upload texture. Neither
+  * value exposes the legacy Metal/OpenGL texture lifetime contract. */
+ export type VideoTextureMode = "copy" | "direct";
+ 
+--- a/src/videoCompositionPlayer.ts
++++ b/src/videoCompositionPlayer.ts
+@@ -333,11 +333,8 @@
+       const pixelWidth = Math.floor(width * pixelRatio);
+       const pixelHeight = Math.floor(height * pixelRatio);
+ 
+-      // A player inside a view that has not been laid out yet is called with a
+-      // zero — or NaN — size. MakeOffscreen accepts it and hands back a surface
+-      // whose texture is null, which aborts the process inside
+-      // MakeImageFromNativeTextureUnstable rather than throwing. Waiting for a
+-      // real size costs one frame and cannot crash.
++      // Layout can report zero or NaN before the player is measured. Avoid
++      // native surface allocation until the dimensions are valid.
+       if (
+         !(pixelWidth > 0) ||
+         !(pixelHeight > 0) ||

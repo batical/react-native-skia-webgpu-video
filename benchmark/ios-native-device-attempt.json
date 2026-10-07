@@ -1,0 +1,85 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "deviceName": "iPhone 15 Pro",
+        "modelName": "iPhone 15 Pro",
+        "osBuildNumber": "24A446",
+        "osVersion": "27.0.1",
+        "platform": "iOS"
+      },
+      "expectedFailures": 0,
+      "failedTests": 5,
+      "passedTests": 45,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "ReactNativeSkiaWebGPUVideoExample · Built with macOS 27.0.1",
+  "expectedFailures": 0,
+  "failedTests": 5,
+  "finishTime": 1791297991.071,
+  "passedTests": 45,
+  "result": "Failed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1791297910.534,
+  "statistics": [],
+  "testFailures": [
+    {
+      "failureText": "(([self seek:t]) equal to (clip.frameAt(t, 30))) failed: (\"0\") is not equal to (\"3\") - at 0.1000s",
+      "targetName": "ReactNativeSkiaWebGPUVideoExampleTests",
+      "testIdentifier": 21,
+      "testIdentifierString": "ItemDecoderPreviewTests/testAForwardScrubReadsTheReaderOn",
+      "testIdentifierURL": "test://com.apple.xcode/ReactNativeSkiaWebGPUVideoExample/ReactNativeSkiaWebGPUVideoExampleTests/ItemDecoderPreviewTests/testAForwardScrubReadsTheReaderOn",
+      "testName": "testAForwardScrubReadsTheReaderOn"
+    },
+    {
+      "failureText": "failed - c at 4.200s shows frame -2, expected 66",
+      "targetName": "ReactNativeSkiaWebGPUVideoExampleTests",
+      "testIdentifier": 46,
+      "testIdentifierString": "PreviewExtractorTests/testAScrubSettlesOnTheRightFrame",
+      "testIdentifierURL": "test://com.apple.xcode/ReactNativeSkiaWebGPUVideoExample/ReactNativeSkiaWebGPUVideoExampleTests/PreviewExtractorTests/testAScrubSettlesOnTheRightFrame",
+      "testName": "testAScrubSettlesOnTheRightFrame"
+    },
+    {
+      "failureText": "((view.width) equal to (spec.width)) failed: (\"1278\") is not equal to (\"1279\")",
+      "targetName": "ReactNativeSkiaWebGPUVideoExampleTests",
+      "testIdentifier": 39,
+      "testIdentifierString": "MediaTests/testOddDimensions",
+      "testIdentifierURL": "test://com.apple.xcode/ReactNativeSkiaWebGPUVideoExample/ReactNativeSkiaWebGPUVideoExampleTests/MediaTests/testOddDimensions",
+      "testName": "testOddDimensions"
+    },
+    {
+      "failureText": "failed - a at 0.500s shows frame 0, expected 15",
+      "targetName": "ReactNativeSkiaWebGPUVideoExampleTests",
+      "testIdentifier": 50,
+      "testIdentifierString": "PreviewExtractorTests/testSeeksWhilePaused",
+      "testIdentifierURL": "test://com.apple.xcode/ReactNativeSkiaWebGPUVideoExample/ReactNativeSkiaWebGPUVideoExampleTests/PreviewExtractorTests/testSeeksWhilePaused",
+      "testName": "testSeeksWhilePaused"
+    },
+    {
+      "failureText": "((shown) equal to (slowMotionFrameAt(t))) failed: (\"1\") is not equal to (\"2\") - at 0.0667s",
+      "targetName": "ReactNativeSkiaWebGPUVideoExampleTests",
+      "testIdentifier": 41,
+      "testIdentifierString": "MediaTests/testSlowMotionIsDecodedInThePresentationTimeline",
+      "testIdentifierURL": "test://com.apple.xcode/ReactNativeSkiaWebGPUVideoExample/ReactNativeSkiaWebGPUVideoExampleTests/MediaTests/testSlowMotionIsDecodedInThePresentationTimeline",
+      "testName": "testSlowMotionIsDecodedInThePresentationTimeline"
+    }
+  ],
+  "title": "Test - ReactNativeSkiaWebGPUVideoExample",
+  "topInsights": [
+    {
+      "category": "Longest Test Runs",
+      "impact": "37% of duration",
+      "text": "2 longest test runs with outlier durations exceeding 4.91s (three standard deviations)"
+    }
+  ],
+  "totalTestCount": 50,
+  "privacy": "Persistent physical device identifier redacted; exact original local report is ignored at benchmark/results/ios-native-device-attempt.local.json",
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

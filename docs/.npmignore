@@ -1,0 +1,4 @@
+# Internal studies are retained locally but are not public package documentation.
+MIGRATION_STUDY.md
+FRAMEBURN_ML_3D.md
+IMPLEMENTATION_STATUS.md

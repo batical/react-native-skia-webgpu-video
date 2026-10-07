@@ -1,0 +1,37 @@
+node_modules/
+lib/
+*.tgz
+example/device.local.json
+example-baseline/
+benchmark/results/*.local.json
+example/ios/Pods/
+example/ios/.xcode.env.local
+example/ios/build/
+example/ios/*.xcworkspace/xcuserdata/
+example/ios/*.xcodeproj/xcuserdata/
+example/fixtures/*
+!example/fixtures/.gitkeep
+.DS_Store
+
+# Preserved signed benchmark products and private crash evidence
+benchmark/results/frozen-3.0.3/
+benchmark/results/frozen-3.0.6-initial/
+benchmark/results/frozen-3.0.6-optimized/
+benchmark/results/*.local.ips
+
+# Local publication audit backups and internal application studies
+benchmark/results/publication-backup/
+docs/MIGRATION_STUDY.md
+docs/FRAMEBURN_ML_3D.md
+docs/IMPLEMENTATION_STATUS.md
+
+# Machine-specific logs, signing material and local configuration
+*.log
+*.local.xcconfig
+*.mobileprovision
+*.p12
+*.keystore
+*.jks
+.env
+.env.*
+!.env.example

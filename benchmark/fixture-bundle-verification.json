@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "completedAt": "2026-10-06T15:25:29.961Z",
+  "executionTarget": "simulator",
+  "configuration": "Release",
+  "app": "<temporary-directory>/rnskv-webgpu-simulator-build/Build/Products/Release-iphonesimulator/ReactNativeSkiaWebGPUVideoExample.app",
+  "sharedFixtures": 14,
+  "manifestIdentityVerified": true,
+  "sourceManifestSha256": "019af1de956886ac1f17348f6623f941cf91bd023afa8b271aebc0950af2f764",
+  "bundledManifestSha256": "019af1de956886ac1f17348f6623f941cf91bd023afa8b271aebc0950af2f764",
+  "allBundledFixturesValid": true,
+  "files": [
+    {
+      "id": "h264-1080p30-audio",
+      "file": "h264-1080p30-audio.mp4",
+      "bytes": 682676,
+      "sourceSha256": "c882b99af0c042c0039a6f5b50d4545b1df96919a583e963037be59c1bc8bf64",
+      "bundledSha256": "c882b99af0c042c0039a6f5b50d4545b1df96919a583e963037be59c1bc8bf64",
+      "valid": true
+    },
+    {
+      "id": "h264-4k30",
+      "file": "h264-4k30.mp4",
+      "bytes": 1061564,
+      "sourceSha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755",
+      "bundledSha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755",
+      "valid": true
+    },
+    {
+      "id": "hevc-4k30",
+      "file": "hevc-4k30.mp4",
+      "bytes": 878768,
+      "sourceSha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae",
+      "bundledSha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae",
+      "valid": true
+    },
+    {
+      "id": "hevc-1080p-hlg10",
+      "file": "hevc-1080p-hlg10.mov",
+      "bytes": 159029,
+      "sourceSha256": "f3e301a9fc04e514411b4b00c7129a579d0aff412f870e86e55204a2b45ae60e",
+      "bundledSha256": "f3e301a9fc04e514411b4b00c7129a579d0aff412f870e86e55204a2b45ae60e",
+      "valid": true
+    },
+    {
+      "id": "h264-720p60",
+      "file": "h264-720p60.mp4",
+      "bytes": 585980,
+      "sourceSha256": "29a2c525c9de210c69eceb4ccbf99eb7a44591ff3f28126801aef3b21652535e",
+      "bundledSha256": "29a2c525c9de210c69eceb4ccbf99eb7a44591ff3f28126801aef3b21652535e",
+      "valid": true
+    },
+    {
+      "id": "h264-1080p-rot90",
+      "file": "h264-1080p-rot90.mp4",
+      "bytes": 404641,
+      "sourceSha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d",
+      "bundledSha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d",
+      "valid": true
+    },
+    {
+      "id": "h264-1080x1920",
+      "file": "h264-1080x1920.mp4",
+      "bytes": 452191,
+      "sourceSha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513",
+      "bundledSha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513",
+      "valid": true
+    },
+    {
+      "id": "h264-638x358",
+      "file": "h264-638x358.mp4",
+      "bytes": 142050,
+      "sourceSha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc",
+      "bundledSha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc",
+      "valid": true
+    },
+    {
+      "id": "h264-720p-short",
+      "file": "h264-720p-short.mp4",
+      "bytes": 23074,
+      "sourceSha256": "9cb3f855e21e440a747181e852ce51f8c3e82919deaff5d2ce50d61fd3d09342",
+      "bundledSha256": "9cb3f855e21e440a747181e852ce51f8c3e82919deaff5d2ce50d61fd3d09342",
+      "valid": true
+    },
+    {
+      "id": "hevc-4k30-audio",
+      "file": "hevc-4k30-audio.mp4",
+      "bytes": 777469,
+      "sourceSha256": "ecd315232afec5b926c9ea654af8524b9cc774a7d2e5aef1d50a2b018d6328b8",
+      "bundledSha256": "ecd315232afec5b926c9ea654af8524b9cc774a7d2e5aef1d50a2b018d6328b8",
+      "valid": true
+    },
+    {
+      "id": "tone",
+      "file": "tone.m4a",
+      "bytes": 375489,
+      "sourceSha256": "b6181ed864af7b5630b48a4053828ec2006af3c11894a9b4d42803b91100bfe1",
+      "bundledSha256": "b6181ed864af7b5630b48a4053828ec2006af3c11894a9b4d42803b91100bfe1",
+      "valid": true
+    },
+    {
+      "id": "h264-720p-rot180",
+      "file": "h264-720p-rot180.mp4",
+      "bytes": 353124,
+      "sourceSha256": "f3d3d31f647361cd1f4cfc9653c2fc78a19bd881ed59014b3bd10395761683e6",
+      "bundledSha256": "f3d3d31f647361cd1f4cfc9653c2fc78a19bd881ed59014b3bd10395761683e6",
+      "valid": true
+    },
+    {
+      "id": "hevc-1080p-rot270",
+      "file": "hevc-1080p-rot270.mp4",
+      "bytes": 354895,
+      "sourceSha256": "1f9dedb05340ee7b909dfdf5ae29f190bfe5aed674859c02e31ece7b66a26b7d",
+      "bundledSha256": "1f9dedb05340ee7b909dfdf5ae29f190bfe5aed674859c02e31ece7b66a26b7d",
+      "valid": true
+    },
+    {
+      "id": "h264-slow-motion",
+      "file": "h264-slow-motion.mov",
+      "bytes": 134690,
+      "sourceSha256": "f2904e161a938c031e22c22db528931dd9b46482cd4989707d36d67f7995a19a",
+      "bundledSha256": "f2904e161a938c031e22c22db528931dd9b46482cd4989707d36d67f7995a19a",
+      "valid": true
+    }
+  ],
+  "limits": [
+    "This confirms embedded file identity, not decoded pixel/audio correctness or physical iPhone performance."
+  ],
+  "publicationPrivacy": "Personal device identifiers, signing metadata and machine-specific evidence paths were generalized for publication. Original records are retained in the ignored benchmark/results/publication-backup directory. Measured results and recorded source/artifact hashes are unchanged."
+}

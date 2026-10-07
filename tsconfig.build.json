@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig",
+  "exclude": [
+    "example",
+    "example-baseline",
+    "docs",
+    "node_modules",
+    "lib",
+    "benchmark",
+    "test",
+    "src/__tests__",
+    "examples"
+  ]
+}

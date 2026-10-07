@@ -1,0 +1,213 @@
+{
+  "validatedAt": "2026-10-07T08:59:20.452248+00:00",
+  "status": "build-and-host-tests-passed",
+  "commands": ":app:assembleDebug :app:assembleRelease :react-native-skia-webgpu-video:assembleDebug :react-native-skia-webgpu-video:assembleDebugAndroidTest :react-native-skia-webgpu-video:testDebugUnitTest --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a",
+  "toolchain": {
+    "reactNative": "0.86.2",
+    "skia": "3.0.6",
+    "webgpu": "0.12.1",
+    "java": "17",
+    "sdk": 36,
+    "ndk": "27.1.12297006",
+    "gradle": "9.3.1",
+    "abi": "arm64-v8a"
+  },
+  "jvm": {
+    "tests": 31,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "name": "com.azzapp.rnskv.BufferLifetimeTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.DecodeRequestsTest",
+        "tests": "5",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.DecoderWindowTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.FrameSizeTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.RgbaBufferAllocatorTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.RgbaLayoutTest",
+        "tests": "4",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.azzapp.rnskv.SurfaceOutputPolicyTest",
+        "tests": "4",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ]
+  },
+  "device": {
+    "connectedDevices": [],
+    "instrumentationExecuted": false,
+    "artGcLifetimeQualified": false,
+    "physicalMemoryMeasured": false,
+    "performanceMeasured": false,
+    "reason": "adb devices -l outside sandbox returned an empty device list"
+  },
+  "instrumentationInventory": {
+    "originalNamedCases": 40,
+    "originalExpandedExecutions": 86,
+    "totalNamedCases": 44,
+    "totalExpandedExecutions": 94
+  },
+  "artifacts": {
+    "debugExampleApk": {
+      "path": "example/android/app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 141637563,
+      "sha256": "cf03243fda75a606b7d605c9ee62639271e28f808dfc24a1ad19fe6da621df25"
+    },
+    "unsignedReleaseExampleApk": {
+      "path": "example/android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "bytes": 75527115,
+      "sha256": "5dea2baefc76eac37673b9569d6b8210eb9273c134dba9e538cea7a8087669bc"
+    },
+    "debugLibraryAar": {
+      "path": "android/build/outputs/aar/react-native-skia-webgpu-video-debug.aar",
+      "bytes": 2171988,
+      "sha256": "c1500b0022b77898003996a0624235ccccd6adbeb1b5d0afce97de4e6b1d4d64"
+    },
+    "debugInstrumentationApk": {
+      "path": "android/build/outputs/apk/androidTest/debug/react-native-skia-webgpu-video-debug-androidTest.apk",
+      "bytes": 34849465,
+      "sha256": "ea6cc6b2e31391ae3caa09a3e3a47c22d5a081f12c83983df2a70a9f6de73ea7"
+    }
+  },
+  "sourceFingerprints": {
+    "android/.gitignore": "82a757990284a60404e27fcab806bdf856fa077462e62ba6a4421ef4788d1213",
+    "android/CMakeLists.txt": "a94f4efdf64fa5bfa2e5939d249e129b28ec8e40a03972631cb04509f1d967db",
+    "android/build.gradle": "49e266e4e97013d65b2fa67af56cfffc8a749481a01d8db854ad85d1ce06b495",
+    "android/cpp/JNIHelpers.cpp": "a7d8ac2cf3996053b89249d979dd5ec35ced3c9ecce6adb743d63092bf1ac5eb",
+    "android/cpp/JNIHelpers.h": "64c9e28dd204f5e028f699115e2501999f0f0f54c8b6560555f9ce06fb16b238",
+    "android/cpp/NativeEventDispatcher.cpp": "8c737aa0c825c3c215a210843c19d64be1ba500d909da566e0b3324764b7f1a7",
+    "android/cpp/NativeEventDispatcher.h": "c2b59c59ec353c1e3df24f61e0b5b38cd68e9bba634abd4c9f78e120c4a75feb",
+    "android/cpp/NativeRgbaBuffer.cpp": "b4d35d925e884fb8c553580559d4b5a115cefed4e08dc6c1d1c337fc22522dc1",
+    "android/cpp/NativeRgbaBuffer.h": "efa4a5744db8b5c37a169873bab00264fca25c0765a0cce14a4201030d7a6f47",
+    "android/cpp/VideoCapabilities.cpp": "232bf9b1680e6312febe958dbec57eae298667ef3930a56613208f025114087e",
+    "android/cpp/VideoCapabilities.h": "0904670d31d7f30b910f87dcf9c08f627095b4f545f1e6525e97c033593951eb",
+    "android/cpp/VideoComposition.cpp": "7ff046c04721e75298418afcdb5b1214fc2c69d08ff0cb7b42fc75d543729b2e",
+    "android/cpp/VideoComposition.h": "d6c17bd93c319fff49fc0f35c3fa0fe6a72d45fad793e845c682091c5973aa39",
+    "android/cpp/VideoCompositionFramesExtractor.cpp": "201b75377cb50e011217355c67f4c15b7570e8dd59e7dd735181962f2adeed52",
+    "android/cpp/VideoCompositionFramesExtractor.h": "81fe940205c438db93ce3946ee148337f81452ae52aa9e076152cac691f08c85",
+    "android/cpp/VideoCompositionFramesExtractorHostObject.cpp": "2022cf4e98b8bdaec27803181d67ac1bdf92a243d52d0c51967603916a9e9884",
+    "android/cpp/VideoCompositionFramesExtractorHostObject.h": "b694c73c9ad6e1b9d3b12cfe86ba178f630136fef6d0524b0b7a4f21b8534797",
+    "android/cpp/VideoCompositionFramesExtractorSyncHostObject.cpp": "40483bd59a1a994b249c6097b15a9e1438c515b603f778a92074c57ee3c70d9a",
+    "android/cpp/VideoCompositionFramesExtractorSyncHostObject.h": "a63ec691ff0afaae4f841e21a5a8eb000102e4866b36d1ed81951c7743ddeea6",
+    "android/cpp/VideoEncoderHostObject.cpp": "974b52256f4a62615915c9640e93898dd48568a1b8ee803ce0087608914515b6",
+    "android/cpp/VideoEncoderHostObject.h": "198a34b2bd2ecf60949aaa2c96a0a6373d19b5cfe3f79dd37bc43573044fb109",
+    "android/cpp/VideoFrame.cpp": "21dbf9d71a1e67e2adec29d7272725a396f3601f05cb2b5027722118db750320",
+    "android/cpp/VideoFrame.h": "60cb67a782df02ff739e88c57fe4ddd44bdfbfc12f83b914bf8f1d8abc0c427c",
+    "android/cpp/VideoPlayer.cpp": "0690a25d3d3cb92343602a7086ecf4983ad86acb3f390968282a3833d2a6248b",
+    "android/cpp/VideoPlayer.h": "96eb25249a7a00d9a4e596d3aebe0bc2ba918bfb23bdcf13000025707b96087b",
+    "android/cpp/VideoPlayerHostObject.cpp": "28b9d1d21b6bfb703904a52eaf7018a77daab0728bcb690bb99d2f3076abe8c3",
+    "android/cpp/VideoPlayerHostObject.h": "56c13d55b2d002ffa6b3d7107d7809fc6ff3c01f34fc11e46b17cfc76f2058b0",
+    "android/cpp/cpp-adapter.cpp": "301df19a79160cece06471c17214098a1023bbfa58539e29ecf4cc4c997d33ab",
+    "android/gradle.properties": "50aa6c7542182523e8c909115d4d3293cf1a2197390df1157baf5b99d0a546cc",
+    "android/instrumentation-inventory.json": "edb7f156d2c1b47a783610811b2ea22c20455178cdf26cd73318c542a1074a1e",
+    "android/proguard-rules.pro": "45595bd6c70a6e499c52538eefb3aa86acef6d7d8faadb83854f3d5470a2a162",
+    "android/scripts/validate.sh": "900810155ea222800e483b10748bb1007c84d34dd8c323c27fb4eb7cc7bba9e8",
+    "android/src/androidTest/java/com/azzapp/rnskv/BigMontageTest.java": "642acd18497bc005839cf013716a8e2998cda78815f93334a72c8b4e133242a2",
+    "android/src/androidTest/java/com/azzapp/rnskv/CompositionExportTest.java": "d6a01e05b66ef21ba3209020925bd8112760fc5f58b170a70832f5b22d1c02a1",
+    "android/src/androidTest/java/com/azzapp/rnskv/CompositionPreviewTest.java": "c36d0248d2a49ba3a5cb26bad01e8367a19a5c5d8d2a3e175e45d115a5c50896",
+    "android/src/androidTest/java/com/azzapp/rnskv/Compositions.java": "d1bfd70013000825e4c57c28ccf5ded0efefbaf87eb58cf2638b3e3ecdf79258",
+    "android/src/androidTest/java/com/azzapp/rnskv/DirectTextureTest.java": "4f2a9ac2c701d20e08973b6488f5a99d1b55c547a383b84bf45f7e7b31564035",
+    "android/src/androidTest/java/com/azzapp/rnskv/EncodeTest.java": "93381c8e9bcefc3c24492b3e215b63d910658e8919c95917426b6912b1d85f0c",
+    "android/src/androidTest/java/com/azzapp/rnskv/Export.java": "4b8cd4ba0ef8c395a5acd63a820c27295d6786f657bc5c2106e81c2877910bd1",
+    "android/src/androidTest/java/com/azzapp/rnskv/MediaTest.java": "0686b5b91c9c5527cc238ff5e06b65962ee4384be38ce4a421b18210b42528fc",
+    "android/src/androidTest/java/com/azzapp/rnskv/NativeRgbaBufferTest.java": "3b5d67b1276d23ffab8ecd7ee96f920fe2794210fb279f4cdd3699cb4424917f",
+    "android/src/androidTest/java/com/azzapp/rnskv/OpenFailureTest.java": "57d2ca38520e932cc5bff2c2b36ae5c9ca78720b09576ec63e3a45f66969318e",
+    "android/src/androidTest/java/com/azzapp/rnskv/Pixels.java": "cebee44a39dac406547591df1b792626d78c9778f07beca78ff285a63fbc7155",
+    "android/src/androidTest/java/com/azzapp/rnskv/Player.java": "320d1665f1920c02d13b7677bf1096f2ede27651a7e45fe30dc1df14206fcc5a",
+    "android/src/androidTest/java/com/azzapp/rnskv/PlayerTest.java": "b23f6cd555fbe448fcc1f12f5703f6ffb47a548a26931b52763f811fa38536c8",
+    "android/src/androidTest/java/com/azzapp/rnskv/TestVideo.java": "f0ab437d829ed6c6412c76e1a226fd789d006abefb4bc3fd646cb1978ef6c2cc",
+    "android/src/main/AndroidManifest.xml": "bfe643676c7bfecf2683b1ad8044a754bc53141c9e4fc6714ad58c1530937b6d",
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionExporter.java": "f88677b933c7a08012190144ccb6cae7672e88b140579b8b7deb65085d3b395a",
+    "android/src/main/java/com/azzapp/rnskv/AudioCompositionPlayer.java": "04ea9480a0e4164473e80dc26d06c1c8708942762968138f3d937db5999576f8",
+    "android/src/main/java/com/azzapp/rnskv/BufferLifetime.java": "0b7ed28b60dc3480bf1b5e77e6e5a0f93fe35114fc136942a24848da50c3b63a",
+    "android/src/main/java/com/azzapp/rnskv/DecodeRequests.java": "18ddabfa8556dce051bb23da16edf45d9e846287bd34c70b6c78eae9c565b153",
+    "android/src/main/java/com/azzapp/rnskv/DecoderWindow.java": "c31565ca278342657895d52ae02a79903487f0f19d15c3677ac1b9c942ef0666",
+    "android/src/main/java/com/azzapp/rnskv/EGLResourcesHolder.java": "210038c00b747d18ce059b3f90e9dd561b6d0159ffc37e966a0ccedb2658359d",
+    "android/src/main/java/com/azzapp/rnskv/EGLUtils.java": "353be2d1bb2c93b74855d84a851e08eb57063626f91f4437e90e99afbc169a44",
+    "android/src/main/java/com/azzapp/rnskv/FrameSize.java": "c23b35630e9e9c8a1b45e99c314f35f5a1170df51aa7624eec466e752762b0f7",
+    "android/src/main/java/com/azzapp/rnskv/GLFrameExtractor.java": "fac47dcf9c594fdc42f332cc6c49b036c311c65d7bcd73476583d5714c076352",
+    "android/src/main/java/com/azzapp/rnskv/JNIHelpers.java": "36a3121f1198b780214a26641c5f9a65221957865d6f03a9e3ea6fe7a8b10a35",
+    "android/src/main/java/com/azzapp/rnskv/NativeEventDispatcher.java": "38258ea4e495b0fcf94191592e3a6c116a210c3e227968190adb7ba3b30f2f33",
+    "android/src/main/java/com/azzapp/rnskv/NativeRgbaBuffer.java": "fbdbf4f940c039c23458a53a6765643ba0578e5d1ceb3bc3b8b39921500fc133",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoModule.java": "d80d12f865b1c65b3658a01742c75d47d4ebd3f52d5639b66c8d816641244b7f",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoPackage.java": "5ee788c23d80111b5582d92fe468fb993181caa93db2f7121c3e287d066ee126",
+    "android/src/main/java/com/azzapp/rnskv/ReactNativeSkiaVideoSpec.java": "0e0d5b0f0a78d35894edaf114f119e60625fe792bbb060c73bf3e9c579874963",
+    "android/src/main/java/com/azzapp/rnskv/RgbaBufferAllocator.java": "bba2b69614b1be391200a7f51843cdaf59dc0a5e7f3d1d941e5acc634c69ea9e",
+    "android/src/main/java/com/azzapp/rnskv/RgbaLayout.java": "8d3809ccfa60993b5c174d52e0a65f61a2ecea3935c6f85464d21a2186d89abc",
+    "android/src/main/java/com/azzapp/rnskv/SurfaceOutputPolicy.java": "eba1255a5dbabc93216cbfdeea6f165deed20c5e3347b0f7d6ee9fd6b9a123e8",
+    "android/src/main/java/com/azzapp/rnskv/TextureRenderer.java": "c5fd5ee2957b7ad01d7c4a7f285c82fb6338b6dd56e555da7d5ed0d294d2f508",
+    "android/src/main/java/com/azzapp/rnskv/TimeHelpers.java": "dc554a6b7cee28f5537bad60aef5b939c911886499fc6aea4cc4bc9cddeae393",
+    "android/src/main/java/com/azzapp/rnskv/VideoCapabilities.java": "99ddf5dd614ef48724fba5a84bceab1f54af67ffe802c415e70853d8fcaa1f09",
+    "android/src/main/java/com/azzapp/rnskv/VideoComposition.java": "5870bb0aff68ae992da0c02688acb2da16f8e6055f7c62e121e52b94dbf853fd",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionDecoder.java": "ec1063002784416660f44f4575f68e51e1ec8ab916d9dbe1f30e4273ef348b37",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractor.java": "3370fddb949f288cf7cacff8cba9759225b5a5061e37b4e14748e838800bf198",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionFramesExtractorSync.java": "a5500525a9819ce6bd3c493685010bd20f1f36c2ab6aace1f871ea49e94f0b73",
+    "android/src/main/java/com/azzapp/rnskv/VideoCompositionItemDecoder.java": "b6017dc7aca7b8a458b8ad47eaeb52f15b3e3438e08bd0f0b1b7d0f5ef91573c",
+    "android/src/main/java/com/azzapp/rnskv/VideoEncoder.java": "c0837ac058b9515af87be4188814a617c21f281c2971c5632ee2c6d0190a76e6",
+    "android/src/main/java/com/azzapp/rnskv/VideoFrame.java": "cdd0e0c0d4eedf8b2eee487d0ec540535bd76721132f400b265719370262bfb5",
+    "android/src/main/java/com/azzapp/rnskv/VideoPlayer.java": "3b5daee2af075711e7da2457e0c8fcbed74a8ad84ae1aeabee937b06caf5c807",
+    "android/src/test/java/com/azzapp/rnskv/BufferLifetimeTest.java": "f2428d43ba042b06a852921c36b1b224d2658dead651ceb08e6a54fd369e5829",
+    "android/src/test/java/com/azzapp/rnskv/DecodeRequestsTest.java": "ee0b66e24d1b6aa2566cfd30b4b2c3f59a935c81774b0a8d5aba4ddf0d7f4080",
+    "android/src/test/java/com/azzapp/rnskv/DecoderWindowTest.java": "ad61801e6356f38d748c4856966aac5da27ef5345c4d274810694e99b05e3d47",
+    "android/src/test/java/com/azzapp/rnskv/FrameSizeTest.java": "18bf1bee65d8f6f56d939d80ea9f8c5ddc0e5737e42b65682df30eac735dde4d",
+    "android/src/test/java/com/azzapp/rnskv/RgbaBufferAllocatorTest.java": "bd1dacf9a2205ae858f6ef08f29152d9e0d8e3dcf2ebe182c4716f1aa34e59e9",
+    "android/src/test/java/com/azzapp/rnskv/RgbaLayoutTest.java": "2903e8f370f5c4e064cf4ba15136c28f2e2d02f4d8e61e2f5809cd0472faa970",
+    "android/src/test/java/com/azzapp/rnskv/SurfaceOutputPolicyTest.java": "05be25567eda27bddfdcd009277277b1965d6fb1e661a0e9493bdf59dd8efee9",
+    "example/App.tsx": "2b145607ebdee278ef51f1f39bc6ee05b1e464703067ca9c2592760366e8b1ce",
+    "example/android/.gitignore": "82a757990284a60404e27fcab806bdf856fa077462e62ba6a4421ef4788d1213",
+    "example/android/app/build.gradle": "8dbb532d236ec033f67d3ce4fa5b30487d7d82ac7778f3beea4502122be259af",
+    "example/android/app/src/main/AndroidManifest.xml": "30e52ba5b6a76841fbaa91170d082b3610ebfde42c859f812ca10798a87669bf",
+    "example/android/app/src/main/java/com/skiawebgpuvideo/tests/MainActivity.kt": "fd82d57d0bfb9de61db1d93b04033f7ddc0019d7293013c8b8a7510015aad47e",
+    "example/android/app/src/main/java/com/skiawebgpuvideo/tests/MainApplication.kt": "9538b053c585b907985bbd0fd66590f47865149f593a99f1516defba729a584f",
+    "example/android/app/src/main/java/com/skiawebgpuvideo/tests/VideoBenchmarkHarness.kt": "f655cba0882ef700f044dc44b044752a3bd88c71f63211bb9afc3716d316a903",
+    "example/android/app/src/main/java/com/skiawebgpuvideo/tests/VideoBenchmarkPackage.kt": "32266ee7f6ad8d72a6c9e36b202f510cbb8688ccc63d7766ce742e3f5b7ae9b3",
+    "example/android/app/src/main/res/values/styles.xml": "d2fc968e7a52a12eb29acd07cd4c47d0ae73d4698ec69addf61b34f2690f6d1d",
+    "example/android/build.gradle": "5e6f23062f98c3c12e4e159c44f4b0a995acbd0683dd0d2f6fe64fbae8ce98c7",
+    "example/android/gradle/wrapper/gradle-wrapper.jar": "b3a875ddc1f044746e1b1a55f645584505f4a10438c1afea9f15e92a7c42ec13",
+    "example/android/gradle/wrapper/gradle-wrapper.properties": "a180163249c7252412ddaee1c7adcf59f6494b1183136f690fbd9a3b8aaed00e",
+    "example/android/gradle.properties": "9cb899438f2cf009a00f6e79525055dfda766b15db7ebbe0d64741f879e34d14",
+    "example/android/gradlew": "fb68debc1b1acf8ec55dc0d5e5495e1dedd0bd6b61f304bee61613eeb2bd9b92",
+    "example/android/gradlew.bat": "fedad02c18e266ec094995a5751b7fe1eb6e74f66bf75db64fae2e50eb22c234",
+    "example/android/settings.gradle": "86c493b95c4f5b242390d55ea57d59140db6926bb841775b06dd226f1eef7196"
+  },
+  "instrumentationPackagedNativeLibraries": [],
+  "releaseApkContainsHermesBundle": true,
+  "releaseApkAbis": [
+    "arm64-v8a"
+  ]
+}

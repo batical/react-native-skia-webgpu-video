@@ -1,0 +1,498 @@
+{
+  "schema": 2,
+  "completedAt": "2026-10-07T08:37:16.338Z",
+  "executionEnvironment": "physical iOS device",
+  "qualificationScope": "iOS native XCTest only; initial Skia 3.0.6 migration build, before later transport optimizations",
+  "buildInvocationStartedAt": "2026-10-07T08:18:14.698Z",
+  "testStartedAt": "2026-10-07T08:18:16.684Z",
+  "testFinishedAt": "2026-10-07T08:23:15.311Z",
+  "configuration": "Release",
+  "sdk": "iphoneos27.0",
+  "dependencyVersions": {
+    "reactNativeSkia": "3.0.6",
+    "reactNativeWebgpu": "0.12.1",
+    "reanimated": "4.5.3",
+    "worklets": "0.11.3"
+  },
+  "sourceQualification": {
+    "scope": "iOS, shared C++, native build inputs, guarded Skia headers and odd native-test fixture; Android and JavaScript sources excluded",
+    "fingerprintRecipe": "SHA-256 of JSON.stringify of the sorted files map; this is an extraction-time scoped fingerprint, not a recorded pre-build global fingerprint",
+    "iosNativeInputFingerprint": "e8fafd5b6301bb1a04390c8d5636af8845bdd13aeb5e15ff41ce6c508acd8e9f",
+    "files": {
+      "cpp/RNSVCheckedSizes.h": "1e06c34b096e74863f20bc8a5eeba086a910f45ca982a56476663b5d921488ea",
+      "cpp/RNSVEventEmitter.cpp": "85108c326725b1558fe99dea5ab78e85be26de846719a9b0f7db95d2be77e2f4",
+      "cpp/RNSVEventEmitter.h": "910fcbd39598d33efc4ef9506e629709b1747627d63df9fb62fc89204109f63b",
+      "cpp/RNSVHostObject.cpp": "eb469ef7636ebf383a297d66bf1500db764b9f8b96f3bf3da78361e77355baa3",
+      "cpp/RNSVHostObject.h": "5f6ed363cd036e6e6da0511f2ba5323fbd6f15aea7ba8797c3b17c30b9088c7e",
+      "cpp/RNSVMemoryBudget.cpp": "471cc61294e762f0184bda822257a65c4bf4e93d19739e4eb4648a0018c42f45",
+      "cpp/RNSVMemoryBudget.h": "53fa50436b0263dacd4a8a196074430d4fee0559f166a46cc6a85f7e76bb7933",
+      "cpp/RNSVRuntimeLifecycleMonitor.cpp": "7d1eccc3182fef89d0e8d3cfdbe4bb40b2e93d01722125216e5f65b88f56695f",
+      "cpp/RNSVRuntimeLifecycleMonitor.h": "61c9b87288e2ebea3ef7685351dcda820ec505370089af5b99680ffe0e5a4ae9",
+      "example/ios/Podfile": "b2669fc2680e3b40ef4c66d3b78acb1747220c4ec5524a350663a6a9f8cd82cd",
+      "example/ios/Podfile.lock": "26426bb28b651410174dfd28fc52feb2c1a07748399c62982d09a1381962e18e",
+      "ios/AudioCompositionUtils.h": "97e0598475217463a35b5d2f206efb51eacbef4da97951d49460ba0214ee97bd",
+      "ios/AudioCompositionUtils.mm": "1a0983e46c01155e4ba825ccdb591c3e3149ee61d55fb584288f0c646e5b3994",
+      "ios/AVAssetTrackUtils.h": "52a05e76bc9d35652f239d671f341d8ee4774460a329326350d18d72c30786f7",
+      "ios/DecoderWindow.h": "ace048d897190b80ac00e55d39e0fa39a43aabf1178f85adcfcf2d67aed88351",
+      "ios/NativeResourceStats.h": "8e374180a0421764fcd3f2e8132119d322bbdf0cd4a837b66e7b8d8deac30b66",
+      "ios/ReactNativeSkiaVideo.h": "5256f7cf05ad8734a759cdbe1b4f594248d1e7384a9478707830df49e84c3902",
+      "ios/ReactNativeSkiaVideo.mm": "fe3a46e250d50a82a227924ca58f2c4f77b622c694028ea84aca724e0f0fc1ad",
+      "ios/RNSVColorSpace.h": "3560e750ef3e987f539792e4fba7c36eb7f9d9d5769e96824463683c2d3521ea",
+      "ios/RNSVJSIUtils.h": "4c144fb06bb1c0dab547438d3a2da48f3ad34012a981c51d7f112b84d21e0074",
+      "ios/RNSVScopedPixelBuffer.h": "cd8c05c3da1672af38aea8531c4c03172f095d264383f77308f2ebb9bc751b7f",
+      "ios/RNSVVideoPlayer.h": "d79591775397d18185ab98cf48195d5d96e81f1de8f0ca502d964699bb18618d",
+      "ios/RNSVVideoPlayer.mm": "9e0ddf8238962f30d6efb58880655be41f1010d925f14135419d963520e02b1f",
+      "ios/SeekPolicy.h": "e3403d4fd02085bd649685487d15b528c132b21ed9c7019d9ae58c0e9d30b67c",
+      "ios/tests/BufferOwnershipTest.mm": "e6766fc67b9b45f206f37341d05824e045e1c018ceb179040d24bedb8bcd61ec",
+      "ios/tests/EncoderReferenceTest.mm": "65271ed8adbfb14a9afe33f337c68bbd78480d71aa87bffe2fb9d992439aed2c",
+      "ios/tests/fixtures/legacy-odd1279x719.json": "a2dc0ac46d9d80b8fa3d7f7f55a65188940ca496ec4510886f3523d111238744",
+      "ios/tests/fixtures/legacy-odd1279x719.mov": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+      "ios/tests/LegacyParityTests.mm": "6c2d99ea066247b119ab5f605c6fe5e4c12dd393e71a41c154e5d27889348321",
+      "ios/tests/NativeValidationTest.mm": "abc205453e9621690dd4cce7174f9a3e7b4e7cc108c3534d2657899f8b17e8a8",
+      "ios/VideoComposition.h": "d319ff868b02da3136bfdced39d625ab931661253f66d7024da92a9d5ca6d606",
+      "ios/VideoCompositionFramesExtractorHostObject.h": "4c8fcda5e2d7ba7d7a760934c32363bac633ca5878913dc4b5ad67a5a498f61c",
+      "ios/VideoCompositionFramesExtractorHostObject.mm": "6082c9dcabae6bf645e843cc1ad15fc29a181ca061d501e73731149e15b12f38",
+      "ios/VideoCompositionFramesExtractorSyncHostObject.h": "b39faf6dfb107df3693ce0aeb167b07d0c316b42eebe077c826b8b6d51a79c44",
+      "ios/VideoCompositionFramesExtractorSyncHostObject.mm": "b3f122c7820c23de48a50ec7784e6680fb4fe514700127d548d050ce478fe285",
+      "ios/VideoCompositionItemDecoder.h": "a23faec780e81cd7ba43ca16cad31f076346b662ad862065a9af3a8cfcf465f4",
+      "ios/VideoCompositionItemDecoder.mm": "f5148801479bb6aeb3487828cc2dc2debb18cf8a4e2dc56702279e927ac97f4c",
+      "ios/VideoEncoderHostObject.h": "32e9525e4a1c7f13d9814e3d3553f2c87d3a2a8f98c05c2a1f6d6133c3922ab4",
+      "ios/VideoEncoderHostObject.mm": "c291d449ed34b15ac5935cdc7c298183078be344b113ca363c542307ce2500b0",
+      "ios/VideoFrame.h": "50229697b35bdfc548d2bc68b74824fa299219e61db428230056da8acf44ea53",
+      "ios/VideoFrame.mm": "2b53c49407bf20d2258cc443f9784aabea584f60ca3f1369ce9106efacd6a192",
+      "ios/VideoPlayerHostObject.h": "cc84bfb11c7b01f9f36b21593fc242e3ea22040eb660e979b94b91b571150292",
+      "ios/VideoPlayerHostObject.mm": "d74958e1c78023492ede5f04a5e2b9df238455921258d271f8777715d5b3f836",
+      "node_modules/react-native-skia/cpp/api/JsiSkCanvas.h": "2758ab28fbc73fd59923720ba8594796d3e80a987adfd12bd59c16590797af13",
+      "node_modules/react-native-skia/cpp/api/JsiSkSurface.h": "d619664807dc6f9fbbaf8814db05f3b6e8d41ae755b2c09a281c6a2be5bc2b0c",
+      "node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476",
+      "node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts": "b1878eafa831d6c3d7a47f4329a94dd64cef4bae5281cc144d3258a5c4a1021c",
+      "node_modules/react-native-skia/package.json": "7c83f78dea12da9e39723b3651d451b9493840cd51b2ed890396ff5e5df57d99",
+      "node_modules/react-native-skia/src/skia/types/Canvas.ts": "226b25b561ad39a6812c8d5f8990e5ac9c078d3283f2bad90e725f077d84efd7",
+      "node_modules/react-native-webgpu/package.json": "3c66754adc5b5584882df4e6b553297165d98bf6c65da7391c2e031d6c69aa4e",
+      "package-lock.json": "12fe4c910b3d0356cfe9b8009d4b3f2a6fa9dc7e83c46bb5f65138e72564b96d",
+      "package.json": "9be3ee1dab1e2b1d3842743a89c6bc7bd9df0448a1f3552e5553729d85222cbc",
+      "react-native-skia-webgpu-video.podspec": "5796fe1ea35d1762ad3ae36e89eea58bf7d3d88e4c73cc50763ccfe46b02c3ff",
+      "scripts/skia-canvas-patch.json": "bd1787b81a87278b7bc4be8c0b6c874affc29d63ecead6a64fb6bb89eea83338"
+    },
+    "predatesInvocation": true,
+    "unchangedDuringExtraction": true,
+    "qualificationMethod": "Retrospective file modification-time checks against the dated invocation plus hashes captured and checked during extraction; no pre-build global fingerprint was recorded"
+  },
+  "device": {
+    "platform": "iOS",
+    "modelName": "iPhone 15 Pro",
+    "architecture": "arm64",
+    "osVersion": "27.0.1",
+    "osBuildNumber": "24A446"
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 50,
+    "passedTests": 50,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0
+  },
+  "passedCases": [
+    {
+      "name": "DecoderWindowTests.testOpensImpliesKeeps",
+      "identifier": "DecoderWindowTests/testOpensImpliesKeeps",
+      "result": "Passed",
+      "durationSeconds": 0.007727980613708496
+    },
+    {
+      "name": "DecoderWindowTests.testSameCasesAsTheHostTest",
+      "identifier": "DecoderWindowTests/testSameCasesAsTheHostTest",
+      "result": "Passed",
+      "durationSeconds": 0.00035202503204345703
+    },
+    {
+      "name": "EncoderTests.testAMontageExportsItsFrames",
+      "identifier": "EncoderTests/testAMontageExportsItsFrames",
+      "result": "Passed",
+      "durationSeconds": 0.88002610206604
+    },
+    {
+      "name": "EncoderTests.testAnUnknownCodecFallsBackToH264",
+      "identifier": "EncoderTests/testAnUnknownCodecFallsBackToH264",
+      "result": "Passed",
+      "durationSeconds": 0.05630910396575928
+    },
+    {
+      "name": "EncoderTests.testCopyModeEncodesEveryFrame",
+      "identifier": "EncoderTests/testCopyModeEncodesEveryFrame",
+      "result": "Passed",
+      "durationSeconds": 0.09238696098327637
+    },
+    {
+      "name": "EncoderTests.testDirectModeEncodesEveryFrame",
+      "identifier": "EncoderTests/testDirectModeEncodesEveryFrame",
+      "result": "Passed",
+      "durationSeconds": 0.11604201793670654
+    },
+    {
+      "name": "EncoderTests.testHEVC",
+      "identifier": "EncoderTests/testHEVC",
+      "result": "Passed",
+      "durationSeconds": 0.09876394271850586
+    },
+    {
+      "name": "EncoderTests.testTheTestVideoIsWhatItSays",
+      "identifier": "EncoderTests/testTheTestVideoIsWhatItSays",
+      "result": "Passed",
+      "durationSeconds": 0.06701898574829102
+    },
+    {
+      "name": "ExportExtractorTests.testALazyMontageGivesTheSameFramesWithFewerDecoders",
+      "identifier": "ExportExtractorTests/testALazyMontageGivesTheSameFramesWithFewerDecoders",
+      "result": "Passed",
+      "durationSeconds": 0.10491299629211426
+    },
+    {
+      "name": "ExportExtractorTests.testAMontageGivesEachItemItsFrame",
+      "identifier": "ExportExtractorTests/testAMontageGivesEachItemItsFrame",
+      "result": "Passed",
+      "durationSeconds": 0.08396995067596436
+    },
+    {
+      "name": "ExportExtractorTests.testAnItemWithoutFramesDoesNotHoldTheExport",
+      "identifier": "ExportExtractorTests/testAnItemWithoutFramesDoesNotHoldTheExport",
+      "result": "Passed",
+      "durationSeconds": 0.02313399314880371
+    },
+    {
+      "name": "ExportExtractorTests.testASingleItemGivesItsFrameAtEveryTime",
+      "identifier": "ExportExtractorTests/testASingleItemGivesItsFrameAtEveryTime",
+      "result": "Passed",
+      "durationSeconds": 0.06725192070007324
+    },
+    {
+      "name": "ExportExtractorTests.testDisposeLeavesNoDecoderBehind",
+      "identifier": "ExportExtractorTests/testDisposeLeavesNoDecoderBehind",
+      "result": "Passed",
+      "durationSeconds": 1.4258400201797485
+    },
+    {
+      "name": "ExportExtractorTests.testMaxLongSideSizesTheFrame",
+      "identifier": "ExportExtractorTests/testMaxLongSideSizesTheFrame",
+      "result": "Passed",
+      "durationSeconds": 0.02201700210571289
+    },
+    {
+      "name": "ItemDecoderExportTests.testAnItemWithoutFramesInItsRangeDoesNotHang",
+      "identifier": "ItemDecoderExportTests/testAnItemWithoutFramesInItsRangeDoesNotHang",
+      "result": "Passed",
+      "durationSeconds": 0.006699919700622559
+    },
+    {
+      "name": "ItemDecoderExportTests.testDirectFramesAreRetiredOneByOneInExport",
+      "identifier": "ItemDecoderExportTests/testDirectFramesAreRetiredOneByOneInExport",
+      "result": "Passed",
+      "durationSeconds": 0.017650961875915527
+    },
+    {
+      "name": "ItemDecoderExportTests.testEveryFrameOfAMontage",
+      "identifier": "ItemDecoderExportTests/testEveryFrameOfAMontage",
+      "result": "Passed",
+      "durationSeconds": 0.1102069616317749
+    },
+    {
+      "name": "ItemDecoderExportTests.testEveryFrameOfASingleItem",
+      "identifier": "ItemDecoderExportTests/testEveryFrameOfASingleItem",
+      "result": "Passed",
+      "durationSeconds": 0.07171404361724854
+    },
+    {
+      "name": "ItemDecoderExportTests.testOpeningAndSeekingPastTheEndOfAnItem",
+      "identifier": "ItemDecoderExportTests/testOpeningAndSeekingPastTheEndOfAnItem",
+      "result": "Passed",
+      "durationSeconds": 0.13069391250610352
+    },
+    {
+      "name": "ItemDecoderExportTests.testReleaseFreesTheDecoder",
+      "identifier": "ItemDecoderExportTests/testReleaseFreesTheDecoder",
+      "result": "Passed",
+      "durationSeconds": 1.1431959867477417
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testAForwardScrubReadsTheReaderOn",
+      "identifier": "ItemDecoderPreviewTests/testAForwardScrubReadsTheReaderOn",
+      "result": "Passed",
+      "durationSeconds": 0.07434999942779541
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testALoopWrapsToTheFirstFrame",
+      "identifier": "ItemDecoderPreviewTests/testALoopWrapsToTheFirstFrame",
+      "result": "Passed",
+      "durationSeconds": 0.19948291778564453
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testAScrubSettlesOnTheRightFrame",
+      "identifier": "ItemDecoderPreviewTests/testAScrubSettlesOnTheRightFrame",
+      "result": "Passed",
+      "durationSeconds": 0.9131439924240112
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testASeekKeepsTheFrameOnScreenAlive",
+      "identifier": "ItemDecoderPreviewTests/testASeekKeepsTheFrameOnScreenAlive",
+      "result": "Passed",
+      "durationSeconds": 0.028504014015197754
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testDirectFramesAreRetiredAfterFourInPreview",
+      "identifier": "ItemDecoderPreviewTests/testDirectFramesAreRetiredAfterFourInPreview",
+      "result": "Passed",
+      "durationSeconds": 0.019627928733825684
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testPlayThroughAtSixtyHertz",
+      "identifier": "ItemDecoderPreviewTests/testPlayThroughAtSixtyHertz",
+      "result": "Passed",
+      "durationSeconds": 0.09836196899414062
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testPlayThroughEveryItemOfAMontage",
+      "identifier": "ItemDecoderPreviewTests/testPlayThroughEveryItemOfAMontage",
+      "result": "Passed",
+      "durationSeconds": 0.1399219036102295
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testSeekIntoTheMiddleOfAMontageItem",
+      "identifier": "ItemDecoderPreviewTests/testSeekIntoTheMiddleOfAMontageItem",
+      "result": "Passed",
+      "durationSeconds": 0.15837609767913818
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testSeeks",
+      "identifier": "ItemDecoderPreviewTests/testSeeks",
+      "result": "Passed",
+      "durationSeconds": 0.14687395095825195
+    },
+    {
+      "name": "ItemDecoderPreviewTests.testTheFirstFrameAfterASeekIsShown",
+      "identifier": "ItemDecoderPreviewTests/testTheFirstFrameAfterASeekIsShown",
+      "result": "Passed",
+      "durationSeconds": 0.0367588996887207
+    },
+    {
+      "name": "MediaTests.test1080p",
+      "identifier": "MediaTests/test1080p",
+      "result": "Passed",
+      "durationSeconds": 0.2834059000015259
+    },
+    {
+      "name": "MediaTests.test4K",
+      "identifier": "MediaTests/test4K",
+      "result": "Passed",
+      "durationSeconds": 0.9472830295562744
+    },
+    {
+      "name": "MediaTests.test60fps",
+      "identifier": "MediaTests/test60fps",
+      "result": "Passed",
+      "durationSeconds": 0.23738503456115723
+    },
+    {
+      "name": "MediaTests.testAnExplicitResolutionWins",
+      "identifier": "MediaTests/testAnExplicitResolutionWins",
+      "result": "Passed",
+      "durationSeconds": 0.045338988304138184
+    },
+    {
+      "name": "MediaTests.testDirectTextureMode",
+      "identifier": "MediaTests/testDirectTextureMode",
+      "result": "Passed",
+      "durationSeconds": 0.026162028312683105
+    },
+    {
+      "name": "MediaTests.testHEVC",
+      "identifier": "MediaTests/testHEVC",
+      "result": "Passed",
+      "durationSeconds": 0.29099905490875244
+    },
+    {
+      "name": "MediaTests.testMaxLongSideCapsTheDecodedSize",
+      "identifier": "MediaTests/testMaxLongSideCapsTheDecodedSize",
+      "result": "Passed",
+      "durationSeconds": 0.1649700403213501
+    },
+    {
+      "name": "MediaTests.testMaxLongSideOnARotatedClip",
+      "identifier": "MediaTests/testMaxLongSideOnARotatedClip",
+      "result": "Passed",
+      "durationSeconds": 0.09506404399871826
+    },
+    {
+      "name": "MediaTests.testOddDimensions",
+      "identifier": "MediaTests/testOddDimensions",
+      "result": "Passed",
+      "durationSeconds": 0.04582500457763672
+    },
+    {
+      "name": "MediaTests.testRotated",
+      "identifier": "MediaTests/testRotated",
+      "result": "Passed",
+      "durationSeconds": 0.02819991111755371
+    },
+    {
+      "name": "MediaTests.testSlowMotionIsDecodedInThePresentationTimeline",
+      "identifier": "MediaTests/testSlowMotionIsDecodedInThePresentationTimeline",
+      "result": "Passed",
+      "durationSeconds": 0.08938705921173096
+    },
+    {
+      "name": "PreviewExtractorTests.testAClosedItemLeavesTheFramesObject",
+      "identifier": "PreviewExtractorTests/testAClosedItemLeavesTheFramesObject",
+      "result": "Passed",
+      "durationSeconds": 0.10002493858337402
+    },
+    {
+      "name": "PreviewExtractorTests.testALazyMontagePlaysThroughWithFewDecoders",
+      "identifier": "PreviewExtractorTests/testALazyMontagePlaysThroughWithFewDecoders",
+      "result": "Passed",
+      "durationSeconds": 5.9170860052108765
+    },
+    {
+      "name": "PreviewExtractorTests.testALoopWrapsToTheStart",
+      "identifier": "PreviewExtractorTests/testALoopWrapsToTheStart",
+      "result": "Passed",
+      "durationSeconds": 3.768056035041809
+    },
+    {
+      "name": "PreviewExtractorTests.testAnEagerMontagePlaysThrough",
+      "identifier": "PreviewExtractorTests/testAnEagerMontagePlaysThrough",
+      "result": "Passed",
+      "durationSeconds": 6.565274000167847
+    },
+    {
+      "name": "PreviewExtractorTests.testAScrubSettlesOnTheRightFrame",
+      "identifier": "PreviewExtractorTests/testAScrubSettlesOnTheRightFrame",
+      "result": "Passed",
+      "durationSeconds": 1.1597100496292114
+    },
+    {
+      "name": "PreviewExtractorTests.testASeekBeforeReadyLands",
+      "identifier": "PreviewExtractorTests/testASeekBeforeReadyLands",
+      "result": "Passed",
+      "durationSeconds": 0.0596240758895874
+    },
+    {
+      "name": "PreviewExtractorTests.testASeekIntoAClosedItemShowsItsFrame",
+      "identifier": "PreviewExtractorTests/testASeekIntoAClosedItemShowsItsFrame",
+      "result": "Passed",
+      "durationSeconds": 0.2163640260696411
+    },
+    {
+      "name": "PreviewExtractorTests.testDisposeReleasesEverything",
+      "identifier": "PreviewExtractorTests/testDisposeReleasesEverything",
+      "result": "Passed",
+      "durationSeconds": 0.13558495044708252
+    },
+    {
+      "name": "PreviewExtractorTests.testSeeksWhilePaused",
+      "identifier": "PreviewExtractorTests/testSeeksWhilePaused",
+      "result": "Passed",
+      "durationSeconds": 0.5318830013275146
+    }
+  ],
+  "passedAssertions": [
+    "ios/tests/LegacyParityTests.mm:DecoderWindowTests.testOpensImpliesKeeps",
+    "ios/tests/LegacyParityTests.mm:DecoderWindowTests.testSameCasesAsTheHostTest",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testAMontageExportsItsFrames",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testAnUnknownCodecFallsBackToH264",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testCopyModeEncodesEveryFrame",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testDirectModeEncodesEveryFrame",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testHEVC",
+    "ios/tests/LegacyParityTests.mm:EncoderTests.testTheTestVideoIsWhatItSays",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testALazyMontageGivesTheSameFramesWithFewerDecoders",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testAMontageGivesEachItemItsFrame",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testAnItemWithoutFramesDoesNotHoldTheExport",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testASingleItemGivesItsFrameAtEveryTime",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testDisposeLeavesNoDecoderBehind",
+    "ios/tests/LegacyParityTests.mm:ExportExtractorTests.testMaxLongSideSizesTheFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testAnItemWithoutFramesInItsRangeDoesNotHang",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testDirectFramesAreRetiredOneByOneInExport",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testEveryFrameOfAMontage",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testEveryFrameOfASingleItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testOpeningAndSeekingPastTheEndOfAnItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderExportTests.testReleaseFreesTheDecoder",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testAForwardScrubReadsTheReaderOn",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testALoopWrapsToTheFirstFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testAScrubSettlesOnTheRightFrame",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testASeekKeepsTheFrameOnScreenAlive",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testDirectFramesAreRetiredAfterFourInPreview",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testPlayThroughAtSixtyHertz",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testPlayThroughEveryItemOfAMontage",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testSeekIntoTheMiddleOfAMontageItem",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testSeeks",
+    "ios/tests/LegacyParityTests.mm:ItemDecoderPreviewTests.testTheFirstFrameAfterASeekIsShown",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test1080p",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test4K",
+    "ios/tests/LegacyParityTests.mm:MediaTests.test60fps",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testAnExplicitResolutionWins",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testDirectTextureMode",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testHEVC",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testMaxLongSideCapsTheDecodedSize",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testMaxLongSideOnARotatedClip",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testOddDimensions",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testRotated",
+    "ios/tests/LegacyParityTests.mm:MediaTests.testSlowMotionIsDecodedInThePresentationTimeline",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAClosedItemLeavesTheFramesObject",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testALazyMontagePlaysThroughWithFewDecoders",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testALoopWrapsToTheStart",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAnEagerMontagePlaysThrough",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testAScrubSettlesOnTheRightFrame",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testASeekBeforeReadyLands",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testASeekIntoAClosedItemShowsItsFrame",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testDisposeReleasesEverything",
+    "ios/tests/LegacyParityTests.mm:PreviewExtractorTests.testSeeksWhilePaused"
+  ],
+  "fixture": {
+    "file": "ios/tests/fixtures/legacy-odd1279x719.mov",
+    "sha256": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+    "metadata": {
+      "schema": 1,
+      "width": 1279,
+      "height": 719,
+      "frames": 30,
+      "fps": 30,
+      "frameIndicesExact": true,
+      "timestampsExact": true,
+      "codec": "jpeg",
+      "file": "legacy-odd1279x719.mov",
+      "bytes": 601364,
+      "sha256": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12",
+      "writerSourceSha256": "1a1830e81ec4808952855c8d8e098e4abb723c7699c47d2f04e4cf15386a85cf",
+      "generatedLocally": true,
+      "execution": "macOS AVFoundation pixel/frame-index/PTS validation"
+    }
+  },
+  "archivedInitialBuild": {
+    "localDirectory": "benchmark/results/frozen-3.0.6-initial",
+    "files": {
+      "ReactNativeSkiaWebGPUVideoExample": "d8add0b84daf5ad62f789c1cb256e02582ca62dae55287d5523664e3c250dbff",
+      "main.jsbundle": "81d05e2c71785474ac7f17bdf32c6880db7cd541ea611d4c3b979e68243f8b02",
+      "PlugIns/ReactNativeSkiaWebGPUVideoExampleTests.xctest/ReactNativeSkiaWebGPUVideoExampleTests": "c135a6a27d5886b977ffed90f3d67704d2d8d870efca046fe86eb4af612d3b46",
+      "PlugIns/ReactNativeSkiaWebGPUVideoExampleTests.xctest/legacy-odd1279x719.mov": "f10c20812dab80bf83ff260bf221b89641eb51258e5b4ca6b91be35c810a0b12"
+    },
+    "qualification": "Archived bytes hashed during extraction; native xcresult independently establishes test execution. The main.jsbundle hash does not establish successful JavaScript/Skia interop execution."
+  },
+  "evidence": {
+    "resultBundleName": "NativeTests.xcresult",
+    "resultInfoSha256": "11ddb450f860a5973faf49720dd61006e862e5283f22eba47227c33b9dfbb42c",
+    "summarySha256": "6f021aaf7f71f8f6090019bdd22af0587728f3a6141e3d84b68cb06317797c3d",
+    "testNodesSha256": "3005447e4f6e6812c1a66b35ca5b2c0cdad767668b7661ed4674a0e5309af57c",
+    "actionMetadataSha256": "16cc9432a61f6e485dcfccdb9c193381c488b342db16c17662cd9b3551db04a2",
+    "buildLogSha256": "caaa2383fb6efd0bdac2dd8f63a8a1b53e0341e53bd8bface47dc615b0afbee6",
+    "extraction": "xcrun xcresulttool get test-results summary/tests --compact; get object --legacy --format json",
+    "localEvidence": "benchmark/results/ios-native-device-306-xcresult-20261007.local.json"
+  },
+  "limits": [
+    "50 named XCTest cases contain multiple assertions; they are not 50 individual assertions.",
+    "This native iPhone result does not qualify the JavaScript preview/export smoke, memory/performance, GPU interop or Android.",
+    "No successful JavaScript smoke had started at the time of this extraction because iPhone launch was blocked by the locked device.",
+    "Android and JavaScript source edits during migration are not assigned to the native build via a fabricated global fingerprint.",
+    "Later iOS/C++/guarded Skia header optimizations require a fresh native run and interop tests; this proof remains versioned historical evidence.",
+    "Persistent device identifier, friendly name, absolute result path and raw Xcode metadata are retained only in ignored local evidence."
+  ]
+}

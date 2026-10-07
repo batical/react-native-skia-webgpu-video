@@ -1,0 +1,142 @@
+# Points amont à revoir lors d'une mise à jour Skia
+
+État revu le **7 octobre 2026**. Le code et les dépendances déclarées ciblent désormais **`react-native-skia@3.0.6` / `react-native-webgpu@0.12.1`**, Graphite **154.1.0** et Dawn **m154a**. La migration est intégrée et son import a été optimisé après archivage du premier build 3.0.6. Le code optimisé passe **157 tests JavaScript dans huit suites et le contrôle TypeScript** ; son fonctionnement et ses performances sur appareil restent à qualifier au moment de cette note. Les [mesures iPhone](PERFORMANCE_AB_IPHONE_303.md), l'[endurance iPhone](PERFORMANCE_SOAK_IPHONE_303.md) et les chiffres simulateur conservés plus bas concernent exclusivement **3.0.3 / 0.11.0**. Aucun de ces résultats ne qualifie le nouveau couple.
+
+## Interop actuelle et coût de la migration
+
+Skia 3.0.5 a déplacé l'import natif vidéo vers WebGPU ; 3.0.6 conserve les mêmes sources d'API et livre les nouveaux binaires Graphite. Le changement vient de [#4139](https://github.com/wcandillon/react-native-skia/pull/4139), pas d'un renommage suffisant à lui seul.
+
+| API utilisée en 3.0.3 | Contrat en 3.0.6 |
+| --- | --- |
+| `Image.MakeImageFromNativeTexture` | `Image.MakeImageFromGPUTexture`, avec objet GPUTexture ou pointeur WGPUTexture en BigInt |
+| `Surface.MakeFromNativeTexture` | `Surface.MakeFromGPUTexture`, sur le device partagé et avec `RENDER_ATTACHMENT` |
+| `Image.MakeNativeTextureFromImage` | `Image.MakeGPUTextureFromImage` ; référence native à adopter exactement une fois |
+| `Image.MakeImageFromNativeBuffer` | Toujours présente pour le web, mais lève une erreur en natif ; notre adaptateur emploie désormais le wrapper NativeVideoFrame de WebGPU |
+| `Skia.NativeBuffer` | Supprimée ; ne pas restaurer cette API dans notre patch |
+
+Sur iOS, [frameInterop.ts](../src/frameInterop.ts) conserve notre CVPixelBuffer et le fait retenir aussi par un `NativeVideoFrame`. WebGPU copie les pixels dans **une texture réutilisable par runtime**, puis Skia crée directement un snapshot possédé depuis une surface enveloppant cette texture. La fin de la queue partagée précède la libération des deux leases, la fermeture des wrappers de surface/canvas et la réutilisation de l'intermédiaire. Il n'y a plus de surface de staging distincte ni de `drawImage` plein cadre entre l'import et le snapshot.
+
+La surface Skia est **un wrapper neuf par frame**, sans nouvelle texture associée : les écritures externes WebGPU n'invalident pas son cache de snapshot. Réutiliser ce wrapper pourrait rendre l'image précédente. Le snapshot Graphite reste une copie indépendante, et `COPY_SRC` ajouté à la texture permet sa copie GPU directe. La fermeture explicite des wrappers conserve uniquement la texture réutilisable et les images publiées. Les tests modélisent notamment ce cache de snapshot, un producteur en pause, les redimensionnements, les erreurs de wrapping/drain et la rétention des leases ; ils ne prouvent pas les pixels effectivement calculés par le GPU.
+
+Le chemin optimisé comporte **deux écritures GPU plein cadre** : buffer natif → texture d'import → snapshot. Le premier build 3.0.6, archivé comme référence avant cette optimisation, en comportait trois avec un staging Skia supplémentaire. Le changement enlève donc une passe et une cible GPU : **31,64 Mio à 3840 × 2160 BGRA8 par runtime**, hors alignement et pilote. Une texture d'import de cette taille reste nécessaire, en plus des snapshots des producteurs. Cette économie est déduite des allocations du code ; elle n'est pas encore une baisse mesurée du RSS ou de l'empreinte physique, ni une accélération démontrée. La synchronisation et la durée de vie des images n'ont pas été relâchées pour obtenir ce gain théorique.
+
+L'export garde son `readPixels` vers un buffer CPU réutilisé puis le pool encodeur natif. Les modes publics `copy` et `direct` restent des options de compatibilité, avec le même transport effectif dans ce backend. L'import Android de notre codec reste le chemin RGBA existant ; aucune migration AHardwareBuffer n'est revendiquée ici.
+
+## Historique 3.0.3 : pourquoi éviter `Skia.NativeBuffer.MakeFromImage`
+
+En 3.0.3, le chemin Apple de `makeNativeBuffer` réalise une lecture des pixels sur CPU, construit un IOSurface puis un CVPixelBuffer. Ce n'est pas une sortie vidéo sans copie. Dans [`apple/RNSkApplePlatformContext.mm`, version 3.0.3](https://github.com/wcandillon/react-native-skia/blob/v3.0.3/packages/skia/apple/RNSkApplePlatformContext.mm#L122-L174), les objets retournés par `CFNumberCreate`, le dictionnaire créé par `CFDictionaryCreateMutable` et l'IOSurface créé par `IOSurfaceCreate` n'ont pas de libération correspondante dans ce chemin, y compris lors de certaines erreurs.
+
+**Décision historique, conservée : ne pas utiliser cette fonction dans la boucle d'export.** L'encodeur de référence reçoit des pixels RGBA/BGRA et utilise son propre pool borné. Cela évite de dépendre de cette allocation amont par frame. Corriger seulement les références Core Foundation ne transformerait pas la fonction en export GPU direct : les copies CPU resteraient présentes.
+
+Cette API est maintenant supprimée en 3.0.6. Si une future API de sortie de buffers natifs apparaît, reprendre les critères suivants :
+
+1. Lire la nouvelle fonction et les chemins d'erreur, vérifier l'équilibre de chaque Create/Retain et du release du CVPixelBuffer retourné.
+2. Vérifier le format, les strides, le coût de copie et l'ownership de l'objet exporté, indépendamment de la correction des références.
+3. Exécuter des exports longs, répétés et annulés sur appareils iOS physiques, avec des tailles alternées ; vérifier les compteurs de session et un palier des allocations natives/GPU après warmup.
+4. Comparer au chemin de référence avec les mêmes fichiers, dimensions, codecs et collecteurs. Activer le nouveau chemin explicitement seulement si ses pixels, timestamps, fermeture et résultats mémoire sont qualifiés.
+
+Aucun correctif de cette fonction n'est inclus dans ce dépôt et aucune issue amont n'a été publiée dans le cadre de ce travail. Cette analyse historique ne décrit pas une fonction encore disponible dans le build 3.0.6.
+
+## Prototype futur : rendre dans le buffer de l'encodeur
+
+**Proposition à discuter, sans implémentation ni validation de performances.** Le backend actuel attend le GPU puis appelle `readPixels` et transmet ces pixels au pool natif, pour les deux valeurs de `encoderMode` : [exportVideoComposition.ts](../src/exportVideoComposition.ts). Les deux valeurs de `textureMode` produisent des images possédées selon le chemin décrit ci-dessus : [frameInterop.ts](../src/frameInterop.ts). Le [contrat public](../src/types.ts) décrit cette compatibilité. Le mot `direct` dans un scénario ne prouve donc pas que le nouveau chemin évite les copies.
+
+L'ancien moteur iOS utilisait déjà Metal. Son export direct copiait sur GPU la texture vers une vue Metal du CVPixelBuffer destiné à l'encodeur. La piste d'optimisation du candidat consiste surtout à supprimer son aller-retour CPU par image ; ajouter un autre canvas natif ne règle pas à lui seul cet intermédiaire. La comparaison de bibliothèques doit conserver cette différence de chemins dans son interprétation.
+
+Les sources des versions ciblées contiennent plusieurs briques utiles :
+
+- WebGPU 0.12.1 expose `importSharedTextureMemory`, puis `createTexture`, `beginAccess` et `endAccess`. Sur iOS, son `handle` est un **IOSurfaceRef**, tandis que `createVideoFrameFromNativeBuffer` reçoit un **CVPixelBufferRef**. Ne pas intervertir ces pointeurs. La fermeture explicite des ressources d'import reste à vérifier pour le prototype de sortie. [Description officielle des imports natifs](https://wcandillon.github.io/react-native-webgpu/docs/getting-started/native-api).
+- Skia 3.0.6 expose `Skia.Surface.MakeFromGPUTexture` pour dessiner dans une texture du device partagé ; le wrapper exige l'usage `RenderAttachment`. [Source versionnée](https://github.com/wcandillon/react-native-skia/blob/v3.0.6/packages/skia/cpp/rnskia/RNDawnContext.h). Cette existence ne prouve pas que tous les formats ou buffers vidéo importés sont des cibles de rendu acceptées.
+- Le pool de [VideoEncoderHostObject.mm](../ios/VideoEncoderHostObject.mm) crée des buffers BGRA compatibles Metal/IOSurface, refuse de dépasser trois allocations et attend leur disponibilité. Sa branche native `encodeFrame(CVPixelBufferRef, ...)` peut soumettre directement un buffer ; elle n'est pas utilisée par le chemin JavaScript actuel de lecture des pixels.
+
+Le device principal de Skia 3.0.6 demande `SharedTextureMemoryIOSurface` et `SharedFenceMTLSharedEvent` dans [RNDawnUtils.h](https://github.com/wcandillon/react-native-skia/blob/v3.0.6/packages/skia/cpp/rnskia/RNDawnUtils.h). Le commentaire natif impose une soumission avant `EndAccess` sur ce chemin Metal ; le device secondaire possède un contrat différent et omet délibérément cette feature de fence. Le prototype doit donc utiliser le device principal partagé, vérifier ses capacités effectives et ne pas transposer le chemin caméra du device secondaire.
+
+Le plus petit prototype iOS devrait porter sur **la sortie seulement**, à taille fixe, avec une frame préparée à la fois. Il conserverait le décodage et `drawFrame` existants :
+
+1. Acquérir un CVPixelBuffer du pool par une nouvelle interface native de session. La session doit conserver explicitement le buffer et fournir un identifiant de réservation, son IOSurface, ses dimensions et son format ; un pointeur nu sans propriétaire ne suffit pas.
+2. Importer cet IOSurface sur le device de Skia, vérifier les usages/format permis, ouvrir son accès et envelopper la texture dans une surface Skia. Initialiser toute l'image avant de dessiner. Ne pas créer de snapshot intermédiaire pour ce chemin.
+3. Soumettre le dessin Skia, fermer l'accès partagé et établir la fin effective des écritures GPU avant la soumission à AVAssetWriter. Le premier prototype peut attendre cette fin explicitement ; une version asynchrone ultérieure demandera une propagation correcte des fences. `endAccess` ou l'acceptation d'une commande ne doit pas être confondu avec la fin physique de son exécution.
+4. Transmettre le CVPixelBuffer à l'encodeur, détacher et fermer ses consommateurs GPU, puis relâcher la réservation de la session dans un ordre prouvé. AVAssetWriter peut conserver le buffer après son acceptation : le pool doit attendre sa restitution, sans réécrire manuellement dans un buffer encore en cours d'encodage.
+5. Traiter annulation, erreur d'import, erreur d'encodage et échec de synchronisation sans fermer une ressource encore utilisée. Garder des files et réservations bornées, comptabiliser les allocations réelles et revenir au chemin de référence si la capacité requise manque avant le démarrage. Une perte du device partagé demande l'arrêt du travail concerné, pas la création silencieuse d'un device de remplacement.
+
+Cette architecture pourrait éviter la lecture CPU de la **sortie composée**. Elle ne supprimerait pas automatiquement la copie des frames d'entrée, les conversions du codec ni toutes les copies internes du pilote. Elle ne doit pas être présentée comme une vidéo intégralement « zero-copy ». L'équivalent Android exige une étude distincte des buffers et de l'entrée de MediaCodec.
+
+**Décision proposée : essayer les APIs existantes avant un nouveau patch Skia.** Le travail principal appartient à l'interface entre notre pool vidéo, l'accès partagé et l'encodeur. Si une capacité manque réellement, isoler un reproducer et proposer le plus petit changement amont ; ne pas maintenir un fork général de Graphite ou Dawn. Les critères de passage seront les pixels/couleurs/timestamps, les annulations et changements de taille, puis les mêmes sessions longues sur appareils avec mesure de mémoire et durée. Le petit patch de durée de vie décrit ci-dessous reste indépendant de ce prototype.
+
+## Patch distinct : durée de vie et soumissions vérifiées
+
+Dans Skia 3.0.3 et encore dans les sources 3.0.6, le wrapper `JsiSkCanvas` peut garder une référence propriétaire à la surface dont il provient. Disposer uniquement le wrapper `SkSurface` ne ferme donc pas cette référence tant que le canvas est encore détenu ; attendre le GC pour les surfaces temporaires est insuffisant pour une fermeture déterministe.
+
+Le patch local ajoute `canvas.dispose()`, idempotent, qui annule `_canvas` et relâche `_surface`, ainsi que la déclaration TypeScript. Les accès ultérieurs via `getCanvas()` échouent explicitement.
+
+Il vérifie aussi le résultat de `makeImageSnapshot()` dans `JsiSkSurface.h`. En cas d'échec d'allocation, une erreur est levée avant de remplacer l'image détenue par le consommateur ou de construire un wrapper autour d'une image nulle. Cette garde est nécessaire sous pression mémoire. Le patch ne restaure pas `Skia.NativeBuffer`.
+
+La migration ajoute aussi une activation interne par surface, `enableCheckedSubmissions()`, appelée par [getVideoCanvas](../src/canvas.ts). Pour ces seules surfaces, la soumission de `flush` et celle de `makeImageSnapshot` refusent un recording nul et vérifient les résultats de `insertRecording` et `submit`. Les surfaces qui n'activent pas ce mode conservent le comportement amont. Cette méthode est une garde privée de notre adaptateur, pas une nouvelle API publique à utiliser dans une application de montage.
+
+Cette protection répond à un cas précis : le blit WebGPU peut déjà être soumis lorsque Graphite échoue. Un retour normal de `flush(true)` ne doit pas être interprété comme une preuve de fin de queue si l'amont a ignoré l'échec d'insertion ou de soumission. Les chemins d'erreur conservent les leases et leurs réservations jusqu'à un drain réussi, et refusent de les fermer lors d'un retry du même frame encore retenu.
+
+La [source Skia de ce build](https://chromium.googlesource.com/skia/+/2466dcf3937437e217e7f284afe0e1aae15891ce/src/gpu/graphite/Recorder.cpp) distingue un recording vide valide d'un recording nul signalant un échec. Le mode vérifié accepte donc le premier. En fonctionnement normal, [DawnQueueManager](https://chromium.googlesource.com/skia/+/2466dcf3937437e217e7f284afe0e1aae15891ce/src/gpu/graphite/dawn/DawnQueueManager.cpp) soumet sur la même queue que WebGPU puis attend `OnSubmittedWorkDone` pour le flush synchrone. Cette revue de source et les tests JavaScript ne remplacent pas la qualification du chemin optimisé sur appareil ; ils ne garantissent pas une récupération générale après perte du device.
+
+Fichiers inspectables :
+
+- [`patches/react-native-skia+3.0.6.patch`](../patches/react-native-skia+3.0.6.patch) : diff du correctif.
+- [`scripts/skia-canvas-patch.json`](../scripts/skia-canvas-patch.json) : version, empreintes avant/après et substitutions attendues.
+- [`scripts/apply-skia-canvas-patch.mjs`](../scripts/apply-skia-canvas-patch.mjs) : vérifie tout avant toute écriture, accepte un patch déjà appliqué, refuse un paquet différent.
+
+Les appels de la bibliothèque doivent soumettre et attendre les enregistrements concernés avant cette fermeture, sur le runtime propriétaire. Le patch n'autorise pas la libération anticipée d'une texture encore utilisée par le GPU. Reconstruire le binaire après son application et refaire les cycles de preview/export.
+
+L'application consommatrice doit intégrer le patch avant sa compilation native, dans son propre mécanisme d'installation/CI. Le script conservé dans le paquet est une entrée explicite ; il n'est pas appliqué silencieusement par le chargement JavaScript. Lors d'une mise à jour Skia, conserver l'échec du garde-fou jusqu'à la revue de la nouvelle durée de vie et des erreurs d'allocation. Retirer chaque partie du patch lorsque l'amont offre une protection équivalente et que les tests de ressources l'ont confirmé.
+
+### Readback d'export : garde amont à étudier séparément
+
+Dans les sources 3.0.6, `JsiSkCanvas::readPixels` crée son propre snapshot et le soumet directement à `DawnContext`, sans passer par le mode vérifié du wrapper surface. Ce chemin ne vérifie pas son snapshot nul. `DawnContext::MakeRasterImage` ne vérifie pas non plus le résultat nul du callback asynchrone avant son utilisation et ignore le résultat de sa soumission. Les sources sont [JsiSkCanvas.h](https://github.com/wcandillon/react-native-skia/blob/v3.0.6/packages/skia/cpp/api/JsiSkCanvas.h) et [RNDawnContext.h](https://github.com/wcandillon/react-native-skia/blob/v3.0.6/packages/skia/cpp/rnskia/RNDawnContext.h).
+
+Ce sont des chemins d'échec à reproduire sous pression mémoire ou perte du device, pas un crash attribué aux mesures actuelles. Le flush vérifié avant le readback sécurise le travail déjà enregistré ; il ne transforme pas ces opérations suivantes en soumissions vérifiées. Aucun correctif supplémentaire de ce readback n'est inclus dans l'optimisation d'entrée. Avant de supprimer une attente ou de modifier l'export, isoler ce contrat et tester les échecs et la fermeture ; conserver le petit patch existant dans son périmètre actuel.
+
+## Couple Skia / WebGPU et anciens modules natifs
+
+Le partage de textures demande le même Dawn et le même device natif. Le couple actuel ne doit pas être mis à jour séparément sans revue des versions natives et des APIs d'interop. Une nouvelle version de package ou un nouveau SDK peut changer les formats, les fences et la durée de vie des buffers.
+
+Le device possédé par Skia doit rester possédé par Skia. Un adaptateur de la bibliothèque ne doit pas le détruire à la fermeture d'une session. Les imports natifs Metal/GL historiques, les définitions Ganesh et les modules compilés contre les anciens headers demandent une migration explicite. Réappliquer le patch de destruction de surface de l'application Skia 2 à Skia 3 sans cette revue serait une hypothèse injustifiée.
+
+La paire a été vérifiée dans les **archives npm publiées**, sans contourner le contrôle du podspec : Graphite Apple iOS 154.1.0 contient `libs/.dawn-version = dawn-chrome-m154a` ; WebGPU 0.12.1 annonce `chrome-m154a`, commit Dawn `3d786993a7ded64c4ebb4884b9b079db9ad0e580`. Le couple historique mesuré 3.0.3 / 0.11.0 utilisait le tag `dawn-chrome-m154`. Ne pas mélanger ces binaires dans une série A/B. La [documentation d'interop](https://wcandillon.github.io/react-native-webgpu/docs/integrations/react-native-skia) demande un couple compatible et une instance Dawn commune.
+
+La [release Skia 3.0.5](https://github.com/wcandillon/react-native-skia/releases/tag/v3.0.5) annonce le déplacement des APIs NativeBuffer. La [release 3.0.6 du 7 octobre](https://github.com/wcandillon/react-native-skia/releases/tag/v3.0.6) livre Graphite 154.1.0, le build Android avec RTTI et un correctif de publication SwiftPM. La comparaison des tarballs 3.0.5 et 3.0.6 ne trouve qu'un changement de `package.json` : les sources d'interop sont identiques. Le patch de durée de vie reste nécessaire et doit porter les empreintes 3.0.6.
+
+WebGPU 0.12.0 ajoute le blit de `NativeVideoFrame` dans `copyExternalImageToTexture`, des helpers publics de vidéo et des contrôles supplémentaires de lecteur. Notre migration conserve ses propres codecs ; elle utilise le wrapper et le blit. Entre 0.12.0 et 0.12.1, les sources JS/C++ de binding sont identiques : les changements portent sur les binaires Dawn et leur packaging.
+
+Le suffixe **m154a** désigne une fabrication corrigée de Dawn, pas une nouvelle version du standard WebGPU. Le [correctif Tint au tag exact](https://github.com/wcandillon/react-native-webgpu/blob/dawn-chrome-m154a/packages/webgpu/scripts/dawn-patches/tint-looprange-function-variable.patch) adapte les variables de boucle pour éviter un blocage GPU documenté sur Pixel 8 / Mali-G715. Il ne démontre aucun gain de vitesse sur iPhone. Les pages de documentation non versionnées doivent toujours être confrontées au tag et aux dépendances verrouillées ; le fait qu'une API y figure ne prouve pas sa présence dans un ancien build.
+
+## Pourquoi investir dans WebGPU pour la composition vidéo
+
+WebGPU est l'API de rendu et de calcul GPU ; Dawn en est une implémentation native utilisant notamment Metal et Vulkan ; Graphite est le backend de rendu de Skia ; React Native Skia 3 expose ce rendu à l'application. Three.js ajoute un moteur 3D. Core ML/Vision et les modèles ML restent des composants séparés. Une annonce concernant l'un de ces niveaux ne livre pas automatiquement une capacité dans tous les autres. [Présentation officielle de Dawn](https://dawn.googlesource.com/dawn/+/refs/heads/main/README.md).
+
+William Candillon explique que React Native WebGPU vise la 3D et le calcul GPU général, puis décrit Redraw comme une bibliothèque de nouvelles primitives vectorielles communes au web et au natif. Ce sont ses objectifs publiés, pas une hypothèse sur ses motivations personnelles. [Présentation de William](https://wcandillon.dev/).
+
+Pour une application de montage avec widgets, la valeur immédiate à explorer est le partage de textures entre une petite scène 3D ou un effet de calcul et le canvas Skia qui porte déjà les widgets. L'[intégration Three.js](https://wcandillon.github.io/react-native-webgpu/docs/integrations/three-js) décrit une scène rendue sur le device de Skia puis composée comme une image. Ce partage peut éviter une copie entre ces deux rendus ; il ne préjuge pas du chemin d'export vidéo ni de son coût global. Le [guide de migration](MIGRATION.md) distingue les fonctionnalités disponibles des intégrations encore à construire.
+
+La mention d'une prochaine « version WebGPU par Google » n'a pas pu être rattachée à une annonce précise dans cette étude. Ne pas décider de la migration à partir de cette formulation seule : relever le lien, la date, le composant concerné, puis sa disponibilité dans les versions natives retenues. Une sortie Chrome ou Dawn ne met pas automatiquement à jour le binaire de l'application iPhone. Aucun suivi automatique n'est créé par cette note.
+
+## Caches Graphite : budget indépendant des ressources vidéo
+
+Les headers inspectés dans **Skia 3.0.3 et 3.0.6** fixent un budget GPU par défaut de **256 Mio pour chaque Recorder** et de **256 Mio pour le Context**. Références exactes dans ces paquets : `cpp/skia/include/gpu/graphite/Recorder.h:79–81` et `ContextOptions.h:123–127`. Ce sont des budgets de ressources allouées/retenues et de cache ; cela ne signifie pas que 256 Mio sont alloués en permanence, ni que le RSS leur est attribuable.
+
+Le wrapper [RNDawnContext.h de Skia 3.0.3](https://github.com/wcandillon/react-native-skia/blob/v3.0.3/packages/skia/cpp/rnskia/RNDawnContext.h) crée les options et le Recorder en `thread_local` aux lignes 429–436 et le Context avec son budget par défaut aux lignes 480–485, sans override de ces budgets. Les sources 3.0.6 conservent cette politique par défaut. Le Recorder appartient à un thread, pas à chaque export ; plusieurs threads peuvent posséder leurs Recorders. Ces budgets ne sont pas comptés par le budget `ownedBytes` de la vidéo et ne plafonnent pas le RSS du processus.
+
+Les APIs natives distinguent `currentBudgetedBytes`, `currentPurgeableBytes`, `maxBudgetedBytes` et `setMaxBudgetedBytes` (`Recorder.h:218–238`, `Context.h:240–260`). Une baisse du budget tente de libérer des ressources ; ce n'est pas un plafond strict de mémoire physique. `freeGpuResources` conserve les ressources en cours d'utilisation et demande de soumettre/attendre les travaux pour une fermeture complète (`Recorder.h:200–206`, `Context.h:222–228`).
+
+**Point futur amont : obtenir une API prise en charge pour inspecter/configurer ces caches au niveau de l'application.** La bibliothèque ne purge pas globalement Graphite, ne modifie pas le budget du device partagé et ne le détruit pas. Une politique globale décidée par la vidéo pourrait perturber les scènes 3D, compute ou ML de l'application. Lors d'une mise à jour Skia, revoir ces valeurs, l'affinité des Recorders et les APIs exposées, puis qualifier toute politique de cache avec les autres consommateurs GPU. Les relevés RSS du simulateur ne permettent pas de conclure quels caches ou allocateurs expliquent leur variation.
+
+La [comparaison du 6 octobre 2026](PERFORMANCE_AB_SOAK_SIMULATOR.md) apporte désormais une référence à rejouer après chaque changement : 300 exports par moteur, mêmes dimensions et collecteur, puis trois minutes de repos. Le RSS final du candidat progresse de 416 à 553 puis 626 Mio, contre environ 308/315/300 Mio pour l'ancien ; au repos à trois minutes, il reste à 437,38 Mio contre 133,20 Mio. Les compteurs vidéo du candidat reviennent à zéro. Ces chiffres motivent l'inspection des allocations encore résidentes, mais **n'attribuent pas la différence aux caches Graphite** : une preuve par catégorie d'allocation reste nécessaire avant de modifier une politique globale.
+
+Une autre catégorie à instrumenter est le buffer CPU de [l'export](../src/exportVideoComposition.ts) : un `Uint8Array` est alloué par session, réutilisé pour les frames, puis sa référence est mise à null après fermeture ; le runtime d'export persiste entre sessions. La disparition de cette référence et de sa réservation comptable n'atteste pas la restitution immédiate du backing store ou des pages de l'allocateur. Distinguer ce stockage, les rasters transitoires du readback, les codecs et les ressources Graphite avant d'attribuer la hausse à l'un d'eux. Cette lecture de code ne prouve pas l'origine de la rétention observée et n'ajoute ni GC forcé ni nouveau cache partagé.
+
+## Référence fournie : `enzomanuelmangano/demos`
+
+Le [dépôt de démos](https://github.com/enzomanuelmangano/demos) est utile pour choisir des scènes visuelles : transitions, reflets de shader et interactions pilotées par des valeurs partagées. Le [manifest consulté](https://github.com/enzomanuelmangano/demos/blob/main/package.json) fixe encore Skia 2.6.2 et WebGPU 0.5.14 ; ses patches de compatibilité ne sont donc pas une preuve de compatibilité avec le couple désormais ciblé 3.0.6/0.12.1, ni avec le couple mesuré 3.0.3/0.11.0.
+
+Les idées retenues pour les futurs adaptateurs sont une transition à progression déterministe, un shader piloté par les mêmes paramètres en preview/export et une scène 3D calculée au temps de composition. Aucun code ou asset de ce dépôt n'est copié dans la bibliothèque. Sa [licence publiée](https://github.com/enzomanuelmangano/demos/blob/main/LICENSE.md) comporte des restrictions de redistribution et de création de bibliothèques d'animation concurrentes ; la référence sert ici à l'étude visuelle. Les implémentations de comparaison doivent être originales ou venir d'une source réutilisable dans ce paquet.
+
+## Procédure de mise à jour
+
+Pour chaque nouvelle version Skia : relever le couple Dawn/WebGPU et les versions RN/Reanimated/Worklets compatibles, relire les imports/sorties de buffers, les soumissions vérifiées, la fermeture canvas/snapshot et les budgets/caches Graphite, revoir les empreintes, compiler les deux plateformes, exécuter les tests de pixels/timestamps puis les **65 workloads du catalogue `2026-10-07.1`** (59 historiques, trois lectures continues `copy` et leurs trois équivalents `direct`) et les sessions longues. La configuration iPhone déjà compilée pour la référence 3.0.3 utilise RN 0.86.2, Reanimated 4.5.3 et Worklets 0.11.3 ; ces versions sont conservées pour la migration 3.0.6. Ne pas laisser une plage ouverte sélectionner une autre version sans refaire l'installation native. Documenter la version et le transport effectif dans les résultats. La présence d'un cas dans le catalogue ne signifie pas qu'il a été exécuté sur toutes les cibles. Une correction amont ou des tests de l'hôte verts seuls ne justifient pas de supprimer un garde-fou mémoire.

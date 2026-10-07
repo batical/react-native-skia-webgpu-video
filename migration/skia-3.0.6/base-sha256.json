@@ -1,0 +1,22 @@
+{
+  "ios/ReactNativeSkiaVideo.mm": "d6d13120296fc2a7d817e990f9706b831dc61a7b1d4b07b9910601a6a15dd94c",
+  "package.json": "9fd3c79635378d135dfc0187360591431481ae9ba367547887f4214a7a43fd78",
+  "patches/react-native-skia+3.0.6.patch": null,
+  "scripts/skia-canvas-patch.json": "f4c21d1164f2d291e86b2df2f36af859221d06a84941f639491c2758f3cd4d6b",
+  "scripts/test-skia-patch-syntax.mjs": "66ad424af949b2c08d34aa390d72e2e5f7119db486064e98472122bea3911ba4",
+  "src/__tests__/canvas.test.ts": null,
+  "src/__tests__/export.test.ts": "8b9c337aa7457388a1c244dc362663cf5c44c813a05ab35ecb9b0dcf9f0fbd7d",
+  "src/__tests__/frameInterop.test.ts": "a232863b5490a8e98f3112910bfeb79e4421b7735869d51a3c0cfedd12a4c61c",
+  "src/__tests__/gpu.test.ts": "8f9eb008916db035722e826a6b537b40893de0e5845a31bf85b381e528d5926f",
+  "src/__tests__/gpuDevice.test.ts": null,
+  "src/__tests__/hooks.test.tsx": "6252f24aea7b5989ff5cd834231ddcb20692031cdcbf5a0adb1a0b7f77c0a84f",
+  "src/__tests__/index.test.tsx": "7698336d2b157e2fe424d4abe1c986aec5476ae73d3626cce06c694cb24076ef",
+  "src/__tests__/videoFrameImage.test.ts": "b325155b226828d1c5c349652a503f08a1d270389c85c614938e40ecb30de7b0",
+  "src/canvas.ts": "dee1973e493c247a7e23374c13f8f581c2942772a4ea35750a0b41d464987129",
+  "src/exportVideoComposition.ts": "024a76e1f475d94904c76414436faffb6cd6bc67f362be0dd1ec17c10f43b9c4",
+  "src/frameInterop.ts": "c883f91f11ef95cd3e4e873e52620f6889ca124babae4cef53dc4e0a8582f113",
+  "src/gpu.ts": "346602103e93830c0e66db507cc2280e0d9118f66b79294f73477a4f0955ab7a",
+  "src/gpuDevice.ts": null,
+  "src/types.ts": "0cdcb261d567d1fa147f50b344a8fbc5396f2e8bcedc5f50cf42bf6e2262afd7",
+  "src/videoCompositionPlayer.ts": "66a9212fa9baaf108ce3d1f9ee6cedd7a6a4fac0f89a41c6adfc2c4c00e1217e"
+}

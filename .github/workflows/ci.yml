@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host-checks:
+    name: Host checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CI: "true"
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Apply the reviewed Skia patch
+        run: node scripts/apply-skia-canvas-patch.mjs
+
+      - name: Test the public API and ownership
+        run: npm test -- --ci
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+      - name: Test the guarded patch installer
+        run: npm run test:package
+
+      - name: Test the benchmark harness
+        run: npm run benchmark:test
+
+      - name: Test portable C++ policies with sanitizers
+        env:
+          CXX: clang++
+        run: node scripts/test-native.mjs --pure-only --asan
+
+      - name: Build the package
+        run: npm run build
+
+      - name: Validate package entry points
+        run: npm run check-package
+
+      - name: Verify the package can be packed
+        run: npm pack --dry-run --ignore-scripts

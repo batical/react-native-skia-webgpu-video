@@ -1,0 +1,121 @@
+{
+  "status": "compiled-not-executed-no-connected-device",
+  "originalNamedCases": 40,
+  "originalPlannedExecutions": 86,
+  "additionalCases": {
+    "DirectTextureTest.oldPixelsRemainValidAcrossLaterFramesAndSessionDisposal": 5,
+    "NativeRgbaBufferTest": 3
+  },
+  "totalNamedCases": 44,
+  "totalPlannedExecutions": 94,
+  "codecUnavailableCases": "JUnit assumption skip, never counted as passed",
+  "classes": [
+    {
+      "class": "BigMontageTest",
+      "methods": [
+        "aLazyExportOfEight4KClipsGivesEveryFrame",
+        "aLazyPreviewOfEight4KClipsPlaysThrough",
+        "aLazyScrubOverEight4KClipsSettles",
+        "anEagerExportOfEight4KClipsWorksOrFailsCleanly",
+        "anEagerPreviewOfEight4KClipsWorksOrReportsAnError"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 5
+    },
+    {
+      "class": "CompositionExportTest",
+      "methods": [
+        "aSingleItemGivesItsFrameAtEveryTime",
+        "aMontageGivesEachItemItsFrame",
+        "aLazyMontageGivesTheSameFramesWithFewerDecoders",
+        "anItemWithoutFramesDoesNotHoldTheExport",
+        "maxLongSideSizesTheFrame",
+        "releaseLeavesNoDecoderBehind"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 6
+    },
+    {
+      "class": "CompositionPreviewTest",
+      "methods": [
+        "anEagerMontagePlaysThrough",
+        "aLazyMontagePlaysThroughWithFewDecoders",
+        "aSeekIntoAClosedItemShowsItsFrame",
+        "aScrubSettlesOnTheRightFrame",
+        "releaseStopsTheDecoderThreads"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 5
+    },
+    {
+      "class": "DirectTextureTest",
+      "methods": [
+        "bothModesKeepTheirPixelsCropOrientationAndTimestamp",
+        "oldPixelsRemainValidAcrossLaterFramesAndSessionDisposal"
+      ],
+      "parameterSets": 5,
+      "plannedExecutions": 10
+    },
+    {
+      "class": "EncodeTest",
+      "methods": [
+        "anEagerMontageEncodesEveryFrameOfTheRightItem",
+        "aLazyMontageEncodesEveryFrameOfTheRightItem",
+        "anHevcExportEncodesEveryFrame",
+        "aLazy4KMontageExportsIn1080p",
+        "anAudioItemWithoutAnAudioTrackDoesNotHoldTheExport"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 5
+    },
+    {
+      "class": "MediaTest",
+      "methods": [
+        "theExportGivesEveryFrameWithItsPixels",
+        "theFrameIsDrawnUpright",
+        "maxLongSideCapsTheFrame",
+        "thePreviewSeeksToExactFramesAndPlays"
+      ],
+      "parameterSets": 9,
+      "plannedExecutions": 36
+    },
+    {
+      "class": "NativeRgbaBufferTest",
+      "methods": [
+        "readOnlySliceKeepsBudgetAndBytesAfterFrameIsDropped",
+        "rejectedAllocationDoesNotLeaveReservation",
+        "snapshotsAreDistinctAndReadOnlyViewsCannotModifyPixels"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 3
+    },
+    {
+      "class": "OpenFailureTest",
+      "methods": [
+        "dolbyVisionOverHevcIsDecodedAsHevcWithoutADolbyVisionDecoder",
+        "dolbyVisionOverAvcIsDecodedAsAvcWithoutADolbyVisionDecoder",
+        "otherCodecsAreLeftAlone",
+        "aFileThePreviewCannotOpenIsAnErrorEvent"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 4
+    },
+    {
+      "class": "PlayerTest",
+      "methods": [
+        "playsThroughAndCompletes",
+        "aPausedSeekShowsTheExactFrameInAnyOrder",
+        "aSeekWhilePlayingPlaysOnFromThere",
+        "aSeekPastTheEndDoesNotBreakThePlayer",
+        "aLoopWrapsToTheFirstItem",
+        "aScrubSettlesOnTheLastSeek",
+        "aScrubWhilePlayingSettles",
+        "aPausedSeekAfterAScrubShowsItsFrameEveryTime",
+        "pauseStopsTheClockAndPlayResumes",
+        "playAfterTheEndStartsOver"
+      ],
+      "parameterSets": 2,
+      "plannedExecutions": 20
+    }
+  ]
+}

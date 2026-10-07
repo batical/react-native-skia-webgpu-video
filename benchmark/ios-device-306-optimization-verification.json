@@ -1,0 +1,6726 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-07T09:29:03.721Z",
+  "scope": "Physical iOS comparison of initial versus optimized Skia 3.0.6 / WebGPU 0.12.1; same video library, not historical Skia 2 or Skia 3.0.3.",
+  "environment": {
+    "deviceModel": "iPhone16,1",
+    "executionTarget": "device",
+    "platform": "ios",
+    "osVersion": "27.0.1",
+    "reactNativeVersion": "0.86.2",
+    "buildMode": "release",
+    "measurementClock": "performance.now",
+    "displayRefreshRate": 120,
+    "pixelRatio": 3
+  },
+  "versions": {
+    "skia": "3.0.6",
+    "webgpu": "0.12.1"
+  },
+  "builds": {
+    "initial": {
+      "executableSha256": "d8add0b84daf5ad62f789c1cb256e02582ca62dae55287d5523664e3c250dbff",
+      "bundleSha256": "81d05e2c71785474ac7f17bdf32c6880db7cd541ea611d4c3b979e68243f8b02",
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "ios",
+          "frameTransport": "cvpixelbuffer-bgra",
+          "preview": "webgpu-native-blit+gpu-stage-synchronous-copy",
+          "gpuUploadScratchCapacityPerRuntime": 1,
+          "export": "cpu-readback-bounded-pixelbuffer-pool",
+          "nativeFrameCapacity": 2,
+          "encoderPoolCapacity": 3,
+          "gpuDirectExport": false
+        }
+      }
+    },
+    "optimized": {
+      "executableSha256": "7464c2f2c8a89a7cd42676b650b1db4f04af65fe1a5db58146fff3f13307e690",
+      "bundleSha256": "f054c61a32aa80a64fb685c187ff2e8865206e23c3e117f9d41b6995c8fea137",
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "ios",
+          "frameTransport": "cvpixelbuffer-bgra",
+          "preview": "webgpu-native-blit+gpu-owned-snapshot",
+          "gpuUploadScratchCapacityPerRuntime": 1,
+          "export": "cpu-readback-bounded-pixelbuffer-pool",
+          "nativeFrameCapacity": 2,
+          "encoderPoolCapacity": 3,
+          "gpuDirectExport": false
+        }
+      }
+    }
+  },
+  "sourceQualification": {
+    "kind": "Frozen executable and Hermes bundle identities checked against the planned apps and each completed execution journal; no retrospective global source fingerprint is invented.",
+    "plan": {
+      "file": "benchmark/results/iphone-306-optimization-plan.local.json",
+      "sha256": "b51d4cf922f69925e31c3f78ad7aec63d09c98b6563d65dab2f7faac6d25367a"
+    },
+    "initialNativeProof": "benchmark/ios-native-device-306-verification.json",
+    "simulatorFunctionalProof": "benchmark/ios-simulator-306-functional-verification.json"
+  },
+  "workloadVersion": "2026-10-07.1",
+  "caseIds": [
+    "steady-playback-h264-1080p30-audio",
+    "steady-playback-h264-4k30",
+    "steady-playback-hevc-4k30",
+    "steady-playback-h264-1080p30-audio-direct",
+    "steady-playback-h264-4k30-direct",
+    "steady-playback-hevc-4k30-direct",
+    "encode-h264-copy",
+    "encode-h264-direct"
+  ],
+  "fixtureManifest": {
+    "schema": 1,
+    "files": [
+      {
+        "id": "h264-1080p30-audio",
+        "file": "h264-1080p30-audio.mp4",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "seconds": 8,
+        "codec": "h264",
+        "audio": true,
+        "bytes": 682676,
+        "sha256": "c882b99af0c042c0039a6f5b50d4545b1df96919a583e963037be59c1bc8bf64"
+      },
+      {
+        "id": "h264-4k30",
+        "file": "h264-4k30.mp4",
+        "width": 3840,
+        "height": 2160,
+        "fps": 30,
+        "seconds": 8,
+        "codec": "h264",
+        "bytes": 1061564,
+        "sha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755"
+      },
+      {
+        "id": "hevc-4k30",
+        "file": "hevc-4k30.mp4",
+        "width": 3840,
+        "height": 2160,
+        "fps": 30,
+        "seconds": 8,
+        "codec": "hevc",
+        "bytes": 878768,
+        "sha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae"
+      },
+      {
+        "id": "hevc-1080p-hlg10",
+        "file": "hevc-1080p-hlg10.mov",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "hevc",
+        "color": "bt2020-hlg",
+        "bitDepth": 10,
+        "bytes": 159029,
+        "sha256": "f3e301a9fc04e514411b4b00c7129a579d0aff412f870e86e55204a2b45ae60e"
+      },
+      {
+        "id": "h264-720p60",
+        "file": "h264-720p60.mp4",
+        "width": 1280,
+        "height": 720,
+        "fps": 60,
+        "seconds": 6,
+        "codec": "h264",
+        "bytes": 585980,
+        "sha256": "29a2c525c9de210c69eceb4ccbf99eb7a44591ff3f28126801aef3b21652535e"
+      },
+      {
+        "id": "h264-1080p-rot90",
+        "file": "h264-1080p-rot90.mp4",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "h264",
+        "rotation": 90,
+        "bytes": 404641,
+        "sha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d"
+      },
+      {
+        "id": "h264-1080x1920",
+        "file": "h264-1080x1920.mp4",
+        "width": 1080,
+        "height": 1920,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "h264",
+        "bytes": 452191,
+        "sha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513"
+      },
+      {
+        "id": "h264-638x358",
+        "file": "h264-638x358.mp4",
+        "width": 638,
+        "height": 358,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "h264",
+        "bytes": 142050,
+        "sha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc"
+      },
+      {
+        "id": "h264-720p-short",
+        "file": "h264-720p-short.mp4",
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+        "seconds": 0.5,
+        "codec": "h264",
+        "bytes": 23074,
+        "sha256": "9cb3f855e21e440a747181e852ce51f8c3e82919deaff5d2ce50d61fd3d09342"
+      },
+      {
+        "id": "hevc-4k30-audio",
+        "file": "hevc-4k30-audio.mp4",
+        "width": 3840,
+        "height": 2160,
+        "fps": 30,
+        "seconds": 8,
+        "codec": "hevc",
+        "audio": true,
+        "bytes": 777469,
+        "sha256": "ecd315232afec5b926c9ea654af8524b9cc774a7d2e5aef1d50a2b018d6328b8"
+      },
+      {
+        "id": "tone",
+        "file": "tone.m4a",
+        "seconds": 30,
+        "codec": "aac",
+        "audioOnly": true,
+        "bytes": 375489,
+        "sha256": "b6181ed864af7b5630b48a4053828ec2006af3c11894a9b4d42803b91100bfe1"
+      },
+      {
+        "id": "h264-720p-rot180",
+        "file": "h264-720p-rot180.mp4",
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "h264",
+        "rotation": 180,
+        "bytes": 353124,
+        "sha256": "f3d3d31f647361cd1f4cfc9653c2fc78a19bd881ed59014b3bd10395761683e6"
+      },
+      {
+        "id": "hevc-1080p-rot270",
+        "file": "hevc-1080p-rot270.mp4",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "seconds": 6,
+        "codec": "hevc",
+        "rotation": 270,
+        "bytes": 354895,
+        "sha256": "1f9dedb05340ee7b909dfdf5ae29f190bfe5aed674859c02e31ece7b66a26b7d"
+      },
+      {
+        "id": "h264-slow-motion",
+        "file": "h264-slow-motion.mov",
+        "width": 320,
+        "height": 240,
+        "fps": 30,
+        "seconds": 9,
+        "codec": "h264",
+        "presentationTimeline": "native-edit-list",
+        "decodedFrames": 180,
+        "slowMotion": {
+          "startSeconds": 1,
+          "sourceSeconds": 1,
+          "presentationSeconds": 4
+        },
+        "bytes": 134690,
+        "sha256": "f2904e161a938c031e22c22db528931dd9b46482cd4989707d36d67f7995a19a"
+      }
+    ],
+    "unavailable": []
+  },
+  "memoryBudget": {
+    "requestedMaxBytes": 536870912,
+    "applied": true,
+    "reportedMaxBytes": 536870912
+  },
+  "collection": {
+    "periodMs": 100,
+    "maxMemorySamplesPerCase": 2048,
+    "droppedSamples": 0,
+    "samples": 3260,
+    "settledSamples": 120,
+    "settledTrackedCounters": {
+      "ownedBytes": 0,
+      "ownedResources": 0,
+      "decoderCount": 0,
+      "inFlightFrames": 0
+    },
+    "settledMeaning": "Scheduled stabilization interval after owner cleanup; not a measurement of complete driver/cache release or an external GPU fence."
+  },
+  "totals": {
+    "runs": 4,
+    "passed": 96,
+    "failed": 0,
+    "skipped": 0,
+    "exports": 24,
+    "frames": 1440
+  },
+  "conditions": {
+    "fair": 3260,
+    "nominal": 0,
+    "normalPower": 3260,
+    "active": 3260,
+    "nominalProtocolSatisfied": false,
+    "userReportedContext": {
+      "source": "User clarification after the measurements",
+      "devicePlacement": "On a travel mini-router",
+      "tetheringActive": true,
+      "instrumented": false,
+      "interpretation": "External heat and background network activity were not quantified. Device warmth cannot be attributed to the library, and the cause of timing differences is not isolated. Raw observations and nominal qualification remain unchanged."
+    }
+  },
+  "qualification": {
+    "strictAssessment": "incomplete",
+    "balancedOrder": true,
+    "windowsDoNotOverlap": true,
+    "nominalRequired": true,
+    "nominalSatisfied": false,
+    "probedMetadataPassed": true,
+    "mediaValidatorsComplete": false,
+    "decodedOrPresentedFpsMeasured": false,
+    "totalGpuMemoryMeasured": false,
+    "separateNativeHeapMeasured": false,
+    "longRunPlateauQualified": false,
+    "universalSpeedGainEstablished": false,
+    "notes": [
+      "All selected runs were fair: descriptive warm-condition measurements only.",
+      "Pixels and requested standalone catalogue media validators remain unavailable; exact probed output metadata is retained separately.",
+      "Six repetitions per variant come from two processes, not six independent process starts.",
+      "No physical Android execution or Android performance conclusion."
+    ]
+  },
+  "smoke": {
+    "passed": 5,
+    "failed": 0,
+    "repetitions": 1,
+    "startedAt": "2026-10-07T09:10:13.538Z",
+    "finishedAt": "2026-10-07T09:11:01.576Z",
+    "samples": 368,
+    "conditions": "fair/normal/active",
+    "result": {
+      "file": "benchmark/results/iphone-smoke-306-optimized-autoretry.local.json",
+      "sha256": "9e43736271ddd15db188f95c0c26223e2b8a6d4680feb3f9348e01a2e2c3669c"
+    },
+    "executionJournal": {
+      "file": "benchmark/results/iphone-smoke-306-optimized-autoretry-execution.local.json",
+      "sha256": "332cbc04188054a00463fe79f88ccc54c46ca588d3d25ff86a621e433f28b04b"
+    }
+  },
+  "runs": [
+    {
+      "order": "A1",
+      "variant": "initial",
+      "startedAt": "2026-10-07T09:11:23.286Z",
+      "finishedAt": "2026-10-07T09:13:35.359Z",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "samples": 813,
+      "settledSamples": 30,
+      "exports": 6,
+      "conditions": {
+        "thermalState": {
+          "fair": 813
+        },
+        "powerMode": {
+          "normal": 813
+        },
+        "applicationState": {
+          "active": 813
+        }
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1050.046291001141,
+        "waitedMs": 1369.7965830005705,
+        "observations": 13,
+        "initialState": "inactive",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "result": {
+        "file": "benchmark/results/iphone-a1-306-initial.local.json",
+        "sha256": "6126537ad84f5f368a75b701e98b6a858ac5e6c3182eee0c4cd8504b0b93e173"
+      },
+      "executionJournal": {
+        "file": "benchmark/results/iphone-a1-306-initial-execution.local.json",
+        "sha256": "db9553b20920f4848c1b920d349cdc59e0f8b2d7a0b4f85d70bf607dc6042674"
+      },
+      "executableSha256": "d8add0b84daf5ad62f789c1cb256e02582ca62dae55287d5523664e3c250dbff",
+      "bundleSha256": "81d05e2c71785474ac7f17bdf32c6880db7cd541ea611d4c3b979e68243f8b02"
+    },
+    {
+      "order": "B1",
+      "variant": "optimized",
+      "startedAt": "2026-10-07T09:14:05.347Z",
+      "finishedAt": "2026-10-07T09:16:17.610Z",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "samples": 815,
+      "settledSamples": 30,
+      "exports": 6,
+      "conditions": {
+        "thermalState": {
+          "fair": 815
+        },
+        "powerMode": {
+          "normal": 815
+        },
+        "applicationState": {
+          "active": 815
+        }
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1050.073374999687,
+        "waitedMs": 1378.3162919990718,
+        "observations": 13,
+        "initialState": "inactive",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "result": {
+        "file": "benchmark/results/iphone-b1-306-optimized.local.json",
+        "sha256": "3bee240d07448de9114a57b8875d54bebad29af05850ad2c95a115649567f1e1"
+      },
+      "executionJournal": {
+        "file": "benchmark/results/iphone-b1-306-optimized-execution.local.json",
+        "sha256": "4c0043aa9e129b9bca4d016526f223c673cf8321cc36ea519cec8a6311c9232c"
+      },
+      "executableSha256": "7464c2f2c8a89a7cd42676b650b1db4f04af65fe1a5db58146fff3f13307e690",
+      "bundleSha256": "f054c61a32aa80a64fb685c187ff2e8865206e23c3e117f9d41b6995c8fea137"
+    },
+    {
+      "order": "B2",
+      "variant": "optimized",
+      "startedAt": "2026-10-07T09:16:41.803Z",
+      "finishedAt": "2026-10-07T09:18:54.200Z",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "samples": 816,
+      "settledSamples": 30,
+      "exports": 6,
+      "conditions": {
+        "thermalState": {
+          "fair": 816
+        },
+        "powerMode": {
+          "normal": 816
+        },
+        "applicationState": {
+          "active": 816
+        }
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1050.050208998844,
+        "waitedMs": 1395.8452920001,
+        "observations": 13,
+        "initialState": "inactive",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "result": {
+        "file": "benchmark/results/iphone-b2-306-optimized.local.json",
+        "sha256": "e4bd2052a8f2535fafa19a0fc34666a224c57b7c740d6596e755c71066da1814"
+      },
+      "executionJournal": {
+        "file": "benchmark/results/iphone-b2-306-optimized-execution.local.json",
+        "sha256": "5b79908f61ccdfd11d5b3006c2abf5d3b0ca5eedf1872a38a16d9a8c1b2b390f"
+      },
+      "executableSha256": "7464c2f2c8a89a7cd42676b650b1db4f04af65fe1a5db58146fff3f13307e690",
+      "bundleSha256": "f054c61a32aa80a64fb685c187ff2e8865206e23c3e117f9d41b6995c8fea137"
+    },
+    {
+      "order": "A2",
+      "variant": "initial",
+      "startedAt": "2026-10-07T09:19:23.995Z",
+      "finishedAt": "2026-10-07T09:21:36.326Z",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "samples": 816,
+      "settledSamples": 30,
+      "exports": 6,
+      "conditions": {
+        "thermalState": {
+          "fair": 816
+        },
+        "powerMode": {
+          "normal": 816
+        },
+        "applicationState": {
+          "active": 816
+        }
+      },
+      "foregroundPreflight": {
+        "status": "passed",
+        "applicationState": "active",
+        "stableMs": 1050.1219999995083,
+        "waitedMs": 1382.5631670001894,
+        "observations": 13,
+        "initialState": "inactive",
+        "pollMs": 100,
+        "timeoutMs": 30000,
+        "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle"
+      },
+      "result": {
+        "file": "benchmark/results/iphone-a2-306-initial.local.json",
+        "sha256": "6ac7859ac63b86c8239573d83bb0c4bf8e9a049ecd230b0f308401520486cbde"
+      },
+      "executionJournal": {
+        "file": "benchmark/results/iphone-a2-306-initial-execution.local.json",
+        "sha256": "aea3edee60226a17fafbfec62b0d65523d19275baf43a75f816ef3e1d74c502d"
+      },
+      "executableSha256": "d8add0b84daf5ad62f789c1cb256e02582ca62dae55287d5523664e3c250dbff",
+      "bundleSha256": "81d05e2c71785474ac7f17bdf32c6880db7cd541ea611d4c3b979e68243f8b02"
+    }
+  ],
+  "combined": [
+    {
+      "id": "steady-playback-h264-1080p30-audio",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 86351872,
+              "min": 84819968,
+              "max": 87212032,
+              "values": [
+                84885504,
+                86425600,
+                87212032,
+                84819968,
+                86278144,
+                87097344
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 86081536,
+              "min": 84279296,
+              "max": 86900736,
+              "values": [
+                84279296,
+                86065152,
+                86900736,
+                84443136,
+                86097920,
+                86900736
+              ]
+            },
+            "percent": -0.3130632767289631
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 86343680,
+              "min": 84819968,
+              "max": 87212032,
+              "values": [
+                84885504,
+                86409216,
+                87212032,
+                84819968,
+                86278144,
+                87097344
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 86081536,
+              "min": 84279296,
+              "max": 86900736,
+              "values": [
+                84279296,
+                86065152,
+                86900736,
+                84443136,
+                86097920,
+                86900736
+              ]
+            },
+            "percent": -0.3036053130929791
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 193546068,
+              "min": 193021792,
+              "max": 201770824,
+              "values": [
+                201770824,
+                193169224,
+                193578824,
+                201656160,
+                193021792,
+                193513312
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 183781192,
+              "min": 182896456,
+              "max": 190842696,
+              "values": [
+                190842696,
+                183928648,
+                182896456,
+                190842696,
+                183158600,
+                183633736
+              ]
+            },
+            "percent": -5.045246385475524
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 73877332,
+              "min": 72468320,
+              "max": 74680136,
+              "values": [
+                72615752,
+                73942856,
+                74680136,
+                72468320,
+                73811808,
+                74631008
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 65627976,
+              "min": 63588168,
+              "max": 67848008,
+              "values": [
+                63588168,
+                65259336,
+                66062152,
+                64718664,
+                65996616,
+                67848008
+              ]
+            },
+            "percent": -11.166288463151322
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.96460747540657,
+            "min": 59.92169946752698,
+            "max": 60.224955319575834,
+            "values": [
+              60.03256963517545,
+              60.224955319575834,
+              59.95835327493213,
+              59.92169946752698,
+              59.96676906773104,
+              59.96244588308208
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.72147328826256,
+            "min": 59.165292114498435,
+            "max": 60.219619506011455,
+            "values": [
+              60.00775251947854,
+              60.219619506011455,
+              59.165292114498435,
+              60.175169274139996,
+              59.430388656296714,
+              59.43519405704659
+            ]
+          },
+          "percent": -0.4054628177858506
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 25,
+            "min": 25,
+            "max": 25,
+            "values": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 25,
+            "min": 25,
+            "max": 25,
+            "values": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "steady-playback-h264-4k30",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 88375296,
+              "min": 87310336,
+              "max": 88883200,
+              "values": [
+                87375872,
+                88473600,
+                88883200,
+                87310336,
+                88276992,
+                88621056
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 88113152,
+              "min": 87097344,
+              "max": 88539136,
+              "values": [
+                87097344,
+                88047616,
+                88408064,
+                87097344,
+                88178688,
+                88539136
+              ]
+            },
+            "percent": -0.29662588060808304
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 88342528,
+              "min": 87310336,
+              "max": 88801280,
+              "values": [
+                87326720,
+                88440832,
+                88801280,
+                87310336,
+                88244224,
+                88588288
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 88096768,
+              "min": 87064576,
+              "max": 88473600,
+              "values": [
+                87064576,
+                88031232,
+                88391680,
+                87064576,
+                88162304,
+                88473600
+              ]
+            },
+            "percent": -0.2781899109792285
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 422094688,
+              "min": 388695880,
+              "max": 423364424,
+              "values": [
+                388695880,
+                422086472,
+                423364424,
+                421857120,
+                422102904,
+                423200632
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 375940948,
+              "min": 374949704,
+              "max": 377112416,
+              "values": [
+                374949704,
+                375654216,
+                376178504,
+                375703392,
+                376719200,
+                377112416
+              ]
+            },
+            "percent": -10.934451750314375
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 181929800,
+              "min": 179701624,
+              "max": 184027000,
+              "values": [
+                180635464,
+                181749576,
+                182110024,
+                179701624,
+                183748472,
+                184027000
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 137733984,
+              "min": 135694152,
+              "max": 139085640,
+              "values": [
+                135694152,
+                138757960,
+                139085640,
+                136496992,
+                137594720,
+                137873248
+              ]
+            },
+            "percent": -24.292785459006716
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.783900566460744,
+            "min": 59.76053769350046,
+            "max": 59.959461613138714,
+            "values": [
+              59.959461613138714,
+              59.78903412677614,
+              59.76053769350046,
+              59.958014258513316,
+              59.77876700614535,
+              59.77370301964693
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.808246996147076,
+            "min": 59.79578435105555,
+            "max": 59.957840817766375,
+            "values": [
+              59.79578435105555,
+              59.80895738733766,
+              59.957840817766375,
+              59.8075366049565,
+              59.82894407445186,
+              59.79839519950766
+            ]
+          },
+          "percent": 0.04072405690436134
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "steady-playback-hevc-4k30",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 90619904,
+              "min": 89505792,
+              "max": 92291072,
+              "values": [
+                89636864,
+                90669056,
+                92291072,
+                89505792,
+                90570752,
+                92209152
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 90423296,
+              "min": 89276416,
+              "max": 92241920,
+              "values": [
+                89309184,
+                90472448,
+                92241920,
+                89276416,
+                90374144,
+                91717632
+              ]
+            },
+            "percent": -0.21695895859699874
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 90611712,
+              "min": 89473024,
+              "max": 92291072,
+              "values": [
+                89620480,
+                90652672,
+                92291072,
+                89473024,
+                90570752,
+                92209152
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 90423296,
+              "min": 89276416,
+              "max": 92241920,
+              "values": [
+                89292800,
+                90472448,
+                92241920,
+                89276416,
+                90374144,
+                91717632
+              ]
+            },
+            "percent": -0.2079377994756351
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 424650604,
+              "min": 423495496,
+              "max": 426035016,
+              "values": [
+                423495496,
+                424560456,
+                426035016,
+                423872400,
+                424740752,
+                425592720
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 378562388,
+              "min": 376866632,
+              "max": 382093152,
+              "values": [
+                376866632,
+                377800520,
+                379324232,
+                377800544,
+                381110112,
+                382093152
+              ]
+            },
+            "percent": -10.853208629841015
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 185493320,
+              "min": 184518544,
+              "max": 187647816,
+              "values": [
+                184977224,
+                186009416,
+                187647816,
+                184928144,
+                186025872,
+                184518544
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 142018376,
+              "min": 138676064,
+              "max": 149768032,
+              "values": [
+                139986760,
+                141133640,
+                142903112,
+                138676064,
+                144230240,
+                149768032
+              ]
+            },
+            "percent": -23.437471494930385
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.87628833751852,
+            "min": 59.78460767607301,
+            "max": 59.95696445295788,
+            "values": [
+              59.95696445295788,
+              59.95622867125647,
+              59.78460767607301,
+              59.79000523553791,
+              59.79889813348587,
+              59.95367854155116
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.854548944544305,
+            "min": 59.81027149696151,
+            "max": 59.956507202544145,
+            "values": [
+              59.81027149696151,
+              59.956507202544145,
+              59.81530652800109,
+              59.88149283122561,
+              59.827605057863,
+              59.956495377608604
+            ]
+          },
+          "percent": -0.03630718198774798
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "steady-playback-h264-1080p30-audio-direct",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 94519296,
+              "min": 93290496,
+              "max": 96206848,
+              "values": [
+                93421568,
+                94519296,
+                96206848,
+                93290496,
+                94519296,
+                95961088
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 94666752,
+              "min": 93388800,
+              "max": 96436224,
+              "values": [
+                93454336,
+                94748672,
+                96436224,
+                93388800,
+                94584832,
+                96206848
+              ]
+            },
+            "percent": 0.15600624024961
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 94519296,
+              "min": 93290496,
+              "max": 96174080,
+              "values": [
+                93421568,
+                94519296,
+                96174080,
+                93290496,
+                94519296,
+                95928320
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 94666752,
+              "min": 93388800,
+              "max": 96436224,
+              "values": [
+                93454336,
+                94748672,
+                96436224,
+                93388800,
+                94584832,
+                96190464
+              ]
+            },
+            "percent": 0.15600624024961
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 312018796,
+              "min": 311019336,
+              "max": 313739080,
+              "values": [
+                311019336,
+                311822152,
+                313739080,
+                311019408,
+                312215440,
+                313722768
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 267994976,
+              "min": 264324936,
+              "max": 270288736,
+              "values": [
+                264324936,
+                265619272,
+                268814152,
+                267388768,
+                268601184,
+                270288736
+              ]
+            },
+            "percent": -14.109348720132871
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 188434284,
+              "min": 185501584,
+              "max": 191399752,
+              "values": [
+                188680008,
+                189744968,
+                191399752,
+                185501584,
+                186730384,
+                188188560
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 146057044,
+              "min": 144017224,
+              "max": 151340896,
+              "values": [
+                144017224,
+                145311560,
+                146999112,
+                151340896,
+                145196896,
+                146802528
+              ]
+            },
+            "percent": -22.489134726672138
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.9630254261981,
+            "min": 59.92046930897742,
+            "max": 60.23108682227698,
+            "values": [
+              60.2201777238195,
+              59.92046930897742,
+              60.23108682227698,
+              59.96040707021695,
+              59.962851293662055,
+              59.96319955873415
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.96027895336637,
+            "min": 59.95016642416814,
+            "max": 60.1470589052383,
+            "values": [
+              59.96108907177919,
+              59.95946883495354,
+              60.1470589052383,
+              59.95016642416814,
+              59.97078330754625,
+              59.956498672853776
+            ]
+          },
+          "percent": -0.004580277282892556
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 25,
+            "min": 25,
+            "max": 25,
+            "values": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 25,
+            "min": 25,
+            "max": 25,
+            "values": [
+              25,
+              25,
+              25,
+              25,
+              25,
+              25
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "steady-playback-h264-4k30-direct",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 96919552,
+              "min": 96436224,
+              "max": 97320960,
+              "values": [
+                96550912,
+                96763904,
+                97320960,
+                96436224,
+                97075200,
+                97271808
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 96952320,
+              "min": 96600064,
+              "max": 97615872,
+              "values": [
+                96845824,
+                97058816,
+                97615872,
+                96600064,
+                96813056,
+                97419264
+              ]
+            },
+            "percent": 0.03380948356013862
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 96903168,
+              "min": 96387072,
+              "max": 97239040,
+              "values": [
+                96501760,
+                96731136,
+                97239040,
+                96387072,
+                97075200,
+                97222656
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 96911360,
+              "min": 96534528,
+              "max": 97550336,
+              "values": [
+                96796672,
+                97026048,
+                97550336,
+                96534528,
+                96796672,
+                97370112
+              ]
+            },
+            "percent": 0.0084537999830924
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 430999404,
+              "min": 430819144,
+              "max": 431654800,
+              "values": [
+                430819144,
+                431015752,
+                431605576,
+                430868368,
+                430983056,
+                431654800
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 386295636,
+              "min": 384436040,
+              "max": 388171616,
+              "values": [
+                384436040,
+                384632648,
+                385189704,
+                387401568,
+                387549024,
+                388171616
+              ]
+            },
+            "percent": -10.372118287198374
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 190580588,
+              "min": 188598160,
+              "max": 192464712,
+              "values": [
+                191727432,
+                191956808,
+                192464712,
+                188598160,
+                189286288,
+                189433744
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 147482452,
+              "min": 147146592,
+              "max": 148997984,
+              "values": [
+                147359560,
+                147588936,
+                148113224,
+                147146592,
+                147375968,
+                148997984
+              ]
+            },
+            "percent": -22.614126891034672
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.955934599547135,
+            "min": 59.75927905517121,
+            "max": 60.0471951268832,
+            "values": [
+              59.97041919617985,
+              59.95972047989812,
+              60.0471951268832,
+              59.76247352182538,
+              59.75927905517121,
+              59.95214871919616
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.809551321344344,
+            "min": 59.432898384003536,
+            "max": 59.95754322738339,
+            "values": [
+              59.808505050151815,
+              59.797784266625065,
+              59.95754322738339,
+              59.432898384003536,
+              59.81059759253688,
+              59.95518283816928
+            ]
+          },
+          "percent": -0.24415144085485813
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "steady-playback-hevc-4k30-direct",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 98304000,
+              "min": 97468416,
+              "max": 98484224,
+              "values": [
+                97468416,
+                98271232,
+                98385920,
+                97550336,
+                98336768,
+                98484224
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 97763328,
+              "min": 97615872,
+              "max": 97959936,
+              "values": [
+                97730560,
+                97959936,
+                97927168,
+                97615872,
+                97763328,
+                97763328
+              ]
+            },
+            "percent": -0.5499999999999999
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 98263040,
+              "min": 97419264,
+              "max": 98435072,
+              "values": [
+                97419264,
+                98238464,
+                98336768,
+                97550336,
+                98287616,
+                98435072
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 97665024,
+              "min": 96829440,
+              "max": 97910784,
+              "values": [
+                97714176,
+                97009664,
+                97910784,
+                97615872,
+                96829440,
+                97730560
+              ]
+            },
+            "percent": -0.6085869112130055
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 432260936,
+              "min": 431736648,
+              "max": 432867216,
+              "values": [
+                431736648,
+                431933256,
+                432588616,
+                431851408,
+                432719760,
+                432867216
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 386828116,
+              "min": 383928136,
+              "max": 388564832,
+              "values": [
+                385288008,
+                383928136,
+                385304392,
+                388351840,
+                388564832,
+                388466528
+              ]
+            },
+            "percent": -10.510507940046658
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 191645548,
+              "min": 189761424,
+              "max": 193529672,
+              "values": [
+                192644936,
+                193431368,
+                193529672,
+                189761424,
+                190498704,
+                190646160
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 151611220,
+              "min": 149243744,
+              "max": 152667976,
+              "values": [
+                152471368,
+                151766856,
+                152667976,
+                149243744,
+                150554464,
+                151455584
+              ]
+            },
+            "percent": -20.889777204738404
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 6,
+            "median": 59.792768181115456,
+            "min": 59.77469832946405,
+            "max": 59.81193847246663,
+            "values": [
+              59.77469832946405,
+              59.794723918981674,
+              59.79081244324924,
+              59.78602348273911,
+              59.81193847246663,
+              59.79585915633931
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 59.90317162195396,
+            "min": 59.44226779881786,
+            "max": 59.95854970786784,
+            "values": [
+              59.819996656369135,
+              59.85288475088589,
+              59.95411668849495,
+              59.44226779881786,
+              59.95345849302203,
+              59.95854970786784
+            ]
+          },
+          "percent": 0.18464346809314033
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0.25,
+            "min": 0.25,
+            "max": 0.25,
+            "values": [
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25,
+              0.25
+            ]
+          },
+          "percent": 0
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 33.333,
+            "min": 33.333,
+            "max": 33.333,
+            "values": [
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333,
+              33.333
+            ]
+          },
+          "percent": 0
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "optimized": {
+            "samples": 6,
+            "median": 0,
+            "min": 0,
+            "max": 0,
+            "values": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "percent": null
+        }
+      },
+      "exports": []
+    },
+    {
+      "id": "encode-h264-copy",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 128737280,
+              "min": 117456896,
+              "max": 143015936,
+              "values": [
+                117456896,
+                128663552,
+                143015936,
+                118374400,
+                128811008,
+                140345344
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 128835584,
+              "min": 116228096,
+              "max": 141541376,
+              "values": [
+                117817344,
+                128827392,
+                141541376,
+                116228096,
+                128843776,
+                140230656
+              ]
+            },
+            "percent": 0.07636016544702513
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 128704512,
+              "min": 116572160,
+              "max": 140345344,
+              "values": [
+                116572160,
+                128663552,
+                140296192,
+                116736000,
+                128745472,
+                140345344
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 128671744,
+              "min": 116080640,
+              "max": 140541952,
+              "values": [
+                116277248,
+                128827392,
+                140541952,
+                116080640,
+                128516096,
+                140230656
+              ]
+            },
+            "percent": -0.025459868881675257
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 294905720,
+              "min": 285984584,
+              "max": 309643104,
+              "values": [
+                285984584,
+                295290720,
+                309643104,
+                287098768,
+                294520720,
+                307054504
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 251406188,
+              "min": 239798088,
+              "max": 264292216,
+              "values": [
+                239798088,
+                249825120,
+                262539104,
+                241321824,
+                252987256,
+                264292216
+              ]
+            },
+            "percent": -14.75031816948142
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 247605112,
+              "min": 235423560,
+              "max": 259327912,
+              "values": [
+                235423560,
+                247498592,
+                259131232,
+                235685776,
+                247711632,
+                259327912
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 198657900,
+              "min": 180012896,
+              "max": 216582008,
+              "values": [
+                189499208,
+                180012896,
+                213747552,
+                192448352,
+                204867448,
+                216582008
+              ]
+            },
+            "percent": -19.768255834717984
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        }
+      },
+      "exports": [
+        {
+          "output": {
+            "width": 640,
+            "height": 360,
+            "fps": 30,
+            "frames": 60,
+            "codec": "h264"
+          },
+          "count": {
+            "initial": 6,
+            "optimized": 6
+          },
+          "pipelineMs": {
+            "initial": {
+              "samples": 6,
+              "median": 248.17783350031823,
+              "min": 230.8464169986546,
+              "max": 254.70770799927413,
+              "values": [
+                247.09850000031292,
+                252.16645799949765,
+                249.25716700032353,
+                254.70770799927413,
+                230.8464169986546,
+                244.93995800055563
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 263.091729500331,
+              "min": 256.3154999986291,
+              "max": 274.06783300079405,
+              "values": [
+                256.3154999986291,
+                264.6598340012133,
+                265.77695900015533,
+                256.82925000041723,
+                274.06783300079405,
+                261.52362499944866
+              ]
+            },
+            "percent": 6.009358607763668
+          },
+          "probeMs": {
+            "initial": {
+              "samples": 6,
+              "median": 41.06579149980098,
+              "min": 39.94995800033212,
+              "max": 102.7940419986844,
+              "values": [
+                39.94995800033212,
+                41.06633299961686,
+                41.7269999999553,
+                40.47241700068116,
+                102.7940419986844,
+                41.0652499999851
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 41.783332999795675,
+              "min": 40.931292001158,
+              "max": 119.76741599850357,
+              "values": [
+                41.384417001158,
+                40.931292001158,
+                119.76741599850357,
+                43.077916000038385,
+                42.13191599957645,
+                41.4347500000149
+              ]
+            },
+            "percent": 1.74729738253839
+          },
+          "totalMs": {
+            "initial": {
+              "samples": 6,
+              "median": 294.90927099995315,
+              "min": 288.96454099938273,
+              "max": 335.71000000089407,
+              "values": [
+                290.1747089996934,
+                296.0256669986993,
+                293.792875001207,
+                298.2352079991251,
+                335.71000000089407,
+                288.96454099938273
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 307.1637084996328,
+              "min": 300.7839999999851,
+              "max": 388.9572919998318,
+              "values": [
+                300.7839999999851,
+                308.32124999910593,
+                388.9572919998318,
+                303.1283330004662,
+                318.9672919996083,
+                306.0061670001596
+              ]
+            },
+            "percent": 4.155324604793985
+          }
+        }
+      ]
+    },
+    {
+      "id": "encode-h264-direct",
+      "passed": {
+        "initial": 6,
+        "optimized": 6
+      },
+      "memory": {
+        "rssBytes": {
+          "sources": [
+            "iOS mach task_info resident_size"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 165011456,
+              "min": 152420352,
+              "max": 177176576,
+              "values": [
+                152502272,
+                164347904,
+                177176576,
+                152420352,
+                165675008,
+                176996352
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 164651008,
+              "min": 152158208,
+              "max": 177799168,
+              "values": [
+                152862720,
+                164773888,
+                177799168,
+                152158208,
+                164528128,
+                177766400
+              ]
+            },
+            "percent": -0.21843816710519784
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 164397056,
+              "min": 152420352,
+              "max": 177176576,
+              "values": [
+                152502272,
+                164347904,
+                177176576,
+                152420352,
+                164446208,
+                176996352
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 164651008,
+              "min": 152125440,
+              "max": 177799168,
+              "values": [
+                152862720,
+                164773888,
+                177799168,
+                152125440,
+                164528128,
+                177504256
+              ]
+            },
+            "percent": 0.15447478572852302
+          }
+        },
+        "physicalFootprintBytes": {
+          "sources": [
+            "iOS task_vm_info phys_footprint"
+          ],
+          "peak": {
+            "initial": {
+              "samples": 6,
+              "median": 331679632,
+              "min": 319080288,
+              "max": 343738232,
+              "values": [
+                319080288,
+                330909560,
+                343738232,
+                319850408,
+                332449704,
+                343705536
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 286656388,
+              "min": 273827704,
+              "max": 301926288,
+              "values": [
+                273827704,
+                285706104,
+                298731384,
+                276334456,
+                287606672,
+                301926288
+              ]
+            },
+            "percent": -13.574316797360652
+          },
+          "settled": {
+            "initial": {
+              "samples": 6,
+              "median": 283314064,
+              "min": 271435688,
+              "max": 296028024,
+              "values": [
+                272713568,
+                283199352,
+                296028024,
+                271435688,
+                283428776,
+                295995328
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 239445892,
+              "min": 226117496,
+              "max": 253872016,
+              "values": [
+                226117496,
+                237995896,
+                251021176,
+                228509560,
+                240895888,
+                253872016
+              ]
+            },
+            "percent": -15.483937288760927
+          }
+        }
+      },
+      "playback": {
+        "callbacksPerSecond": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "drawCallbackP95UpperMs": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "callbackGapP95UpperMs": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        },
+        "missingFrames": {
+          "initial": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "optimized": {
+            "samples": 0,
+            "median": null,
+            "min": null,
+            "max": null,
+            "values": []
+          },
+          "percent": null
+        }
+      },
+      "exports": [
+        {
+          "output": {
+            "width": 640,
+            "height": 360,
+            "fps": 30,
+            "frames": 60,
+            "codec": "h264"
+          },
+          "count": {
+            "initial": 6,
+            "optimized": 6
+          },
+          "pipelineMs": {
+            "initial": {
+              "samples": 6,
+              "median": 251.79504199977964,
+              "min": 244.87854200042784,
+              "max": 484.1437920015305,
+              "values": [
+                292.9660000000149,
+                244.87854200042784,
+                254.24766699969769,
+                249.3424169998616,
+                484.1437920015305,
+                246.61575000174344
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 260.67141600046307,
+              "min": 237.72520800121129,
+              "max": 287.9796249996871,
+              "values": [
+                265.41166599839926,
+                237.72520800121129,
+                259.5107920002192,
+                259.551291000098,
+                287.9796249996871,
+                261.79154100082815
+              ]
+            },
+            "percent": 3.5252378006280187
+          },
+          "probeMs": {
+            "initial": {
+              "samples": 6,
+              "median": 41.44950049929321,
+              "min": 39.71454199962318,
+              "max": 49.83108299970627,
+              "values": [
+                39.74533399939537,
+                41.57291699945927,
+                41.83579199947417,
+                39.71454199962318,
+                49.83108299970627,
+                41.32608399912715
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 40.9018540000543,
+              "min": 38.55208300054073,
+              "max": 113.96016700007021,
+              "values": [
+                40.78887500055134,
+                38.55208300054073,
+                42.201166998595,
+                40.45845799893141,
+                113.96016700007021,
+                41.01483299955726
+              ]
+            },
+            "percent": -1.3212378741409603
+          },
+          "totalMs": {
+            "initial": {
+              "samples": 6,
+              "median": 295.4939580000937,
+              "min": 289.6400830000639,
+              "max": 536.8442919999361,
+              "values": [
+                335.5555419996381,
+                289.6400830000639,
+                298.9640410002321,
+                292.0238749999553,
+                536.8442919999361,
+                290.92358300089836
+              ]
+            },
+            "optimized": {
+              "samples": 6,
+              "median": 305.0814789989963,
+              "min": 278.2494159992784,
+              "max": 404.91412499919534,
+              "values": [
+                309.1970830000937,
+                278.2494159992784,
+                304.65324999950826,
+                302.724417001009,
+                404.91412499919534,
+                305.5097079984844
+              ]
+            },
+            "percent": 3.244574293089126
+          }
+        }
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "label": "AB",
+      "strictAssessment": "incomplete",
+      "warnings": [
+        "Decode/render/encode transport changed; record the intended change and do not describe CPU readback results as GPU-only",
+        "Thermal state was not confirmed nominal for both runs"
+      ],
+      "confounders": [
+        "Thermal state was not confirmed nominal for both runs"
+      ],
+      "cases": [
+        {
+          "id": "steady-playback-h264-1080p30-audio",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 86425600,
+                  "min": 84885504,
+                  "max": 87212032,
+                  "values": [
+                    84885504,
+                    86425600,
+                    87212032
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 86065152,
+                  "min": 84279296,
+                  "max": 86900736,
+                  "values": [
+                    84279296,
+                    86065152,
+                    86900736
+                  ]
+                },
+                "percent": -0.4170616113744076
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 86409216,
+                  "min": 84885504,
+                  "max": 87212032,
+                  "values": [
+                    84885504,
+                    86409216,
+                    87212032
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 86065152,
+                  "min": 84279296,
+                  "max": 86900736,
+                  "values": [
+                    84279296,
+                    86065152,
+                    86900736
+                  ]
+                },
+                "percent": -0.39817974971558584
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 193578824,
+                  "min": 193169224,
+                  "max": 201770824,
+                  "values": [
+                    201770824,
+                    193169224,
+                    193578824
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 183928648,
+                  "min": 182896456,
+                  "max": 190842696,
+                  "values": [
+                    190842696,
+                    183928648,
+                    182896456
+                  ]
+                },
+                "percent": -4.985140316794155
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 73942856,
+                  "min": 72615752,
+                  "max": 74680136,
+                  "values": [
+                    72615752,
+                    73942856,
+                    74680136
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 65259336,
+                  "min": 63588168,
+                  "max": 66062152,
+                  "values": [
+                    63588168,
+                    65259336,
+                    66062152
+                  ]
+                },
+                "percent": -11.743555050132226
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 60.03256963517545,
+                "min": 59.95835327493213,
+                "max": 60.224955319575834,
+                "values": [
+                  60.03256963517545,
+                  60.224955319575834,
+                  59.95835327493213
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 60.00775251947854,
+                "min": 59.165292114498435,
+                "max": 60.219619506011455,
+                "values": [
+                  60.00775251947854,
+                  60.219619506011455,
+                  59.165292114498435
+                ]
+              },
+              "percent": -0.041339419331420414
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-4k30",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 88473600,
+                  "min": 87375872,
+                  "max": 88883200,
+                  "values": [
+                    87375872,
+                    88473600,
+                    88883200
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 88047616,
+                  "min": 87097344,
+                  "max": 88408064,
+                  "values": [
+                    87097344,
+                    88047616,
+                    88408064
+                  ]
+                },
+                "percent": -0.4814814814814815
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 88440832,
+                  "min": 87326720,
+                  "max": 88801280,
+                  "values": [
+                    87326720,
+                    88440832,
+                    88801280
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 88031232,
+                  "min": 87064576,
+                  "max": 88391680,
+                  "values": [
+                    87064576,
+                    88031232,
+                    88391680
+                  ]
+                },
+                "percent": -0.4631344942571323
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 422086472,
+                  "min": 388695880,
+                  "max": 423364424,
+                  "values": [
+                    388695880,
+                    422086472,
+                    423364424
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 375654216,
+                  "min": 374949704,
+                  "max": 376178504,
+                  "values": [
+                    374949704,
+                    375654216,
+                    376178504
+                  ]
+                },
+                "percent": -11.000650122707558
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 181749576,
+                  "min": 180635464,
+                  "max": 182110024,
+                  "values": [
+                    180635464,
+                    181749576,
+                    182110024
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 138757960,
+                  "min": 135694152,
+                  "max": 139085640,
+                  "values": [
+                    135694152,
+                    138757960,
+                    139085640
+                  ]
+                },
+                "percent": -23.654314329734667
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.78903412677614,
+                "min": 59.76053769350046,
+                "max": 59.959461613138714,
+                "values": [
+                  59.959461613138714,
+                  59.78903412677614,
+                  59.76053769350046
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.80895738733766,
+                "min": 59.79578435105555,
+                "max": 59.957840817766375,
+                "values": [
+                  59.79578435105555,
+                  59.80895738733766,
+                  59.957840817766375
+                ]
+              },
+              "percent": 0.03332259979191884
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-hevc-4k30",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 90669056,
+                  "min": 89636864,
+                  "max": 92291072,
+                  "values": [
+                    89636864,
+                    90669056,
+                    92291072
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 90472448,
+                  "min": 89309184,
+                  "max": 92241920,
+                  "values": [
+                    89309184,
+                    90472448,
+                    92241920
+                  ]
+                },
+                "percent": -0.21684134441633537
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 90652672,
+                  "min": 89620480,
+                  "max": 92291072,
+                  "values": [
+                    89620480,
+                    90652672,
+                    92291072
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 90472448,
+                  "min": 89292800,
+                  "max": 92241920,
+                  "values": [
+                    89292800,
+                    90472448,
+                    92241920
+                  ]
+                },
+                "percent": -0.19880715705765406
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 424560456,
+                  "min": 423495496,
+                  "max": 426035016,
+                  "values": [
+                    423495496,
+                    424560456,
+                    426035016
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 377800520,
+                  "min": 376866632,
+                  "max": 379324232,
+                  "values": [
+                    376866632,
+                    377800520,
+                    379324232
+                  ]
+                },
+                "percent": -11.013728513613618
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 186009416,
+                  "min": 184977224,
+                  "max": 187647816,
+                  "values": [
+                    184977224,
+                    186009416,
+                    187647816
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 141133640,
+                  "min": 139986760,
+                  "max": 142903112,
+                  "values": [
+                    139986760,
+                    141133640,
+                    142903112
+                  ]
+                },
+                "percent": -24.125539967288535
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.95622867125647,
+                "min": 59.78460767607301,
+                "max": 59.95696445295788,
+                "values": [
+                  59.95696445295788,
+                  59.95622867125647,
+                  59.78460767607301
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.81530652800109,
+                "min": 59.81027149696151,
+                "max": 59.956507202544145,
+                "values": [
+                  59.81027149696151,
+                  59.956507202544145,
+                  59.81530652800109
+                ]
+              },
+              "percent": -0.23504170688931264
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-1080p30-audio-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 94519296,
+                  "min": 93421568,
+                  "max": 96206848,
+                  "values": [
+                    93421568,
+                    94519296,
+                    96206848
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 94748672,
+                  "min": 93454336,
+                  "max": 96436224,
+                  "values": [
+                    93454336,
+                    94748672,
+                    96436224
+                  ]
+                },
+                "percent": 0.24267637372161555
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 94519296,
+                  "min": 93421568,
+                  "max": 96174080,
+                  "values": [
+                    93421568,
+                    94519296,
+                    96174080
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 94748672,
+                  "min": 93454336,
+                  "max": 96436224,
+                  "values": [
+                    93454336,
+                    94748672,
+                    96436224
+                  ]
+                },
+                "percent": 0.24267637372161555
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 311822152,
+                  "min": 311019336,
+                  "max": 313739080,
+                  "values": [
+                    311019336,
+                    311822152,
+                    313739080
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 265619272,
+                  "min": 264324936,
+                  "max": 268814152,
+                  "values": [
+                    264324936,
+                    265619272,
+                    268814152
+                  ]
+                },
+                "percent": -14.817061489589104
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 189744968,
+                  "min": 188680008,
+                  "max": 191399752,
+                  "values": [
+                    188680008,
+                    189744968,
+                    191399752
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 145311560,
+                  "min": 144017224,
+                  "max": 146999112,
+                  "values": [
+                    144017224,
+                    145311560,
+                    146999112
+                  ]
+                },
+                "percent": -23.41743681972109
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 60.2201777238195,
+                "min": 59.92046930897742,
+                "max": 60.23108682227698,
+                "values": [
+                  60.2201777238195,
+                  59.92046930897742,
+                  60.23108682227698
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.96108907177919,
+                "min": 59.95946883495354,
+                "max": 60.1470589052383,
+                "values": [
+                  59.96108907177919,
+                  59.95946883495354,
+                  60.1470589052383
+                ]
+              },
+              "percent": -0.43023561509323105
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-4k30-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 96763904,
+                  "min": 96550912,
+                  "max": 97320960,
+                  "values": [
+                    96550912,
+                    96763904,
+                    97320960
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97058816,
+                  "min": 96845824,
+                  "max": 97615872,
+                  "values": [
+                    96845824,
+                    97058816,
+                    97615872
+                  ]
+                },
+                "percent": 0.3047748052827633
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 96731136,
+                  "min": 96501760,
+                  "max": 97239040,
+                  "values": [
+                    96501760,
+                    96731136,
+                    97239040
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97026048,
+                  "min": 96796672,
+                  "max": 97550336,
+                  "values": [
+                    96796672,
+                    97026048,
+                    97550336
+                  ]
+                },
+                "percent": 0.3048780487804878
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 431015752,
+                  "min": 430819144,
+                  "max": 431605576,
+                  "values": [
+                    430819144,
+                    431015752,
+                    431605576
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 384632648,
+                  "min": 384436040,
+                  "max": 385189704,
+                  "values": [
+                    384436040,
+                    384632648,
+                    385189704
+                  ]
+                },
+                "percent": -10.761347766241267
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 191956808,
+                  "min": 191727432,
+                  "max": 192464712,
+                  "values": [
+                    191727432,
+                    191956808,
+                    192464712
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 147588936,
+                  "min": 147359560,
+                  "max": 148113224,
+                  "values": [
+                    147359560,
+                    147588936,
+                    148113224
+                  ]
+                },
+                "percent": -23.113466233508113
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.97041919617985,
+                "min": 59.95972047989812,
+                "max": 60.0471951268832,
+                "values": [
+                  59.97041919617985,
+                  59.95972047989812,
+                  60.0471951268832
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.808505050151815,
+                "min": 59.797784266625065,
+                "max": 59.95754322738339,
+                "values": [
+                  59.808505050151815,
+                  59.797784266625065,
+                  59.95754322738339
+                ]
+              },
+              "percent": -0.26999001874301687
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-hevc-4k30-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 98271232,
+                  "min": 97468416,
+                  "max": 98385920,
+                  "values": [
+                    97468416,
+                    98271232,
+                    98385920
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97927168,
+                  "min": 97730560,
+                  "max": 97959936,
+                  "values": [
+                    97730560,
+                    97959936,
+                    97927168
+                  ]
+                },
+                "percent": -0.35011670556852287
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 98238464,
+                  "min": 97419264,
+                  "max": 98336768,
+                  "values": [
+                    97419264,
+                    98238464,
+                    98336768
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97714176,
+                  "min": 97009664,
+                  "max": 97910784,
+                  "values": [
+                    97714176,
+                    97009664,
+                    97910784
+                  ]
+                },
+                "percent": -0.5336891260840559
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 431933256,
+                  "min": 431736648,
+                  "max": 432588616,
+                  "values": [
+                    431736648,
+                    431933256,
+                    432588616
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 385288008,
+                  "min": 383928136,
+                  "max": 385304392,
+                  "values": [
+                    385288008,
+                    383928136,
+                    385304392
+                  ]
+                },
+                "percent": -10.799179584356894
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 193431368,
+                  "min": 192644936,
+                  "max": 193529672,
+                  "values": [
+                    192644936,
+                    193431368,
+                    193529672
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 152471368,
+                  "min": 151766856,
+                  "max": 152667976,
+                  "values": [
+                    152471368,
+                    151766856,
+                    152667976
+                  ]
+                },
+                "percent": -21.175469327187926
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.79081244324924,
+                "min": 59.77469832946405,
+                "max": 59.794723918981674,
+                "values": [
+                  59.77469832946405,
+                  59.794723918981674,
+                  59.79081244324924
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.85288475088589,
+                "min": 59.819996656369135,
+                "max": 59.95411668849495,
+                "values": [
+                  59.819996656369135,
+                  59.85288475088589,
+                  59.95411668849495
+                ]
+              },
+              "percent": 0.10381579560500329
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "encode-h264-copy",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 128663552,
+                  "min": 117456896,
+                  "max": 143015936,
+                  "values": [
+                    117456896,
+                    128663552,
+                    143015936
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 128827392,
+                  "min": 117817344,
+                  "max": 141541376,
+                  "values": [
+                    117817344,
+                    128827392,
+                    141541376
+                  ]
+                },
+                "percent": 0.12733987011333248
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 128663552,
+                  "min": 116572160,
+                  "max": 140296192,
+                  "values": [
+                    116572160,
+                    128663552,
+                    140296192
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 128827392,
+                  "min": 116277248,
+                  "max": 140541952,
+                  "values": [
+                    116277248,
+                    128827392,
+                    140541952
+                  ]
+                },
+                "percent": 0.12733987011333248
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 295290720,
+                  "min": 285984584,
+                  "max": 309643104,
+                  "values": [
+                    285984584,
+                    295290720,
+                    309643104
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 249825120,
+                  "min": 239798088,
+                  "max": 262539104,
+                  "values": [
+                    239798088,
+                    249825120,
+                    262539104
+                  ]
+                },
+                "percent": -15.396894287771726
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 247498592,
+                  "min": 235423560,
+                  "max": 259131232,
+                  "values": [
+                    235423560,
+                    247498592,
+                    259131232
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 189499208,
+                  "min": 180012896,
+                  "max": 213747552,
+                  "values": [
+                    189499208,
+                    180012896,
+                    213747552
+                  ]
+                },
+                "percent": -23.43422786017304
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            }
+          },
+          "exports": [
+            {
+              "output": {
+                "width": 640,
+                "height": 360,
+                "fps": 30,
+                "frames": 60,
+                "codec": "h264"
+              },
+              "count": {
+                "initial": 3,
+                "optimized": 3
+              },
+              "pipelineMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 249.25716700032353,
+                  "min": 247.09850000031292,
+                  "max": 252.16645799949765,
+                  "values": [
+                    247.09850000031292,
+                    252.16645799949765,
+                    249.25716700032353
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 264.6598340012133,
+                  "min": 256.3154999986291,
+                  "max": 265.77695900015533,
+                  "values": [
+                    256.3154999986291,
+                    264.6598340012133,
+                    265.77695900015533
+                  ]
+                },
+                "percent": 6.179427932304866
+              },
+              "probeMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 41.06633299961686,
+                  "min": 39.94995800033212,
+                  "max": 41.7269999999553,
+                  "values": [
+                    39.94995800033212,
+                    41.06633299961686,
+                    41.7269999999553
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 41.384417001158,
+                  "min": 40.931292001158,
+                  "max": 119.76741599850357,
+                  "values": [
+                    41.384417001158,
+                    40.931292001158,
+                    119.76741599850357
+                  ]
+                },
+                "percent": 0.774561491877313
+              },
+              "totalMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 293.792875001207,
+                  "min": 290.1747089996934,
+                  "max": 296.0256669986993,
+                  "values": [
+                    290.1747089996934,
+                    296.0256669986993,
+                    293.792875001207
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 308.32124999910593,
+                  "min": 300.7839999999851,
+                  "max": 388.9572919998318,
+                  "values": [
+                    300.7839999999851,
+                    308.32124999910593,
+                    388.9572919998318
+                  ]
+                },
+                "percent": 4.945108011158967
+              }
+            }
+          ]
+        },
+        {
+          "id": "encode-h264-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 164347904,
+                  "min": 152502272,
+                  "max": 177176576,
+                  "values": [
+                    152502272,
+                    164347904,
+                    177176576
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 164773888,
+                  "min": 152862720,
+                  "max": 177799168,
+                  "values": [
+                    152862720,
+                    164773888,
+                    177799168
+                  ]
+                },
+                "percent": 0.25919649087827734
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 164347904,
+                  "min": 152502272,
+                  "max": 177176576,
+                  "values": [
+                    152502272,
+                    164347904,
+                    177176576
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 164773888,
+                  "min": 152862720,
+                  "max": 177799168,
+                  "values": [
+                    152862720,
+                    164773888,
+                    177799168
+                  ]
+                },
+                "percent": 0.25919649087827734
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 330909560,
+                  "min": 319080288,
+                  "max": 343738232,
+                  "values": [
+                    319080288,
+                    330909560,
+                    343738232
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 285706104,
+                  "min": 273827704,
+                  "max": 298731384,
+                  "values": [
+                    273827704,
+                    285706104,
+                    298731384
+                  ]
+                },
+                "percent": -13.660365690250833
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 283199352,
+                  "min": 272713568,
+                  "max": 296028024,
+                  "values": [
+                    272713568,
+                    283199352,
+                    296028024
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 237995896,
+                  "min": 226117496,
+                  "max": 251021176,
+                  "values": [
+                    226117496,
+                    237995896,
+                    251021176
+                  ]
+                },
+                "percent": -15.961708838938304
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            }
+          },
+          "exports": [
+            {
+              "output": {
+                "width": 640,
+                "height": 360,
+                "fps": 30,
+                "frames": 60,
+                "codec": "h264"
+              },
+              "count": {
+                "initial": 3,
+                "optimized": 3
+              },
+              "pipelineMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 254.24766699969769,
+                  "min": 244.87854200042784,
+                  "max": 292.9660000000149,
+                  "values": [
+                    292.9660000000149,
+                    244.87854200042784,
+                    254.24766699969769
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 259.5107920002192,
+                  "min": 237.72520800121129,
+                  "max": 265.41166599839926,
+                  "values": [
+                    265.41166599839926,
+                    237.72520800121129,
+                    259.5107920002192
+                  ]
+                },
+                "percent": 2.0700779923096793
+              },
+              "probeMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 41.57291699945927,
+                  "min": 39.74533399939537,
+                  "max": 41.83579199947417,
+                  "values": [
+                    39.74533399939537,
+                    41.57291699945927,
+                    41.83579199947417
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 40.78887500055134,
+                  "min": 38.55208300054073,
+                  "max": 42.201166998595,
+                  "values": [
+                    40.78887500055134,
+                    38.55208300054073,
+                    42.201166998595
+                  ]
+                },
+                "percent": -1.8859441566684425
+              },
+              "totalMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 298.9640410002321,
+                  "min": 289.6400830000639,
+                  "max": 335.5555419996381,
+                  "values": [
+                    335.5555419996381,
+                    289.6400830000639,
+                    298.9640410002321
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 304.65324999950826,
+                  "min": 278.2494159992784,
+                  "max": 309.1970830000937,
+                  "values": [
+                    309.1970830000937,
+                    278.2494159992784,
+                    304.65324999950826
+                  ]
+                },
+                "percent": 1.9029743444201521
+              }
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "steady-playback-h264-1080p30-audio",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-4k30",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-hevc-4k30",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-1080p30-audio-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-4k30-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-hevc-4k30-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "encode-h264-copy",
+          "assessment": "incomplete",
+          "findings": [
+            "Baseline: Media validation unavailable: pixels",
+            "Baseline: Media validation unavailable: presentation-timestamps",
+            "Baseline: Media validation unavailable: actual-codec",
+            "Candidate: Media validation unavailable: pixels",
+            "Candidate: Media validation unavailable: presentation-timestamps",
+            "Candidate: Media validation unavailable: actual-codec",
+            "Thermal state was non-nominal during the workload",
+            "Pixel / audio / timestamp validation incomplete"
+          ]
+        },
+        {
+          "id": "encode-h264-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Baseline: Media validation unavailable: pixels",
+            "Baseline: Media validation unavailable: presentation-timestamps",
+            "Baseline: Media validation unavailable: actual-codec",
+            "Candidate: Media validation unavailable: pixels",
+            "Candidate: Media validation unavailable: presentation-timestamps",
+            "Candidate: Media validation unavailable: actual-codec",
+            "Thermal state was non-nominal during the workload",
+            "Pixel / audio / timestamp validation incomplete"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "BA",
+      "strictAssessment": "incomplete",
+      "warnings": [
+        "Decode/render/encode transport changed; record the intended change and do not describe CPU readback results as GPU-only",
+        "Thermal state was not confirmed nominal for both runs"
+      ],
+      "confounders": [
+        "Thermal state was not confirmed nominal for both runs"
+      ],
+      "cases": [
+        {
+          "id": "steady-playback-h264-1080p30-audio",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 86278144,
+                  "min": 84819968,
+                  "max": 87097344,
+                  "values": [
+                    84819968,
+                    86278144,
+                    87097344
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 86097920,
+                  "min": 84443136,
+                  "max": 86900736,
+                  "values": [
+                    84443136,
+                    86097920,
+                    86900736
+                  ]
+                },
+                "percent": -0.20888720091150778
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 86278144,
+                  "min": 84819968,
+                  "max": 87097344,
+                  "values": [
+                    84819968,
+                    86278144,
+                    87097344
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 86097920,
+                  "min": 84443136,
+                  "max": 86900736,
+                  "values": [
+                    84443136,
+                    86097920,
+                    86900736
+                  ]
+                },
+                "percent": -0.20888720091150778
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 193513312,
+                  "min": 193021792,
+                  "max": 201656160,
+                  "values": [
+                    201656160,
+                    193021792,
+                    193513312
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 183633736,
+                  "min": 183158600,
+                  "max": 190842696,
+                  "values": [
+                    190842696,
+                    183158600,
+                    183633736
+                  ]
+                },
+                "percent": -5.105372802466427
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 73811808,
+                  "min": 72468320,
+                  "max": 74631008,
+                  "values": [
+                    72468320,
+                    73811808,
+                    74631008
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 65996616,
+                  "min": 64718664,
+                  "max": 67848008,
+                  "values": [
+                    64718664,
+                    65996616,
+                    67848008
+                  ]
+                },
+                "percent": -10.587996977394186
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.96244588308208,
+                "min": 59.92169946752698,
+                "max": 59.96676906773104,
+                "values": [
+                  59.92169946752698,
+                  59.96676906773104,
+                  59.96244588308208
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.43519405704659,
+                "min": 59.430388656296714,
+                "max": 60.175169274139996,
+                "values": [
+                  60.175169274139996,
+                  59.430388656296714,
+                  59.43519405704659
+                ]
+              },
+              "percent": -0.879303401104683
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-4k30",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 88276992,
+                  "min": 87310336,
+                  "max": 88621056,
+                  "values": [
+                    87310336,
+                    88276992,
+                    88621056
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 88178688,
+                  "min": 87097344,
+                  "max": 88539136,
+                  "values": [
+                    87097344,
+                    88178688,
+                    88539136
+                  ]
+                },
+                "percent": -0.11135857461024498
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 88244224,
+                  "min": 87310336,
+                  "max": 88588288,
+                  "values": [
+                    87310336,
+                    88244224,
+                    88588288
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 88162304,
+                  "min": 87064576,
+                  "max": 88473600,
+                  "values": [
+                    87064576,
+                    88162304,
+                    88473600
+                  ]
+                },
+                "percent": -0.09283327144448571
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 422102904,
+                  "min": 421857120,
+                  "max": 423200632,
+                  "values": [
+                    421857120,
+                    422102904,
+                    423200632
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 376719200,
+                  "min": 375703392,
+                  "max": 377112416,
+                  "values": [
+                    375703392,
+                    376719200,
+                    377112416
+                  ]
+                },
+                "percent": -10.75181041635288
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 183748472,
+                  "min": 179701624,
+                  "max": 184027000,
+                  "values": [
+                    179701624,
+                    183748472,
+                    184027000
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 137594720,
+                  "min": 136496992,
+                  "max": 137873248,
+                  "values": [
+                    136496992,
+                    137594720,
+                    137873248
+                  ]
+                },
+                "percent": -25.117897034811804
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.77876700614535,
+                "min": 59.77370301964693,
+                "max": 59.958014258513316,
+                "values": [
+                  59.958014258513316,
+                  59.77876700614535,
+                  59.77370301964693
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.8075366049565,
+                "min": 59.79839519950766,
+                "max": 59.82894407445186,
+                "values": [
+                  59.8075366049565,
+                  59.82894407445186,
+                  59.79839519950766
+                ]
+              },
+              "percent": 0.04812678523161025
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-hevc-4k30",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 90570752,
+                  "min": 89505792,
+                  "max": 92209152,
+                  "values": [
+                    89505792,
+                    90570752,
+                    92209152
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 90374144,
+                  "min": 89276416,
+                  "max": 91717632,
+                  "values": [
+                    89276416,
+                    90374144,
+                    91717632
+                  ]
+                },
+                "percent": -0.21707670043415342
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 90570752,
+                  "min": 89473024,
+                  "max": 92209152,
+                  "values": [
+                    89473024,
+                    90570752,
+                    92209152
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 90374144,
+                  "min": 89276416,
+                  "max": 91717632,
+                  "values": [
+                    89276416,
+                    90374144,
+                    91717632
+                  ]
+                },
+                "percent": -0.21707670043415342
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 424740752,
+                  "min": 423872400,
+                  "max": 425592720,
+                  "values": [
+                    423872400,
+                    424740752,
+                    425592720
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 381110112,
+                  "min": 377800544,
+                  "max": 382093152,
+                  "values": [
+                    377800544,
+                    381110112,
+                    382093152
+                  ]
+                },
+                "percent": -10.272298995223327
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 184928144,
+                  "min": 184518544,
+                  "max": 186025872,
+                  "values": [
+                    184928144,
+                    186025872,
+                    184518544
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 144230240,
+                  "min": 138676064,
+                  "max": 149768032,
+                  "values": [
+                    138676064,
+                    144230240,
+                    149768032
+                  ]
+                },
+                "percent": -22.007414944909627
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.79889813348587,
+                "min": 59.79000523553791,
+                "max": 59.95367854155116,
+                "values": [
+                  59.79000523553791,
+                  59.79889813348587,
+                  59.95367854155116
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.88149283122561,
+                "min": 59.827605057863,
+                "max": 59.956495377608604,
+                "values": [
+                  59.88149283122561,
+                  59.827605057863,
+                  59.956495377608604
+                ]
+              },
+              "percent": 0.13812076863918926
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-1080p30-audio-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 94519296,
+                  "min": 93290496,
+                  "max": 95961088,
+                  "values": [
+                    93290496,
+                    94519296,
+                    95961088
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 94584832,
+                  "min": 93388800,
+                  "max": 96206848,
+                  "values": [
+                    93388800,
+                    94584832,
+                    96206848
+                  ]
+                },
+                "percent": 0.06933610677760445
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 94519296,
+                  "min": 93290496,
+                  "max": 95928320,
+                  "values": [
+                    93290496,
+                    94519296,
+                    95928320
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 94584832,
+                  "min": 93388800,
+                  "max": 96190464,
+                  "values": [
+                    93388800,
+                    94584832,
+                    96190464
+                  ]
+                },
+                "percent": 0.06933610677760445
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 312215440,
+                  "min": 311019408,
+                  "max": 313722768,
+                  "values": [
+                    311019408,
+                    312215440,
+                    313722768
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 268601184,
+                  "min": 267388768,
+                  "max": 270288736,
+                  "values": [
+                    267388768,
+                    268601184,
+                    270288736
+                  ]
+                },
+                "percent": -13.969282236650434
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 186730384,
+                  "min": 185501584,
+                  "max": 188188560,
+                  "values": [
+                    185501584,
+                    186730384,
+                    188188560
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 146802528,
+                  "min": 145196896,
+                  "max": 151340896,
+                  "values": [
+                    151340896,
+                    145196896,
+                    146802528
+                  ]
+                },
+                "percent": -21.382624051156025
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.962851293662055,
+                "min": 59.96040707021695,
+                "max": 59.96319955873415,
+                "values": [
+                  59.96040707021695,
+                  59.962851293662055,
+                  59.96319955873415
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.956498672853776,
+                "min": 59.95016642416814,
+                "max": 59.97078330754625,
+                "values": [
+                  59.95016642416814,
+                  59.97078330754625,
+                  59.956498672853776
+                ]
+              },
+              "percent": -0.010594260731811796
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 25,
+                "min": 25,
+                "max": 25,
+                "values": [
+                  25,
+                  25,
+                  25
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-h264-4k30-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 97075200,
+                  "min": 96436224,
+                  "max": 97271808,
+                  "values": [
+                    96436224,
+                    97075200,
+                    97271808
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 96813056,
+                  "min": 96600064,
+                  "max": 97419264,
+                  "values": [
+                    96600064,
+                    96813056,
+                    97419264
+                  ]
+                },
+                "percent": -0.270042194092827
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 97075200,
+                  "min": 96387072,
+                  "max": 97222656,
+                  "values": [
+                    96387072,
+                    97075200,
+                    97222656
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 96796672,
+                  "min": 96534528,
+                  "max": 97370112,
+                  "values": [
+                    96534528,
+                    96796672,
+                    97370112
+                  ]
+                },
+                "percent": -0.2869198312236287
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 430983056,
+                  "min": 430868368,
+                  "max": 431654800,
+                  "values": [
+                    430868368,
+                    430983056,
+                    431654800
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 387549024,
+                  "min": 387401568,
+                  "max": 388171616,
+                  "values": [
+                    387401568,
+                    387549024,
+                    388171616
+                  ]
+                },
+                "percent": -10.077897818794993
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 189286288,
+                  "min": 188598160,
+                  "max": 189433744,
+                  "values": [
+                    188598160,
+                    189286288,
+                    189433744
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 147375968,
+                  "min": 147146592,
+                  "max": 148997984,
+                  "values": [
+                    147146592,
+                    147375968,
+                    148997984
+                  ]
+                },
+                "percent": -22.141234023248423
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.76247352182538,
+                "min": 59.75927905517121,
+                "max": 59.95214871919616,
+                "values": [
+                  59.76247352182538,
+                  59.75927905517121,
+                  59.95214871919616
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.81059759253688,
+                "min": 59.432898384003536,
+                "max": 59.95518283816928,
+                "values": [
+                  59.432898384003536,
+                  59.81059759253688,
+                  59.95518283816928
+                ]
+              },
+              "percent": 0.080525567091742
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "steady-playback-hevc-4k30-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 98336768,
+                  "min": 97550336,
+                  "max": 98484224,
+                  "values": [
+                    97550336,
+                    98336768,
+                    98484224
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97763328,
+                  "min": 97615872,
+                  "max": 97763328,
+                  "values": [
+                    97615872,
+                    97763328,
+                    97763328
+                  ]
+                },
+                "percent": -0.583138953682106
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 98287616,
+                  "min": 97550336,
+                  "max": 98435072,
+                  "values": [
+                    97550336,
+                    98287616,
+                    98435072
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 97615872,
+                  "min": 96829440,
+                  "max": 97730560,
+                  "values": [
+                    97615872,
+                    96829440,
+                    97730560
+                  ]
+                },
+                "percent": -0.6834472412068678
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 432719760,
+                  "min": 431851408,
+                  "max": 432867216,
+                  "values": [
+                    431851408,
+                    432719760,
+                    432867216
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 388466528,
+                  "min": 388351840,
+                  "max": 388564832,
+                  "values": [
+                    388351840,
+                    388564832,
+                    388466528
+                  ]
+                },
+                "percent": -10.226764777277563
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 190498704,
+                  "min": 189761424,
+                  "max": 190646160,
+                  "values": [
+                    189761424,
+                    190498704,
+                    190646160
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 150554464,
+                  "min": 149243744,
+                  "max": 151455584,
+                  "values": [
+                    149243744,
+                    150554464,
+                    151455584
+                  ]
+                },
+                "percent": -20.968247637002296
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 3,
+                "median": 59.79585915633931,
+                "min": 59.78602348273911,
+                "max": 59.81193847246663,
+                "values": [
+                  59.78602348273911,
+                  59.81193847246663,
+                  59.79585915633931
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 59.95345849302203,
+                "min": 59.44226779881786,
+                "max": 59.95854970786784,
+                "values": [
+                  59.44226779881786,
+                  59.95345849302203,
+                  59.95854970786784
+                ]
+              },
+              "percent": 0.26356229161399036
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0.25,
+                "min": 0.25,
+                "max": 0.25,
+                "values": [
+                  0.25,
+                  0.25,
+                  0.25
+                ]
+              },
+              "percent": 0
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 33.333,
+                "min": 33.333,
+                "max": 33.333,
+                "values": [
+                  33.333,
+                  33.333,
+                  33.333
+                ]
+              },
+              "percent": 0
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "optimized": {
+                "samples": 3,
+                "median": 0,
+                "min": 0,
+                "max": 0,
+                "values": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              "percent": null
+            }
+          },
+          "exports": []
+        },
+        {
+          "id": "encode-h264-copy",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 128811008,
+                  "min": 118374400,
+                  "max": 140345344,
+                  "values": [
+                    118374400,
+                    128811008,
+                    140345344
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 128843776,
+                  "min": 116228096,
+                  "max": 140230656,
+                  "values": [
+                    116228096,
+                    128843776,
+                    140230656
+                  ]
+                },
+                "percent": 0.02543881963876876
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 128745472,
+                  "min": 116736000,
+                  "max": 140345344,
+                  "values": [
+                    116736000,
+                    128745472,
+                    140345344
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 128516096,
+                  "min": 116080640,
+                  "max": 140230656,
+                  "values": [
+                    116080640,
+                    128516096,
+                    140230656
+                  ]
+                },
+                "percent": -0.17816238228556885
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 294520720,
+                  "min": 287098768,
+                  "max": 307054504,
+                  "values": [
+                    287098768,
+                    294520720,
+                    307054504
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 252987256,
+                  "min": 241321824,
+                  "max": 264292216,
+                  "values": [
+                    241321824,
+                    252987256,
+                    264292216
+                  ]
+                },
+                "percent": -14.10205163154565
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 247711632,
+                  "min": 235685776,
+                  "max": 259327912,
+                  "values": [
+                    235685776,
+                    247711632,
+                    259327912
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 204867448,
+                  "min": 192448352,
+                  "max": 216582008,
+                  "values": [
+                    192448352,
+                    204867448,
+                    216582008
+                  ]
+                },
+                "percent": -17.29599197828546
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            }
+          },
+          "exports": [
+            {
+              "output": {
+                "width": 640,
+                "height": 360,
+                "fps": 30,
+                "frames": 60,
+                "codec": "h264"
+              },
+              "count": {
+                "initial": 3,
+                "optimized": 3
+              },
+              "pipelineMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 244.93995800055563,
+                  "min": 230.8464169986546,
+                  "max": 254.70770799927413,
+                  "values": [
+                    254.70770799927413,
+                    230.8464169986546,
+                    244.93995800055563
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 261.52362499944866,
+                  "min": 256.82925000041723,
+                  "max": 274.06783300079405,
+                  "values": [
+                    256.82925000041723,
+                    274.06783300079405,
+                    261.52362499944866
+                  ]
+                },
+                "percent": 6.770502916006625
+              },
+              "probeMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 41.0652499999851,
+                  "min": 40.47241700068116,
+                  "max": 102.7940419986844,
+                  "values": [
+                    40.47241700068116,
+                    102.7940419986844,
+                    41.0652499999851
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 42.13191599957645,
+                  "min": 41.4347500000149,
+                  "max": 43.077916000038385,
+                  "values": [
+                    43.077916000038385,
+                    42.13191599957645,
+                    41.4347500000149
+                  ]
+                },
+                "percent": 2.5974905780233595
+              },
+              "totalMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 298.2352079991251,
+                  "min": 288.96454099938273,
+                  "max": 335.71000000089407,
+                  "values": [
+                    298.2352079991251,
+                    335.71000000089407,
+                    288.96454099938273
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 306.0061670001596,
+                  "min": 303.1283330004662,
+                  "max": 318.9672919996083,
+                  "values": [
+                    303.1283330004662,
+                    318.9672919996083,
+                    306.0061670001596
+                  ]
+                },
+                "percent": 2.605647754726965
+              }
+            }
+          ]
+        },
+        {
+          "id": "encode-h264-direct",
+          "passed": {
+            "initial": 3,
+            "optimized": 3
+          },
+          "memory": {
+            "rssBytes": {
+              "sources": [
+                "iOS mach task_info resident_size"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 165675008,
+                  "min": 152420352,
+                  "max": 176996352,
+                  "values": [
+                    152420352,
+                    165675008,
+                    176996352
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 164528128,
+                  "min": 152158208,
+                  "max": 177766400,
+                  "values": [
+                    152158208,
+                    164528128,
+                    177766400
+                  ]
+                },
+                "percent": -0.6922468354430379
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 164446208,
+                  "min": 152420352,
+                  "max": 176996352,
+                  "values": [
+                    152420352,
+                    164446208,
+                    176996352
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 164528128,
+                  "min": 152125440,
+                  "max": 177504256,
+                  "values": [
+                    152125440,
+                    164528128,
+                    177504256
+                  ]
+                },
+                "percent": 0.04981568197668626
+              }
+            },
+            "physicalFootprintBytes": {
+              "sources": [
+                "iOS task_vm_info phys_footprint"
+              ],
+              "peak": {
+                "initial": {
+                  "samples": 3,
+                  "median": 332449704,
+                  "min": 319850408,
+                  "max": 343705536,
+                  "values": [
+                    319850408,
+                    332449704,
+                    343705536
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 287606672,
+                  "min": 276334456,
+                  "max": 301926288,
+                  "values": [
+                    276334456,
+                    287606672,
+                    301926288
+                  ]
+                },
+                "percent": -13.48866654427823
+              },
+              "settled": {
+                "initial": {
+                  "samples": 3,
+                  "median": 283428776,
+                  "min": 271435688,
+                  "max": 295995328,
+                  "values": [
+                    271435688,
+                    283428776,
+                    295995328
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 240895888,
+                  "min": 228509560,
+                  "max": 253872016,
+                  "values": [
+                    228509560,
+                    240895888,
+                    253872016
+                  ]
+                },
+                "percent": -15.006552475109302
+              }
+            }
+          },
+          "playback": {
+            "callbacksPerSecond": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "drawCallbackP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "callbackGapP95UpperMs": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            },
+            "missingFrames": {
+              "initial": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "optimized": {
+                "samples": 0,
+                "median": null,
+                "min": null,
+                "max": null,
+                "values": []
+              },
+              "percent": null
+            }
+          },
+          "exports": [
+            {
+              "output": {
+                "width": 640,
+                "height": 360,
+                "fps": 30,
+                "frames": 60,
+                "codec": "h264"
+              },
+              "count": {
+                "initial": 3,
+                "optimized": 3
+              },
+              "pipelineMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 249.3424169998616,
+                  "min": 246.61575000174344,
+                  "max": 484.1437920015305,
+                  "values": [
+                    249.3424169998616,
+                    484.1437920015305,
+                    246.61575000174344
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 261.79154100082815,
+                  "min": 259.551291000098,
+                  "max": 287.9796249996871,
+                  "values": [
+                    259.551291000098,
+                    287.9796249996871,
+                    261.79154100082815
+                  ]
+                },
+                "percent": 4.992782275377341
+              },
+              "probeMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 41.32608399912715,
+                  "min": 39.71454199962318,
+                  "max": 49.83108299970627,
+                  "values": [
+                    39.71454199962318,
+                    49.83108299970627,
+                    41.32608399912715
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 41.01483299955726,
+                  "min": 40.45845799893141,
+                  "max": 113.96016700007021,
+                  "values": [
+                    40.45845799893141,
+                    113.96016700007021,
+                    41.01483299955726
+                  ]
+                },
+                "percent": -0.753158706197439
+              },
+              "totalMs": {
+                "initial": {
+                  "samples": 3,
+                  "median": 292.0238749999553,
+                  "min": 290.92358300089836,
+                  "max": 536.8442919999361,
+                  "values": [
+                    292.0238749999553,
+                    536.8442919999361,
+                    290.92358300089836
+                  ]
+                },
+                "optimized": {
+                  "samples": 3,
+                  "median": 305.5097079984844,
+                  "min": 302.724417001009,
+                  "max": 404.91412499919534,
+                  "values": [
+                    302.724417001009,
+                    404.91412499919534,
+                    305.5097079984844
+                  ]
+                },
+                "percent": 4.618058368868347
+              }
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "steady-playback-h264-1080p30-audio",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-4k30",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-hevc-4k30",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-1080p30-audio-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-h264-4k30-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "steady-playback-hevc-4k30-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Thermal state was non-nominal during the workload"
+          ]
+        },
+        {
+          "id": "encode-h264-copy",
+          "assessment": "incomplete",
+          "findings": [
+            "Baseline: Media validation unavailable: pixels",
+            "Baseline: Media validation unavailable: presentation-timestamps",
+            "Baseline: Media validation unavailable: actual-codec",
+            "Candidate: Media validation unavailable: pixels",
+            "Candidate: Media validation unavailable: presentation-timestamps",
+            "Candidate: Media validation unavailable: actual-codec",
+            "Thermal state was non-nominal during the workload",
+            "Pixel / audio / timestamp validation incomplete"
+          ]
+        },
+        {
+          "id": "encode-h264-direct",
+          "assessment": "incomplete",
+          "findings": [
+            "Baseline: Media validation unavailable: pixels",
+            "Baseline: Media validation unavailable: presentation-timestamps",
+            "Baseline: Media validation unavailable: actual-codec",
+            "Candidate: Media validation unavailable: pixels",
+            "Candidate: Media validation unavailable: presentation-timestamps",
+            "Candidate: Media validation unavailable: actual-codec",
+            "Thermal state was non-nominal during the workload",
+            "Pixel / audio / timestamp validation incomplete"
+          ]
+        }
+      ]
+    }
+  ]
+}
