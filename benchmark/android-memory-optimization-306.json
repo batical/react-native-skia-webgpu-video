@@ -1,0 +1,4139 @@
+{
+  "schema": 1,
+  "kind": "android-production-memory-optimization",
+  "identities": {
+    "provider-fix": {
+      "baseCommit": "249e03b6fa8f0820dec032206952000b809f58d8",
+      "apkSha256": "1e236b7d3cf4512997057e2d0e1d7c5a394d6137b29a88bfa5ef3a51ff6513aa",
+      "change": "ImageProvider factory adopts construction reference; no cache purge or diagnostic instrumentation",
+      "patchedSourceSha256": {
+        "node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h": "f6c329e5d43fcecfcecc95c8516df159e1bfb68582d27ce92b67facfcd84b4eb",
+        "node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476",
+        "node_modules/react-native-skia/cpp/api/JsiSkApi.h": "67cb4f045263f10ec53876d1ce1df980e2477d8ebf8f49eec030b06f6ed6d121",
+        "src/exportVideoComposition.ts": "81e6270c7c110a9c2275e8355238817ade271026cc9bfec6cc551b35336c4e98",
+        "src/previewLifecycle.ts": "3ca46cad69b79ad9f35ef89b8a1b01f979a668aa8ab97069b9b66b4b432dfbc5"
+      }
+    },
+    "export-cache": {
+      "baseCommit": "249e03b6fa8f0820dec032206952000b809f58d8",
+      "apkSha256": "fd4f6f277207d809fe40203439fcfa62b34e1bfcaffe42ad51adaf48db9f6254",
+      "change": "ImageProvider factory ownership fix plus successful-session cleanup of only the dedicated export recorder cache",
+      "sourceHashes": {
+        "src/exportVideoComposition.ts": "ac1e2ab8bc3a089b0a861c17d02ef678cdced0b0596d795d2a9d5234159a5f67",
+        "src/exportCache.ts": "24b52db1a024447f3be3018d8241587cf62cd44d349918a1692311acb10f62d4",
+        "src/canvas.ts": "1cca4c22672becbcd1d0d8e1daa9ec33ef95e75fedb6ec3a3d140e051f65e0da",
+        "src/previewLifecycle.ts": "3ca46cad69b79ad9f35ef89b8a1b01f979a668aa8ab97069b9b66b4b432dfbc5",
+        "example/App.tsx": "0a9955ec5ce13efcd26834b05c106abb70fc8d2cbce1e6786f8bad323df017f9",
+        "scripts/skia-canvas-patch.json": "140743aa8a4ee44f2ca5c3861c84d27d88b868645cc46f5dfb20ab957185ddb0",
+        "node_modules/react-native-skia/cpp/api/JsiSkCanvas.h": "2758ab28fbc73fd59923720ba8594796d3e80a987adfd12bd59c16590797af13",
+        "node_modules/react-native-skia/src/skia/types/Canvas.ts": "226b25b561ad39a6812c8d5f8990e5ac9c078d3283f2bad90e725f077d84efd7",
+        "node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts": "b1878eafa831d6c3d7a47f4329a94dd64cef4bae5281cc144d3258a5c4a1021c",
+        "node_modules/react-native-skia/cpp/api/JsiSkSurface.h": "d619664807dc6f9fbbaf8814db05f3b6e8d41ae755b2c09a281c6a2be5bc2b0c",
+        "node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476",
+        "node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h": "f6c329e5d43fcecfcecc95c8516df159e1bfb68582d27ce92b67facfcd84b4eb",
+        "node_modules/react-native-skia/cpp/api/JsiSkApi.h": "c609adcb77b219b69785d9d8ecef22f5d3b8329d060a470c0b451df1a46959b6"
+      }
+    }
+  },
+  "runs": [
+    {
+      "label": "baseline",
+      "apkSha256": "59afb795cfc9fe86d5bbbbaaa487cf0129130dd6538d0f5faf5d6bc11a6edbfa",
+      "rawReportSha256": "cae9762f1f8f5fa6449dff925daa8f8310f56272cb3a3a4ba917346192abc949",
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "executionTarget": "device",
+        "platform": "android",
+        "osVersion": "17",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "android",
+          "decodeTransport": "ahardwarebuffer-rgba-egl",
+          "encodeTransport": "cpu-rgba-upload",
+          "decodeCpuCopiesBeforeSkia": 0,
+          "cpuReadbackDecode": false,
+          "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+          "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+          "zeroCopyDecode": false,
+          "zeroCopyEncode": false
+        }
+      },
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "elapsedMs": 144292.14484599978,
+          "sampleCount": 1179,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1179
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 826978304,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 735953920,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 95041536,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 839995392,
+            "pssBytes": 1108342784,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12229.972295999527,
+              "draws": 623,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 1781.6087239999324,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3013.281293001026,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1602.7235109992325
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 33911.696591001004,
+              "encodeMs": 28989.902927000076,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 31817.39833099954,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 22878.60002700053,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8604.691777000204,
+              "durationMs": 8055.885216999799,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  397,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 400,
+                "sumMs": 41.66198202595115,
+                "maxMs": 0.27111800014972687
+              },
+              "draws": 400,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 57290.97667100094,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 86876.82206400111,
+              "memory": {
+                "rssBytes": {
+                  "value": 813150208,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 722379776,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 85538816,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 100519.73438300006,
+              "memory": {
+                "rssBytes": {
+                  "value": 818561024,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 727245824,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 89786368,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 114517.59954299964,
+              "memory": {
+                "rssBytes": {
+                  "value": 818610176,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 727305216,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 90937344,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 128446.17503000051,
+              "memory": {
+                "rssBytes": {
+                  "value": 824188928,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 732912640,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 93399040,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 142106.78864300065,
+              "memory": {
+                "rssBytes": {
+                  "value": 826978304,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 735896576,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 95041536,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "snapshots": [
+        {
+          "label": "idle-before-workload",
+          "sha256": "52739367cfd5c63f58d64ec3cfb04d05478cce5e3918d006fd426a7168ac3a4a",
+          "dumpsysTotalPssBytes": 173273088,
+          "dumpsysTotalRssBytes": 316301312,
+          "categoryPssBytes": {
+            "Native Heap": 22284288,
+            "Dalvik Heap": 6579200,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 20922368,
+            "Unknown": 4687872
+          }
+        },
+        {
+          "label": "running-004s",
+          "sha256": "a3b4a44d06c5a5b824c027db1de260728a9541602e60b9234773ada2469b68a7",
+          "dumpsysTotalPssBytes": 629145600,
+          "dumpsysTotalRssBytes": 778792960,
+          "categoryPssBytes": {
+            "Native Heap": 37191680,
+            "Dalvik Heap": 7753728,
+            "EGL mtrack": 268894208,
+            "GL mtrack": 229351424,
+            "Unknown": 7481344
+          }
+        },
+        {
+          "label": "running-018s",
+          "sha256": "55a6d31a0698262d5eefab9340a0d586b470ecf6f4eaf6f73b2fd57899e4d24c",
+          "dumpsysTotalPssBytes": 429816832,
+          "dumpsysTotalRssBytes": 581574656,
+          "categoryPssBytes": {
+            "Native Heap": 42346496,
+            "Dalvik Heap": 4992000,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 228958208,
+            "Unknown": 13371392
+          }
+        },
+        {
+          "label": "running-033s",
+          "sha256": "889352ecedfb4c9118df1c3ee5c76ea937330d762ae95e15074b49d61779e345",
+          "dumpsysTotalPssBytes": 812468224,
+          "dumpsysTotalRssBytes": 964583424,
+          "categoryPssBytes": {
+            "Native Heap": 71170048,
+            "Dalvik Heap": 5213184,
+            "EGL mtrack": 257634304,
+            "GL mtrack": 363663360,
+            "Unknown": 34244608
+          }
+        },
+        {
+          "label": "running-048s",
+          "sha256": "609592917225ce6fc4e9e882303b6467ed52cae9630d2ec627fa072c0a451544",
+          "dumpsysTotalPssBytes": 994935808,
+          "dumpsysTotalRssBytes": 1146974208,
+          "categoryPssBytes": {
+            "Native Heap": 90068992,
+            "Dalvik Heap": 3750912,
+            "EGL mtrack": 395104256,
+            "GL mtrack": 363896832,
+            "Unknown": 61499392
+          }
+        },
+        {
+          "label": "running-063s",
+          "sha256": "e1105b9e67dea2f1e9d322abc015e82ab43a5c3e4f1bb3ac8525c84f2a0a15e7",
+          "dumpsysTotalPssBytes": 712759296,
+          "dumpsysTotalRssBytes": 865017856,
+          "categoryPssBytes": {
+            "Native Heap": 83298304,
+            "Dalvik Heap": 3738624,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416673792,
+            "Unknown": 67237888
+          }
+        },
+        {
+          "label": "running-078s",
+          "sha256": "2a6c8527cfccd670d3cb87c6190d07b4341cf63988155388bd6b7ba49fb6ffa4",
+          "dumpsysTotalPssBytes": 952067072,
+          "dumpsysTotalRssBytes": 1104220160,
+          "categoryPssBytes": {
+            "Native Heap": 90634240,
+            "Dalvik Heap": 5745664,
+            "EGL mtrack": 281337856,
+            "GL mtrack": 423710720,
+            "Unknown": 69986304
+          }
+        },
+        {
+          "label": "running-093s",
+          "sha256": "b5e66954ecadb99806c55261344d897f07c44b554deb1c73b67a669fc881cfa1",
+          "dumpsysTotalPssBytes": 732336128,
+          "dumpsysTotalRssBytes": 884682752,
+          "categoryPssBytes": {
+            "Native Heap": 94005248,
+            "Dalvik Heap": 4750336,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 418586624,
+            "Unknown": 72787968
+          }
+        },
+        {
+          "label": "running-108s",
+          "sha256": "52746a39e3aea91c89446933db623e3957f4b3e8a324086eb51f2097c3941533",
+          "dumpsysTotalPssBytes": 764909568,
+          "dumpsysTotalRssBytes": 917274624,
+          "categoryPssBytes": {
+            "Native Heap": 96159744,
+            "Dalvik Heap": 4754432,
+            "EGL mtrack": 86388736,
+            "GL mtrack": 423456768,
+            "Unknown": 73398272
+          }
+        },
+        {
+          "label": "running-123s",
+          "sha256": "d4ddcc91c58595f3e9b943cd780f685f97fa6abe4f6e306ad23fde1d140e3bd6",
+          "dumpsysTotalPssBytes": 742987776,
+          "dumpsysTotalRssBytes": 895176704,
+          "categoryPssBytes": {
+            "Native Heap": 98240512,
+            "Dalvik Heap": 4660224,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 423227392,
+            "Unknown": 74741760
+          }
+        },
+        {
+          "label": "running-138s",
+          "sha256": "84c55fd7900c6e4c87e818047b28152d14cc69f568715f4261eb0b1c23508530",
+          "dumpsysTotalPssBytes": 748613632,
+          "dumpsysTotalRssBytes": 900997120,
+          "categoryPssBytes": {
+            "Native Heap": 100452352,
+            "Dalvik Heap": 5602304,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 423342080,
+            "Unknown": 76986368
+          }
+        },
+        {
+          "label": "after-cleanup-00s",
+          "sha256": "b9de7a5a0b5481c3e7dd23454a61d008dc6d4859474251b075f2a03917faddfe",
+          "dumpsysTotalPssBytes": 747800576,
+          "dumpsysTotalRssBytes": 900157440,
+          "categoryPssBytes": {
+            "Native Heap": 97118208,
+            "Dalvik Heap": 14003200,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416763904,
+            "Unknown": 77740032
+          }
+        },
+        {
+          "label": "after-cleanup-10s",
+          "sha256": "98cde991b4309b261cf8012b839a97f0d0bb4d806c72e30a6ca0a38ef3655603",
+          "dumpsysTotalPssBytes": 737187840,
+          "dumpsysTotalRssBytes": 889544704,
+          "categoryPssBytes": {
+            "Native Heap": 97019904,
+            "Dalvik Heap": 3529728,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416763904,
+            "Unknown": 77740032
+          }
+        },
+        {
+          "label": "after-cleanup-30s",
+          "sha256": "67b6a68e85b25376b8ae33bf7429fc3ec4401aab9bea517d51b661751a18c07f",
+          "dumpsysTotalPssBytes": 736811008,
+          "dumpsysTotalRssBytes": 889167872,
+          "categoryPssBytes": {
+            "Native Heap": 96688128,
+            "Dalvik Heap": 3492864,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416763904,
+            "Unknown": 77740032
+          }
+        },
+        {
+          "label": "after-cleanup-60s",
+          "sha256": "da36c458bd5bd4338f02fc8457ad1925ec51a37cef4b447f2173a4ad1caf0a9d",
+          "dumpsysTotalPssBytes": 736917504,
+          "dumpsysTotalRssBytes": 889274368,
+          "categoryPssBytes": {
+            "Native Heap": 96688128,
+            "Dalvik Heap": 3599360,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416763904,
+            "Unknown": 77740032
+          }
+        }
+      ]
+    },
+    {
+      "label": "provider-only",
+      "apkSha256": "1e236b7d3cf4512997057e2d0e1d7c5a394d6137b29a88bfa5ef3a51ff6513aa",
+      "rawReportSha256": "9586d1719b5c11de802fdcbe1b1a5f37959e2870000827458d913441560533c0",
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "executionTarget": "device",
+        "platform": "android",
+        "osVersion": "17",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "android",
+          "decodeTransport": "ahardwarebuffer-rgba-egl",
+          "encodeTransport": "cpu-rgba-upload",
+          "decodeCpuCopiesBeforeSkia": 0,
+          "cpuReadbackDecode": false,
+          "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+          "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+          "zeroCopyDecode": false,
+          "zeroCopyEncode": false
+        }
+      },
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "elapsedMs": 143297.51365999877,
+          "sampleCount": 1198,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1198
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 814460928,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 724602880,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 94832640,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 830832640,
+            "pssBytes": 1077982208,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12313.698818001896,
+              "draws": 591,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2042.1367189995944,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3052.166342999786,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1625.4664719998837
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 33635.27202999964,
+              "encodeMs": 28710.563124001026,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 31463.40431199968,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23035.017914999276,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8541.895390000194,
+              "durationMs": 8079.662397999316,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  402,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 403,
+                "sumMs": 41.32658202201128,
+                "maxMs": 0.26672400161623955
+              },
+              "draws": 403,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56202.62543500215,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 86967.90303700045,
+              "memory": {
+                "rssBytes": {
+                  "value": 801779712,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 712027136,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 85833728,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 100539.42436599731,
+              "memory": {
+                "rssBytes": {
+                  "value": 806498304,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 716293120,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 88864768,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 114061.76059399918,
+              "memory": {
+                "rssBytes": {
+                  "value": 809734144,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 719471616,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 91641856,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 127721.58852300048,
+              "memory": {
+                "rssBytes": {
+                  "value": 812765184,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 722447360,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 93583360,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 141041.14606500044,
+              "memory": {
+                "rssBytes": {
+                  "value": 815276032,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 725340160,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 95647744,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "snapshots": [
+        {
+          "label": "idle-before-workload",
+          "sha256": "c5953f1e9b19b26fb99ff6bb9caee8cfb3986f82085385b738a661e7a266c2fe",
+          "dumpsysTotalPssBytes": 172256256,
+          "dumpsysTotalRssBytes": 314605568,
+          "categoryPssBytes": {
+            "Native Heap": 22327296,
+            "Dalvik Heap": 6575104,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 20922368,
+            "Unknown": 4679680
+          }
+        },
+        {
+          "label": "running-004s",
+          "sha256": "f97344e8d34795c27c076abfb5f54f7e413f39edac7a9f32c005d812e207ee94",
+          "dumpsysTotalPssBytes": 585707520,
+          "dumpsysTotalRssBytes": 734691328,
+          "categoryPssBytes": {
+            "Native Heap": 37019648,
+            "Dalvik Heap": 7706624,
+            "EGL mtrack": 235712512,
+            "GL mtrack": 229289984,
+            "Unknown": 7428096
+          }
+        },
+        {
+          "label": "running-018s",
+          "sha256": "cd2250d2bcf6783b4e420f154c21430c55ea9a3e3a9e3d249532982fce73ac51",
+          "dumpsysTotalPssBytes": 527601664,
+          "dumpsysTotalRssBytes": 678707200,
+          "categoryPssBytes": {
+            "Native Heap": 42141696,
+            "Dalvik Heap": 4928512,
+            "EGL mtrack": 169345024,
+            "GL mtrack": 229175296,
+            "Unknown": 13228032
+          }
+        },
+        {
+          "label": "running-034s",
+          "sha256": "0eba53e4d0908f7b7ed39ca53ff13bb1b01b4ddcfedfd28f179d58165bfe1f4c",
+          "dumpsysTotalPssBytes": 797097984,
+          "dumpsysTotalRssBytes": 948379648,
+          "categoryPssBytes": {
+            "Native Heap": 71079936,
+            "Dalvik Heap": 5211136,
+            "EGL mtrack": 252895232,
+            "GL mtrack": 363741184,
+            "Unknown": 33740800
+          }
+        },
+        {
+          "label": "running-049s",
+          "sha256": "1b97dd9c3a58b23294d3812334fe3ae31dc523439d3d1a6cb1aaa759448f100d",
+          "dumpsysTotalPssBytes": 975237120,
+          "dumpsysTotalRssBytes": 1126551552,
+          "categoryPssBytes": {
+            "Native Heap": 89810944,
+            "Dalvik Heap": 4129792,
+            "EGL mtrack": 385626112,
+            "GL mtrack": 364003328,
+            "Unknown": 61368320
+          }
+        },
+        {
+          "label": "running-063s",
+          "sha256": "c617e209f832c5c48e798b0b321386eea7d5bb4edb7bb2263ba7cc86abd70e8f",
+          "dumpsysTotalPssBytes": 704843776,
+          "dumpsysTotalRssBytes": 856403968,
+          "categoryPssBytes": {
+            "Native Heap": 83154944,
+            "Dalvik Heap": 5751808,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416866304,
+            "Unknown": 67553280
+          }
+        },
+        {
+          "label": "running-078s",
+          "sha256": "7ed5e268765191157f2f600072556dc08c74398fbda86b53a1dbccd2df30ab94",
+          "dumpsysTotalPssBytes": 940595200,
+          "dumpsysTotalRssBytes": 1092087808,
+          "categoryPssBytes": {
+            "Native Heap": 90621952,
+            "Dalvik Heap": 5354496,
+            "EGL mtrack": 281337856,
+            "GL mtrack": 423133184,
+            "Unknown": 69842944
+          }
+        },
+        {
+          "label": "running-093s",
+          "sha256": "f18819dd33ef2f4ec8f4146d7c2d9c423d22ac63ef38aa402db4b1450ef21262",
+          "dumpsysTotalPssBytes": 721543168,
+          "dumpsysTotalRssBytes": 873263104,
+          "categoryPssBytes": {
+            "Native Heap": 93943808,
+            "Dalvik Heap": 4830208,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 418336768,
+            "Unknown": 72583168
+          }
+        },
+        {
+          "label": "running-108s",
+          "sha256": "ac4dcb222420e4ce0a3af98671d2fc88d72643c40d9fb4755ecbf4c5436e2524",
+          "dumpsysTotalPssBytes": 728666112,
+          "dumpsysTotalRssBytes": 880390144,
+          "categoryPssBytes": {
+            "Native Heap": 97105920,
+            "Dalvik Heap": 4920320,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 421285888,
+            "Unknown": 73480192
+          }
+        },
+        {
+          "label": "running-123s",
+          "sha256": "d71274af008cfaa2004da086d48c7a88a5202835257dacd55a3d3adb5e91b358",
+          "dumpsysTotalPssBytes": 782114816,
+          "dumpsysTotalRssBytes": 933847040,
+          "categoryPssBytes": {
+            "Native Heap": 98600960,
+            "Dalvik Heap": 5080064,
+            "EGL mtrack": 111276032,
+            "GL mtrack": 421400576,
+            "Unknown": 75376640
+          }
+        },
+        {
+          "label": "running-138s",
+          "sha256": "8717abc168eda556e6ded87b6363e85619901822fa6a562d4902d89cf675b7f3",
+          "dumpsysTotalPssBytes": 923097088,
+          "dumpsysTotalRssBytes": 1074827264,
+          "categoryPssBytes": {
+            "Native Heap": 101300224,
+            "Dalvik Heap": 6513664,
+            "EGL mtrack": 244006912,
+            "GL mtrack": 423813120,
+            "Unknown": 77084672
+          }
+        },
+        {
+          "label": "after-cleanup-00s",
+          "sha256": "dd7ce91d4ccbb6caa7b4c51a8df6d6c9414e680054b543502d4fb18875463343",
+          "dumpsysTotalPssBytes": 737590272,
+          "dumpsysTotalRssBytes": 889286656,
+          "categoryPssBytes": {
+            "Native Heap": 97859584,
+            "Dalvik Heap": 13923328,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416706560,
+            "Unknown": 77862912
+          }
+        },
+        {
+          "label": "after-cleanup-10s",
+          "sha256": "7a5c8ca0c0d947c146de925184842a221e65544013da25935db1ea05cacd6b1c",
+          "dumpsysTotalPssBytes": 726506496,
+          "dumpsysTotalRssBytes": 878202880,
+          "categoryPssBytes": {
+            "Native Heap": 97224704,
+            "Dalvik Heap": 3515392,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416706560,
+            "Unknown": 77862912
+          }
+        },
+        {
+          "label": "after-cleanup-30s",
+          "sha256": "0ecac46fdcde80ebd4b066ac8b760b32baa6aaf27eba69d37905d190868e6a11",
+          "dumpsysTotalPssBytes": 726486016,
+          "dumpsysTotalRssBytes": 878182400,
+          "categoryPssBytes": {
+            "Native Heap": 97175552,
+            "Dalvik Heap": 3511296,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416706560,
+            "Unknown": 77862912
+          }
+        },
+        {
+          "label": "after-cleanup-60s",
+          "sha256": "5e5ea2f86215b5a2931adacb47963310cba730ac564cf60cf5af5bc135b0dd2e",
+          "dumpsysTotalPssBytes": 726628352,
+          "dumpsysTotalRssBytes": 878288896,
+          "categoryPssBytes": {
+            "Native Heap": 97175552,
+            "Dalvik Heap": 3613696,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416706560,
+            "Unknown": 77862912
+          }
+        }
+      ]
+    },
+    {
+      "label": "provider-and-export-cache",
+      "apkSha256": "fd4f6f277207d809fe40203439fcfa62b34e1bfcaffe42ad51adaf48db9f6254",
+      "rawReportSha256": "5db1ac2bccb4abd63a9c9cb9514d088d774861771648054f6d2e47d29712dabe",
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "executionTarget": "device",
+        "platform": "android",
+        "osVersion": "17",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "android",
+          "decodeTransport": "ahardwarebuffer-rgba-egl",
+          "encodeTransport": "cpu-rgba-upload",
+          "decodeCpuCopiesBeforeSkia": 0,
+          "cpuReadbackDecode": false,
+          "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+          "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+          "zeroCopyDecode": false,
+          "zeroCopyEncode": false
+        }
+      },
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "elapsedMs": 143933.33242699876,
+          "sampleCount": 1191,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1191
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 710447104,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 620402688,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 95315968,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 761851904,
+            "pssBytes": 1025995776,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12337.640305999666,
+              "draws": 618,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2319.6604419983923,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3012.0960300005972,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1533.681111998856
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 34042.37375500053,
+              "encodeMs": 29124.05506800115,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 31948.869481999427,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 22707.918428000063,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8516.626713000238,
+              "durationMs": 8042.005131002516,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  408,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 409,
+                "sumMs": 41.343605022877455,
+                "maxMs": 0.29606200009584427
+              },
+              "draws": 409,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56424.70933799818,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 87363.79040699825,
+              "memory": {
+                "rssBytes": {
+                  "value": 696537088,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 606679040,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 85432320,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 100904.7399169989,
+              "memory": {
+                "rssBytes": {
+                  "value": 701878272,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 611739648,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 89851904,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 114630.4795479998,
+              "memory": {
+                "rssBytes": {
+                  "value": 704516096,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 614332416,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 91621376,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 128103.34796299785,
+              "memory": {
+                "rssBytes": {
+                  "value": 707317760,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 617232384,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 93378560,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 141710.58828499913,
+              "memory": {
+                "rssBytes": {
+                  "value": 710447104,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 620333056,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 95315968,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "snapshots": [
+        {
+          "label": "idle-before-workload",
+          "sha256": "b5b1b83445f7d5e1dafbe885291f16d8645ade3c1394ec7b865895a65fa62745",
+          "dumpsysTotalPssBytes": 171895808,
+          "dumpsysTotalRssBytes": 313667584,
+          "categoryPssBytes": {
+            "Native Heap": 22347776,
+            "Dalvik Heap": 6559744,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 21131264,
+            "Unknown": 4691968
+          }
+        },
+        {
+          "label": "running-004s",
+          "sha256": "949b92c33dbd3438fdaff12bd4158f83036df15fad02ecc13bfe1c65d8b44b9d",
+          "dumpsysTotalPssBytes": 614162432,
+          "dumpsysTotalRssBytes": 762736640,
+          "categoryPssBytes": {
+            "Native Heap": 37257216,
+            "Dalvik Heap": 7710720,
+            "EGL mtrack": 256450560,
+            "GL mtrack": 229269504,
+            "Unknown": 7481344
+          }
+        },
+        {
+          "label": "running-019s",
+          "sha256": "5c4e1892cd0b1a157f54a944d674732a8fd3570b2a958642413de1d77f135b27",
+          "dumpsysTotalPssBytes": 535296000,
+          "dumpsysTotalRssBytes": 685928448,
+          "categoryPssBytes": {
+            "Native Heap": 42391552,
+            "Dalvik Heap": 4895744,
+            "EGL mtrack": 169345024,
+            "GL mtrack": 229089280,
+            "Unknown": 13125632
+          }
+        },
+        {
+          "label": "running-034s",
+          "sha256": "97a8121bf5f0a1bcb8dad3b7fb7f9fdacc835d4c898812ecb4ceb6c35b1a1f69",
+          "dumpsysTotalPssBytes": 837576704,
+          "dumpsysTotalRssBytes": 988450816,
+          "categoryPssBytes": {
+            "Native Heap": 70920192,
+            "Dalvik Heap": 5121024,
+            "EGL mtrack": 286076928,
+            "GL mtrack": 363675648,
+            "Unknown": 33814528
+          }
+        },
+        {
+          "label": "running-049s",
+          "sha256": "3c75a0fa7c68f512b05fab49ce195dd8413c41d37fe1cc5e30e996508ab1da51",
+          "dumpsysTotalPssBytes": 878016512,
+          "dumpsysTotalRssBytes": 1028984832,
+          "categoryPssBytes": {
+            "Native Heap": 89143296,
+            "Dalvik Heap": 3679232,
+            "EGL mtrack": 277782528,
+            "GL mtrack": 368988160,
+            "Unknown": 60585984
+          }
+        },
+        {
+          "label": "running-064s",
+          "sha256": "e7b12512eb6c4be6e56f86c59d74947a6a497f36e031635755a6c76901e793ab",
+          "dumpsysTotalPssBytes": 555152384,
+          "dumpsysTotalRssBytes": 706609152,
+          "categoryPssBytes": {
+            "Native Heap": 82683904,
+            "Dalvik Heap": 4551680,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 261079040,
+            "Unknown": 67344384
+          }
+        },
+        {
+          "label": "running-078s",
+          "sha256": "07e679c46d3e822de986579dc8bee71cfc03db1bc8c8c81ced0006c47bc6377d",
+          "dumpsysTotalPssBytes": 802081792,
+          "dumpsysTotalRssBytes": 953475072,
+          "categoryPssBytes": {
+            "Native Heap": 90220544,
+            "Dalvik Heap": 5288960,
+            "EGL mtrack": 248156160,
+            "GL mtrack": 310198272,
+            "Unknown": 69969920
+          }
+        },
+        {
+          "label": "running-093s",
+          "sha256": "d369c574e788f07b5063d89dd834f783cca69d1649be94970dc514b6a774487e",
+          "dumpsysTotalPssBytes": 621302784,
+          "dumpsysTotalRssBytes": 772841472,
+          "categoryPssBytes": {
+            "Native Heap": 93808640,
+            "Dalvik Heap": 4899840,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 310005760,
+            "Unknown": 72824832
+          }
+        },
+        {
+          "label": "running-108s",
+          "sha256": "9a117635f543ce111978c71b8605064571aec80df600ed3914ec9cfece63ab54",
+          "dumpsysTotalPssBytes": 625216512,
+          "dumpsysTotalRssBytes": 776749056,
+          "categoryPssBytes": {
+            "Native Heap": 96086016,
+            "Dalvik Heap": 5780480,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 310169600,
+            "Unknown": 73435136
+          }
+        },
+        {
+          "label": "running-123s",
+          "sha256": "950463bf5c95c9193b6c6514470d5fa6cbbf0e0a7d8377248cf23fa7c2278d96",
+          "dumpsysTotalPssBytes": 624483328,
+          "dumpsysTotalRssBytes": 776134656,
+          "categoryPssBytes": {
+            "Native Heap": 98256896,
+            "Dalvik Heap": 5178368,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 305885184,
+            "Unknown": 75356160
+          }
+        },
+        {
+          "label": "running-138s",
+          "sha256": "023e4ec9fd099a0073f76f14101c42312973a37dab80c0e59db6337be9dede32",
+          "dumpsysTotalPssBytes": 632087552,
+          "dumpsysTotalRssBytes": 783712256,
+          "categoryPssBytes": {
+            "Native Heap": 100665344,
+            "Dalvik Heap": 6116352,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 308334592,
+            "Unknown": 77150208
+          }
+        },
+        {
+          "label": "after-cleanup-00s",
+          "sha256": "79b96a1b17d118c327e6c1571742b4a394578fd9b2ac2db2ff308533cd79ecec",
+          "dumpsysTotalPssBytes": 624030720,
+          "dumpsysTotalRssBytes": 775655424,
+          "categoryPssBytes": {
+            "Native Heap": 97511424,
+            "Dalvik Heap": 13960192,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 303370240,
+            "Unknown": 77899776
+          }
+        },
+        {
+          "label": "after-cleanup-10s",
+          "sha256": "29c565c9caf23cf526f2b9bf71d31e1a7ff30cd0dfa415ed5d3b41d20d763fa2",
+          "dumpsysTotalPssBytes": 613248000,
+          "dumpsysTotalRssBytes": 764829696,
+          "categoryPssBytes": {
+            "Native Heap": 97155072,
+            "Dalvik Heap": 3523584,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 303370240,
+            "Unknown": 77907968
+          }
+        },
+        {
+          "label": "after-cleanup-30s",
+          "sha256": "8c15f2f89abfcaadcd9e7c9433254866f03189f59a4c882a15ca993fef55dd46",
+          "dumpsysTotalPssBytes": 612912128,
+          "dumpsysTotalRssBytes": 764493824,
+          "categoryPssBytes": {
+            "Native Heap": 96802816,
+            "Dalvik Heap": 3511296,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 303370240,
+            "Unknown": 77907968
+          }
+        },
+        {
+          "label": "after-cleanup-60s",
+          "sha256": "98a4007be6136f9b7f93d95062281b1db555f30b4d7032e03112e4bac90634a9",
+          "dumpsysTotalPssBytes": 613014528,
+          "dumpsysTotalRssBytes": 764596224,
+          "categoryPssBytes": {
+            "Native Heap": 96802816,
+            "Dalvik Heap": 3613696,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 303370240,
+            "Unknown": 77907968
+          }
+        }
+      ]
+    },
+    {
+      "label": "two-montages-same-process",
+      "apkSha256": "fd4f6f277207d809fe40203439fcfa62b34e1bfcaffe42ad51adaf48db9f6254",
+      "rawReportSha256": "b72d3bfebe9c1a80cbd0ce82d6532b5f3f86837fa96490158ec127d489221d24",
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "executionTarget": "device",
+        "platform": "android",
+        "osVersion": "17",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "android",
+          "decodeTransport": "ahardwarebuffer-rgba-egl",
+          "encodeTransport": "cpu-rgba-upload",
+          "decodeCpuCopiesBeforeSkia": 0,
+          "cpuReadbackDecode": false,
+          "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+          "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+          "zeroCopyDecode": false,
+          "zeroCopyEncode": false
+        }
+      },
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "elapsedMs": 143467.03172699735,
+          "sampleCount": 1166,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1166
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 752500736,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 661951488,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 94197760,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 768397312,
+            "pssBytes": 1017349120,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12372.553594999015,
+              "draws": 621,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2256.4825449995697,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3007.251995999366,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1488.2162280008197
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 33671.05555900186,
+              "encodeMs": 28811.133558999747,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 31564.455012001097,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 22814.031261000782,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8505.205204997212,
+              "durationMs": 8031.172205001116,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  340,
+                  4,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 344,
+                "sumMs": 37.576214008033276,
+                "maxMs": 0.4334309995174408
+              },
+              "draws": 344,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56404.33376799896,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 86994.98295300081,
+              "memory": {
+                "rssBytes": {
+                  "value": 738353152,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 648510464,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 85649408,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 100366.74353899807,
+              "memory": {
+                "rssBytes": {
+                  "value": 743796736,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 653554688,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 89995264,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 113991.09372499958,
+              "memory": {
+                "rssBytes": {
+                  "value": 746590208,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 656169984,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 91645952,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 127663.80633699894,
+              "memory": {
+                "rssBytes": {
+                  "value": 749891584,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 659360768,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 93550592,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 141253.26736300066,
+              "memory": {
+                "rssBytes": {
+                  "value": 752291840,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 661869568,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 94197760,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "elapsedMs": 145029.63080799952,
+          "sampleCount": 1177,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1177
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 865107968,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 774800384,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 142653440,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 1003954176,
+            "pssBytes": 1267049472,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12177.147222999483,
+              "draws": 595,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2354.8412280008197,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3064.3623070009053,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1577.6110440008342
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 34272.77133799717,
+              "encodeMs": 29395.468398001045,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 32169.79803000018,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23108.244518000633,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8484.750208001584,
+              "durationMs": 8034.937911000103,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  310,
+                  1,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 312,
+                "sumMs": 36.63577901571989,
+                "maxMs": 1.6003419980406761
+              },
+              "draws": 312,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 57071.59833499789,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 87926.19055400044,
+              "memory": {
+                "rssBytes": {
+                  "value": 853409792,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 763538432,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 136849408,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 101450.45085499808,
+              "memory": {
+                "rssBytes": {
+                  "value": 857833472,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 767378432,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 140056576,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 115192.73227499798,
+              "memory": {
+                "rssBytes": {
+                  "value": 860102656,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 769588224,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 140888064,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 128865.7272759974,
+              "memory": {
+                "rssBytes": {
+                  "value": 867811328,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 777214976,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 144144384,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 142876.565295998,
+              "memory": {
+                "rssBytes": {
+                  "value": 875421696,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 784638976,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 147556352,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "snapshots": [
+        {
+          "label": "idle-before-workload",
+          "sha256": "638c32e085aeb6dbf048ac16bda3a03719592bd9a51318e9f378d7e45e1a0109",
+          "dumpsysTotalPssBytes": 172027904,
+          "dumpsysTotalRssBytes": 313749504,
+          "categoryPssBytes": {
+            "Native Heap": 22372352,
+            "Dalvik Heap": 6608896,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 21131264,
+            "Unknown": 4675584
+          }
+        },
+        {
+          "label": "running-004s",
+          "sha256": "c98b0a63c3c1f334aa1aee6ce16bf7f0328cc5e3edb6cdfab7d856730c58e7d7",
+          "dumpsysTotalPssBytes": 593690624,
+          "dumpsysTotalRssBytes": 742461440,
+          "categoryPssBytes": {
+            "Native Heap": 37146624,
+            "Dalvik Heap": 7706624,
+            "EGL mtrack": 235712512,
+            "GL mtrack": 229289984,
+            "Unknown": 7485440
+          }
+        },
+        {
+          "label": "running-019s",
+          "sha256": "d58cb4557cada824f760946d59ba7c7bef2cdc451a26617f4a1a8040fed0a02a",
+          "dumpsysTotalPssBytes": 464539648,
+          "dumpsysTotalRssBytes": 615522304,
+          "categoryPssBytes": {
+            "Native Heap": 42182656,
+            "Dalvik Heap": 4834304,
+            "EGL mtrack": 98832384,
+            "GL mtrack": 229031936,
+            "Unknown": 13109248
+          }
+        },
+        {
+          "label": "running-033s",
+          "sha256": "e3f7960d88aff30cfec0d646a2db6253b0a6e900c46757973e9be168f96ac56f",
+          "dumpsysTotalPssBytes": 844002304,
+          "dumpsysTotalRssBytes": 995254272,
+          "categoryPssBytes": {
+            "Native Heap": 71608320,
+            "Dalvik Heap": 5137408,
+            "EGL mtrack": 290226176,
+            "GL mtrack": 363687936,
+            "Unknown": 35141632
+          }
+        },
+        {
+          "label": "running-049s",
+          "sha256": "454871504c3f7a49e6e85635b21e227ccf9c1053324718265e58d69e65463a8a",
+          "dumpsysTotalPssBytes": 970682368,
+          "dumpsysTotalRssBytes": 1121959936,
+          "categoryPssBytes": {
+            "Native Heap": 89921536,
+            "Dalvik Heap": 4150272,
+            "EGL mtrack": 373182464,
+            "GL mtrack": 363769856,
+            "Unknown": 61429760
+          }
+        },
+        {
+          "label": "running-063s",
+          "sha256": "81a74ca92b8be0f2fd55bbf34e31530470d4fad6c8131c010020988210f87240",
+          "dumpsysTotalPssBytes": 599752704,
+          "dumpsysTotalRssBytes": 751280128,
+          "categoryPssBytes": {
+            "Native Heap": 83314688,
+            "Dalvik Heap": 5735424,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 303972352,
+            "Unknown": 67295232
+          }
+        },
+        {
+          "label": "running-079s",
+          "sha256": "6a7dcbe4c0098bca5b8293253a4af6b10f4976b40797d835cfd5a4393bc60fb6",
+          "dumpsysTotalPssBytes": 845146112,
+          "dumpsysTotalRssBytes": 996605952,
+          "categoryPssBytes": {
+            "Native Heap": 91555840,
+            "Dalvik Heap": 4654080,
+            "EGL mtrack": 248156160,
+            "GL mtrack": 352436224,
+            "Unknown": 70125568
+          }
+        },
+        {
+          "label": "running-093s",
+          "sha256": "e91781d033b868494e08dbab09ef9fce1ddf4a499e259e0785d2faad5d5ab735",
+          "dumpsysTotalPssBytes": 662300672,
+          "dumpsysTotalRssBytes": 813977600,
+          "categoryPssBytes": {
+            "Native Heap": 94296064,
+            "Dalvik Heap": 5358592,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 350277632,
+            "Unknown": 72607744
+          }
+        },
+        {
+          "label": "running-108s",
+          "sha256": "0a3da8e333058cfc2cde0dbba12af909eb915c9754170dae59e6af3f487f6031",
+          "dumpsysTotalPssBytes": 667293696,
+          "dumpsysTotalRssBytes": 818991104,
+          "categoryPssBytes": {
+            "Native Heap": 96454656,
+            "Dalvik Heap": 5432320,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 352444416,
+            "Unknown": 73148416
+          }
+        },
+        {
+          "label": "running-123s",
+          "sha256": "76901771488dde3286cf9da54303c0dd786e54a9ee59b3f8b4d5cd86a72d4c04",
+          "dumpsysTotalPssBytes": 673091584,
+          "dumpsysTotalRssBytes": 824717312,
+          "categoryPssBytes": {
+            "Native Heap": 99067904,
+            "Dalvik Heap": 6190080,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 352583680,
+            "Unknown": 75388928
+          }
+        },
+        {
+          "label": "running-138s",
+          "sha256": "b6d3eccdfbf2837e65bfef6fa0f684e9ca157dc024dd858824b81728fc68d300",
+          "dumpsysTotalPssBytes": 673170432,
+          "dumpsysTotalRssBytes": 824774656,
+          "categoryPssBytes": {
+            "Native Heap": 100919296,
+            "Dalvik Heap": 4727808,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 350666752,
+            "Unknown": 77006848
+          }
+        },
+        {
+          "label": "running-153s",
+          "sha256": "f8c3e1418004f78c3adbc41d250c17930a815de2b72a3de2c242d4f48c71b051",
+          "dumpsysTotalPssBytes": 852449280,
+          "dumpsysTotalRssBytes": 1003868160,
+          "categoryPssBytes": {
+            "Native Heap": 99719168,
+            "Dalvik Heap": 6439936,
+            "EGL mtrack": 235712512,
+            "GL mtrack": 352681984,
+            "Unknown": 79456256
+          }
+        },
+        {
+          "label": "running-168s",
+          "sha256": "fcb24c7ae31b26d14037f56ab1096973ee41f16ee068e5114f32d3fb6392faf8",
+          "dumpsysTotalPssBytes": 1005637632,
+          "dumpsysTotalRssBytes": 1157038080,
+          "categoryPssBytes": {
+            "Native Heap": 118753280,
+            "Dalvik Heap": 4305920,
+            "EGL mtrack": 273633280,
+            "GL mtrack": 445870080,
+            "Unknown": 84731904
+          }
+        },
+        {
+          "label": "running-183s",
+          "sha256": "5a0d2dcf4bee0026e3f3e8a8750510a395aaa3e021180a797cf51ea332f996a7",
+          "dumpsysTotalPssBytes": 1058347008,
+          "dumpsysTotalRssBytes": 1209716736,
+          "categoryPssBytes": {
+            "Native Heap": 137136128,
+            "Dalvik Heap": 3691520,
+            "EGL mtrack": 240451584,
+            "GL mtrack": 487333888,
+            "Unknown": 111470592
+          }
+        },
+        {
+          "label": "running-198s",
+          "sha256": "56298baa4cf5354593e665b1620294330dbf7da101763580e5bee504abfeae60",
+          "dumpsysTotalPssBytes": 870998016,
+          "dumpsysTotalRssBytes": 1022279680,
+          "categoryPssBytes": {
+            "Native Heap": 132876288,
+            "Dalvik Heap": 6231040,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 458780672,
+            "Unknown": 133597184
+          }
+        },
+        {
+          "label": "running-213s",
+          "sha256": "c85b992e2646a09cbbfb14e569e0e8228815f3c6c38801eff901daf0c970866e",
+          "dumpsysTotalPssBytes": 769892352,
+          "dumpsysTotalRssBytes": 921563136,
+          "categoryPssBytes": {
+            "Native Heap": 141113344,
+            "Dalvik Heap": 3666944,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 350679040,
+            "Unknown": 134731776
+          }
+        },
+        {
+          "label": "running-228s",
+          "sha256": "6703d150e75ba76e74840e595c16f045ce98de7e1f062c4d9fd125152fb206cf",
+          "dumpsysTotalPssBytes": 930560000,
+          "dumpsysTotalRssBytes": 1082011648,
+          "categoryPssBytes": {
+            "Native Heap": 142260224,
+            "Dalvik Heap": 5268480,
+            "EGL mtrack": 248156160,
+            "GL mtrack": 319827968,
+            "Unknown": 136722432
+          }
+        },
+        {
+          "label": "running-243s",
+          "sha256": "34a022ae473e9909011c29749c43594bf790240c2cfe7feae068772d25a81bdd",
+          "dumpsysTotalPssBytes": 780263424,
+          "dumpsysTotalRssBytes": 931926016,
+          "categoryPssBytes": {
+            "Native Heap": 146212864,
+            "Dalvik Heap": 5731328,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 350511104,
+            "Unknown": 138184704
+          }
+        },
+        {
+          "label": "running-258s",
+          "sha256": "11e33caaa98383fbca7e2a9a2640f8753f2e73935bd71fdcdfc5c69735a0f761",
+          "dumpsysTotalPssBytes": 771536896,
+          "dumpsysTotalRssBytes": 923205632,
+          "categoryPssBytes": {
+            "Native Heap": 142297088,
+            "Dalvik Heap": 4105216,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 345788416,
+            "Unknown": 139855872
+          }
+        },
+        {
+          "label": "running-273s",
+          "sha256": "6ac2b5be580b589e5058ca0596745135f7d85d1c5ee838d2c1c485e6ab2e21db",
+          "dumpsysTotalPssBytes": 784539648,
+          "dumpsysTotalRssBytes": 936103936,
+          "categoryPssBytes": {
+            "Native Heap": 147449856,
+            "Dalvik Heap": 6194176,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 349749248,
+            "Unknown": 141473792
+          }
+        },
+        {
+          "label": "running-288s",
+          "sha256": "ec61fedd14477c85f8317efa2bd155591f0879efc51acbe696008044b0b37ab4",
+          "dumpsysTotalPssBytes": 775864320,
+          "dumpsysTotalRssBytes": 927559680,
+          "categoryPssBytes": {
+            "Native Heap": 143271936,
+            "Dalvik Heap": 3634176,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 346132480,
+            "Unknown": 143169536
+          }
+        },
+        {
+          "label": "after-cleanup-00s",
+          "sha256": "1a4dda5fd17ac7982ee5b6d70ae75fa0554f6e464f0eaef502b2814530d105fc",
+          "dumpsysTotalPssBytes": 791789568,
+          "dumpsysTotalRssBytes": 943550464,
+          "categoryPssBytes": {
+            "Native Heap": 149604352,
+            "Dalvik Heap": 21246976,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 346107904,
+            "Unknown": 143579136
+          }
+        },
+        {
+          "label": "after-cleanup-10s",
+          "sha256": "fcd3456af46ab076a2d2789726dcb7d6b6badc4ff9b9cc8967c208899f9b2779",
+          "dumpsysTotalPssBytes": 773484544,
+          "dumpsysTotalRssBytes": 925245440,
+          "categoryPssBytes": {
+            "Native Heap": 149174272,
+            "Dalvik Heap": 3421184,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 346107904,
+            "Unknown": 143579136
+          }
+        },
+        {
+          "label": "after-cleanup-30s",
+          "sha256": "e76849efc19bf916bd0d6753f9f31a7f51c15434cff8bebf7b4d68d792c6ce3e",
+          "dumpsysTotalPssBytes": 773570560,
+          "dumpsysTotalRssBytes": 925331456,
+          "categoryPssBytes": {
+            "Native Heap": 149174272,
+            "Dalvik Heap": 3511296,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 346107904,
+            "Unknown": 143579136
+          }
+        },
+        {
+          "label": "after-cleanup-60s",
+          "sha256": "a148f9da4ce01131b47b80811bf6c6f4561d839f32d55bf7c9ed70c992d4b39b",
+          "dumpsysTotalPssBytes": 773672960,
+          "dumpsysTotalRssBytes": 925433856,
+          "categoryPssBytes": {
+            "Native Heap": 149174272,
+            "Dalvik Heap": 3613696,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 346107904,
+            "Unknown": 143579136
+          }
+        }
+      ]
+    },
+    {
+      "label": "baseline-two-montages-same-process",
+      "apkSha256": "59afb795cfc9fe86d5bbbbaaa487cf0129130dd6538d0f5faf5d6bc11a6edbfa",
+      "rawReportSha256": "bc73ea71ee0d05e1dc34182e03bab2d5005a1c67ab5bf3a306a66481cf807b4f",
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "executionTarget": "device",
+        "platform": "android",
+        "osVersion": "17",
+        "reactNativeVersion": "0.86.2",
+        "buildMode": "release"
+      },
+      "backend": {
+        "name": "react-native-skia-webgpu-video",
+        "version": "0.1.0-alpha.0",
+        "skiaVersion": "3.0.6",
+        "webgpuVersion": "0.12.1",
+        "paths": {
+          "platform": "android",
+          "decodeTransport": "ahardwarebuffer-rgba-egl",
+          "encodeTransport": "cpu-rgba-upload",
+          "decodeCpuCopiesBeforeSkia": 0,
+          "cpuReadbackDecode": false,
+          "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+          "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+          "zeroCopyDecode": false,
+          "zeroCopyEncode": false
+        }
+      },
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "elapsedMs": 142788.09504000098,
+          "sampleCount": 1164,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1164
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 872964096,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 782932992,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 94353408,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 887709696,
+            "pssBytes": 1129282560,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12356.91191200167,
+              "draws": 607,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2122.9770110026,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2970.3476170003414,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1526.4622409977019
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 33118.90134299919,
+              "encodeMs": 28202.55775300041,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 30968.037856999785,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 22928.77458800003,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8575.86938900128,
+              "durationMs": 8105.821293000132,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  396,
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 399,
+                "sumMs": 42.643355026841164,
+                "maxMs": 0.4148759990930557
+              },
+              "draws": 399,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56258.91543300077,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 86497.46773399785,
+              "memory": {
+                "rssBytes": {
+                  "value": 861052928,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 771486720,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 86669312,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 99920.20126099885,
+              "memory": {
+                "rssBytes": {
+                  "value": 862683136,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 781464576,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 90589184,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 113593.6709540002,
+              "memory": {
+                "rssBytes": {
+                  "value": 868102144,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 777755648,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 91768832,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 127048.05654000118,
+              "memory": {
+                "rssBytes": {
+                  "value": 870281216,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 780055552,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 92698624,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 140638.1830930002,
+              "memory": {
+                "rssBytes": {
+                  "value": 872964096,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 782879744,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 94353408,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "elapsedMs": 145755.84613999724,
+          "sampleCount": 1174,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1174
+          },
+          "allSettledOwnedZero": true,
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 989417472,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 898801664,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 145147904,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "peaks": {
+            "rssBytes": 1043210240,
+            "pssBytes": 1308187648,
+            "ownedBytes": 269568000
+          },
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12294.195562001318,
+              "draws": 536,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2243.758138999343,
+              "seekCount": 10
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3019.4820980019867,
+              "seekCount": 81
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1567.8313400000334
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 34890.28395199776,
+              "encodeMs": 29941.6874740012,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "exportMs": 32748.743179999292,
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23496.02987800166,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8468.225467998534,
+              "durationMs": 8091.666508000344,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  392,
+                  2,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 394,
+                "sumMs": 41.301835998892784,
+                "maxMs": 0.38460300117731094
+              },
+              "draws": 394,
+              "missingFrames": 0,
+              "droppedFrames": null
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56851.35846699774,
+              "cycles": 40
+            }
+          ],
+          "remountCheckpoints": [
+            {
+              "cycle": 0,
+              "elapsedMs": 88840.84257199988,
+              "memory": {
+                "rssBytes": {
+                  "value": 973758464,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 884232192,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 135710720,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 10,
+              "elapsedMs": 102632.42391899973,
+              "memory": {
+                "rssBytes": {
+                  "value": 978681856,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 888602624,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 139479040,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 20,
+              "elapsedMs": 116439.57500799745,
+              "memory": {
+                "rssBytes": {
+                  "value": 982614016,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 892260352,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 141993984,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 30,
+              "elapsedMs": 130126.1613180004,
+              "memory": {
+                "rssBytes": {
+                  "value": 984768512,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 894519296,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 142977024,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            },
+            {
+              "cycle": 40,
+              "elapsedMs": 143546.11892599985,
+              "memory": {
+                "rssBytes": {
+                  "value": 993042432,
+                  "source": "Android /proc/self/status VmRSS",
+                  "reason": null
+                },
+                "pssBytes": {
+                  "value": 902213632,
+                  "source": "Android Debug.MemoryInfo TOTAL PSS",
+                  "reason": null
+                },
+                "nativeHeapBytes": {
+                  "value": 146368512,
+                  "source": "Android Debug.MemoryInfo native heap PSS",
+                  "reason": null
+                },
+                "ownedBytes": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget byte estimates",
+                  "reason": null
+                },
+                "ownedResources": {
+                  "value": 0,
+                  "source": "RNSkiaVideo memory budget reservations",
+                  "reason": null
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "snapshots": [
+        {
+          "label": "idle-before-workload",
+          "sha256": "29dd144fcc1e630a0460008af645d29d56bdd65a29e3ec5fd852f51bdc7c5f6c",
+          "dumpsysTotalPssBytes": 171904000,
+          "dumpsysTotalRssBytes": 313704448,
+          "categoryPssBytes": {
+            "Native Heap": 22347776,
+            "Dalvik Heap": 6584320,
+            "EGL mtrack": 53063680,
+            "GL mtrack": 21131264,
+            "Unknown": 4679680
+          }
+        },
+        {
+          "label": "running-004s",
+          "sha256": "294d93a93c5746c7feec436afbf75cca49737b6c385dae5d74f7ab4f4d4b4bb8",
+          "dumpsysTotalPssBytes": 626665472,
+          "dumpsysTotalRssBytes": 775258112,
+          "categoryPssBytes": {
+            "Native Heap": 37183488,
+            "Dalvik Heap": 7718912,
+            "EGL mtrack": 268894208,
+            "GL mtrack": 229359616,
+            "Unknown": 7481344
+          }
+        },
+        {
+          "label": "running-019s",
+          "sha256": "6adf685ea37fbca3f3e85e507b768e062ae22469ec87dd2a21cf5265c9979200",
+          "dumpsysTotalPssBytes": 528193536,
+          "dumpsysTotalRssBytes": 678903808,
+          "categoryPssBytes": {
+            "Native Heap": 42649600,
+            "Dalvik Heap": 5428224,
+            "EGL mtrack": 161050624,
+            "GL mtrack": 229134336,
+            "Unknown": 13350912
+          }
+        },
+        {
+          "label": "running-033s",
+          "sha256": "10345094acd66341f8a62aa329d4c14f67bb075d36890df07a29ce414b2007e5",
+          "dumpsysTotalPssBytes": 843219968,
+          "dumpsysTotalRssBytes": 994115584,
+          "categoryPssBytes": {
+            "Native Heap": 71550976,
+            "Dalvik Heap": 5121024,
+            "EGL mtrack": 290082816,
+            "GL mtrack": 363667456,
+            "Unknown": 34670592
+          }
+        },
+        {
+          "label": "running-048s",
+          "sha256": "23c82696524bde7646f57923bebc0ca7bf0b42885560a2a6932e34e6c64d47e3",
+          "dumpsysTotalPssBytes": 1013445632,
+          "dumpsysTotalRssBytes": 1164361728,
+          "categoryPssBytes": {
+            "Native Heap": 90310656,
+            "Dalvik Heap": 4641792,
+            "EGL mtrack": 414519296,
+            "GL mtrack": 363769856,
+            "Unknown": 62228480
+          }
+        },
+        {
+          "label": "running-063s",
+          "sha256": "aa64c6c266ce2cd51a420a13636ee52080f3722a704cb6dc9d7c79040fd1ca02",
+          "dumpsysTotalPssBytes": 714108928,
+          "dumpsysTotalRssBytes": 865513472,
+          "categoryPssBytes": {
+            "Native Heap": 83380224,
+            "Dalvik Heap": 7029760,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 416763904,
+            "Unknown": 67262464
+          }
+        },
+        {
+          "label": "running-078s",
+          "sha256": "203fedb0b6a6ae5cc6310f52579dfb2701a0978579eacd0fc537098ff7bb2ea5",
+          "dumpsysTotalPssBytes": 971933696,
+          "dumpsysTotalRssBytes": 1123278848,
+          "categoryPssBytes": {
+            "Native Heap": 92481536,
+            "Dalvik Heap": 8631296,
+            "EGL mtrack": 248156160,
+            "GL mtrack": 474001408,
+            "Unknown": 70162432
+          }
+        },
+        {
+          "label": "running-093s",
+          "sha256": "a8e1cc42fe29f7d1af90be8418aa42c4127997066b908e6763dc347c9381c4b4",
+          "dumpsysTotalPssBytes": 880093184,
+          "dumpsysTotalRssBytes": 1031626752,
+          "categoryPssBytes": {
+            "Native Heap": 94742528,
+            "Dalvik Heap": 5465088,
+            "EGL mtrack": 156901376,
+            "GL mtrack": 471650304,
+            "Unknown": 72869888
+          }
+        },
+        {
+          "label": "running-108s",
+          "sha256": "0e9cd8170fa236eb231a4cd6cd020afb4913f6b37021e00f1582718c303b91db",
+          "dumpsysTotalPssBytes": 924020736,
+          "dumpsysTotalRssBytes": 1075580928,
+          "categoryPssBytes": {
+            "Native Heap": 95987712,
+            "Dalvik Heap": 3896320,
+            "EGL mtrack": 198381568,
+            "GL mtrack": 473821184,
+            "Unknown": 73414656
+          }
+        },
+        {
+          "label": "running-123s",
+          "sha256": "958366b6e274a33d8e36b5ee8f3e59ecdabfd0624e439be3f1ad3c54ae3437f9",
+          "dumpsysTotalPssBytes": 790329344,
+          "dumpsysTotalRssBytes": 941875200,
+          "categoryPssBytes": {
+            "Native Heap": 99379200,
+            "Dalvik Heap": 6284288,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 469221376,
+            "Unknown": 75466752
+          }
+        },
+        {
+          "label": "running-138s",
+          "sha256": "19abf669cd5199ff9f3ca72af13286e1a537ac9a3c176a3676d180a719227ae9",
+          "dumpsysTotalPssBytes": 795582464,
+          "dumpsysTotalRssBytes": 947093504,
+          "categoryPssBytes": {
+            "Native Heap": 100960256,
+            "Dalvik Heap": 5657600,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 471724032,
+            "Unknown": 77264896
+          }
+        },
+        {
+          "label": "running-153s",
+          "sha256": "c62d494048c8c6cb3cd7a84e09f317a696505d31e1b144491f34a9b45e0ed9b0",
+          "dumpsysTotalPssBytes": 1074030592,
+          "dumpsysTotalRssBytes": 1225371648,
+          "categoryPssBytes": {
+            "Native Heap": 99928064,
+            "Dalvik Heap": 6595584,
+            "EGL mtrack": 335261696,
+            "GL mtrack": 473997312,
+            "Unknown": 79587328
+          }
+        },
+        {
+          "label": "running-168s",
+          "sha256": "a85113e0f95eb3205b55790c922b9a96f5d48688aa715956874e5d51d4656ca4",
+          "dumpsysTotalPssBytes": 1047384064,
+          "dumpsysTotalRssBytes": 1198563328,
+          "categoryPssBytes": {
+            "Native Heap": 116733952,
+            "Dalvik Heap": 4375552,
+            "EGL mtrack": 240451584,
+            "GL mtrack": 522113024,
+            "Unknown": 84977664
+          }
+        },
+        {
+          "label": "running-183s",
+          "sha256": "b79e438623017ec5c8a8690a68f97dd7a5562298d5442d6955ad4ec96af62ef2",
+          "dumpsysTotalPssBytes": 1099071488,
+          "dumpsysTotalRssBytes": 1250361344,
+          "categoryPssBytes": {
+            "Native Heap": 134678528,
+            "Dalvik Heap": 4379648,
+            "EGL mtrack": 240451584,
+            "GL mtrack": 529825792,
+            "Unknown": 111077376
+          }
+        },
+        {
+          "label": "running-198s",
+          "sha256": "b20a384654134a294c71da586810fab490aee65479c9bbfdc7b9e3c22e8f5b41",
+          "dumpsysTotalPssBytes": 877283328,
+          "dumpsysTotalRssBytes": 1028435968,
+          "categoryPssBytes": {
+            "Native Heap": 131233792,
+            "Dalvik Heap": 6231040,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 466976768,
+            "Unknown": 132958208
+          }
+        },
+        {
+          "label": "running-213s",
+          "sha256": "48267bcdbe2878a76f62139872d69c30197bcded4c513b195f665fec71168570",
+          "dumpsysTotalPssBytes": 887234560,
+          "dumpsysTotalRssBytes": 1038594048,
+          "categoryPssBytes": {
+            "Native Heap": 136013824,
+            "Dalvik Heap": 5305344,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 471879680,
+            "Unknown": 134154240
+          }
+        },
+        {
+          "label": "running-228s",
+          "sha256": "ea9b8e7ee77daaac52d4e3fc4b418315ec1f8a5ef45ee0fa444644b9dc060090",
+          "dumpsysTotalPssBytes": 1191447552,
+          "dumpsysTotalRssBytes": 1342820352,
+          "categoryPssBytes": {
+            "Native Heap": 141465600,
+            "Dalvik Heap": 4572160,
+            "EGL mtrack": 355999744,
+            "GL mtrack": 474181632,
+            "Unknown": 136509440
+          }
+        },
+        {
+          "label": "running-243s",
+          "sha256": "56624c1cff695b4e625aac4ee885ec6c17119dce83f77d8144c33166a46039b7",
+          "dumpsysTotalPssBytes": 900742144,
+          "dumpsysTotalRssBytes": 1052336128,
+          "categoryPssBytes": {
+            "Native Heap": 145737728,
+            "Dalvik Heap": 5141504,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 471699456,
+            "Unknown": 138086400
+          }
+        },
+        {
+          "label": "running-258s",
+          "sha256": "d559e398161a250a4b0e0823b5d04f8b746fdc85ef5f13c7a41bc8b8e0534654",
+          "dumpsysTotalPssBytes": 897784832,
+          "dumpsysTotalRssBytes": 1049325568,
+          "categoryPssBytes": {
+            "Native Heap": 143259648,
+            "Dalvik Heap": 6382592,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 469323776,
+            "Unknown": 138962944
+          }
+        },
+        {
+          "label": "running-273s",
+          "sha256": "2a502214f940a4955a3843e055fad79e5d483df7436c6200232ee311b8aa801b",
+          "dumpsysTotalPssBytes": 896476160,
+          "dumpsysTotalRssBytes": 1048031232,
+          "categoryPssBytes": {
+            "Native Heap": 144345088,
+            "Dalvik Heap": 3961856,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467148800,
+            "Unknown": 141101056
+          }
+        },
+        {
+          "label": "running-288s",
+          "sha256": "14d6317766fa99a47c943eaf5de0bf71a61b63285883f23380ce0efe4de8b8ff",
+          "dumpsysTotalPssBytes": 902282240,
+          "dumpsysTotalRssBytes": 1053851648,
+          "categoryPssBytes": {
+            "Native Heap": 146372608,
+            "Dalvik Heap": 5792768,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467378176,
+            "Unknown": 142841856
+          }
+        },
+        {
+          "label": "after-cleanup-00s",
+          "sha256": "374af5ba695ee9bee4f6117b61743d68fefee4ffb5baaf05947d8e8399661eb9",
+          "dumpsysTotalPssBytes": 921205760,
+          "dumpsysTotalRssBytes": 1072840704,
+          "categoryPssBytes": {
+            "Native Heap": 149215232,
+            "Dalvik Heap": 21423104,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467353600,
+            "Unknown": 143153152
+          }
+        },
+        {
+          "label": "after-cleanup-10s",
+          "sha256": "df35fc7ecdc885553e1206dca5b357ec949513e9dee96b6cbe73f702c46b386e",
+          "dumpsysTotalPssBytes": 902802432,
+          "dumpsysTotalRssBytes": 1054437376,
+          "categoryPssBytes": {
+            "Native Heap": 148858880,
+            "Dalvik Heap": 3417088,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467353600,
+            "Unknown": 143161344
+          }
+        },
+        {
+          "label": "after-cleanup-30s",
+          "sha256": "37a7f92940f6f72f87d625e302357aad32338fbf603f223bcc156da76e4b0b0e",
+          "dumpsysTotalPssBytes": 902864896,
+          "dumpsysTotalRssBytes": 1054527488,
+          "categoryPssBytes": {
+            "Native Heap": 148862976,
+            "Dalvik Heap": 3507200,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467353600,
+            "Unknown": 143161344
+          }
+        },
+        {
+          "label": "after-cleanup-60s",
+          "sha256": "12cb05b9c98a498fd92087ba41de689b867c0aacca995eb5954d62bc87374072",
+          "dumpsysTotalPssBytes": 902971392,
+          "dumpsysTotalRssBytes": 1054633984,
+          "categoryPssBytes": {
+            "Native Heap": 148862976,
+            "Dalvik Heap": 3613696,
+            "EGL mtrack": 61501440,
+            "GL mtrack": 467353600,
+            "Unknown": 143161344
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Bounded runs on one Pixel 8a, not endurance or a proof of memory plateau.",
+    "The baseline and corrected binaries differ; the separately published instrumented purge experiment is not the production policy.",
+    "No forced GC, global context/UI-recorder cache purge, input downscaling, quota increase or system setting changes.",
+    "Callback timing is not presented/decoded FPS. There is no controlled Skia 2 or cross-platform speed comparison.",
+    "The original collector marked noCachePurge=true because it sends no external purge; the export-cache binary itself trims its private recorder at session close. This summary describes the actual binary policy."
+  ],
+  "pixelOracle": {
+    "rawSha256": "c7fea8cf2754c8650f59b4f6d85c1f8558334f56094ba8e5b2e1f7524a706c45",
+    "apkSha256": "fd4f6f277207d809fe40203439fcfa62b34e1bfcaffe42ad51adaf48db9f6254",
+    "schema": 1,
+    "kind": "android-ahardwarebuffer-pixel-comparison",
+    "status": "passed",
+    "failure": null,
+    "plannedCases": 10,
+    "completedCases": 10,
+    "results": [
+      {
+        "fixture": "h264-638x358",
+        "sha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc",
+        "mode": "copy",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 638,
+          "height": 358,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-638x358",
+        "sha256": "d8946fe709697d302ca429ee3ffe2f0db60bb17c2c9d60ba5056048b78b0c3bc",
+        "mode": "direct",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 638,
+          "height": 358,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-1080p-rot90",
+        "sha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d",
+        "mode": "copy",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 1080,
+          "height": 1920,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-1080p-rot90",
+        "sha256": "9a1ca00bdff0b290e061fa07952bc5dfb2dd42757c47f332e018a9eac395d91d",
+        "mode": "direct",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 1080,
+          "height": 1920,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-1080x1920",
+        "sha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513",
+        "mode": "copy",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 1080,
+          "height": 1920,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-1080x1920",
+        "sha256": "e8371d5773fb10881e87f436e419ed92c451a034817b7654645f62ddb518d513",
+        "mode": "direct",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 1080,
+          "height": 1920,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-4k30",
+        "sha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755",
+        "mode": "copy",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 3840,
+          "height": 2160,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "h264-4k30",
+        "sha256": "17878a699a9f6cd5a67de5d0b3f0546d2c884e9e2686589c2428dfe8fd25b755",
+        "mode": "direct",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 3840,
+          "height": 2160,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "hevc-4k30",
+        "sha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae",
+        "mode": "copy",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 3840,
+          "height": 2160,
+          "rotation": 0
+        }
+      },
+      {
+        "fixture": "hevc-4k30",
+        "sha256": "e8268f8b2bb87d4f9496013b39861ffd9f8a78db3591be3207ad4cee2041f7ae",
+        "mode": "direct",
+        "status": "passed",
+        "retained": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "later": {
+          "passed": true,
+          "dimensions": true,
+          "timestamp": true,
+          "referenceHasColorDetail": true,
+          "maxChannelError": 0,
+          "errorsOverTolerance": 0,
+          "comparedChannels": 3328
+        },
+        "referenceChanges": true,
+        "observedTransports": [
+          "rgba",
+          "native-buffer"
+        ],
+        "dimensions": {
+          "width": 3840,
+          "height": 2160,
+          "rotation": 0
+        }
+      }
+    ],
+    "before": {
+      "budget": {
+        "currentBytes": 0,
+        "peakBytes": 256,
+        "allocations": 0,
+        "maxBytes": 536870912
+      },
+      "native": null,
+      "backend": {
+        "platform": "android",
+        "decodeTransport": "ahardwarebuffer-rgba-egl",
+        "encodeTransport": "cpu-rgba-upload",
+        "decodeCpuCopiesBeforeSkia": 0,
+        "cpuReadbackDecode": false,
+        "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+        "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+        "zeroCopyDecode": false,
+        "zeroCopyEncode": false
+      }
+    },
+    "after": {
+      "budget": {
+        "currentBytes": 132710428,
+        "peakBytes": 331776056,
+        "allocations": 4,
+        "maxBytes": 536870912
+      },
+      "native": null,
+      "backend": {
+        "platform": "android",
+        "decodeTransport": "ahardwarebuffer-rgba-egl",
+        "encodeTransport": "cpu-rgba-upload",
+        "decodeCpuCopiesBeforeSkia": 0,
+        "cpuReadbackDecode": false,
+        "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+        "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+        "zeroCopyDecode": false,
+        "zeroCopyEncode": false
+      }
+    },
+    "limits": [
+      "Compares sampled decoded SDR pixels, not full-image fidelity or HDR.",
+      "This validation reads GPU pixels; its runtime and memory are not performance measurements.",
+      "Device memory and post-GC cleanup are qualified by the separate benchmark campaign."
+    ],
+    "buildMode": "release"
+  }
+}

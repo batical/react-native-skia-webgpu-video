@@ -32,6 +32,7 @@ function test(name, sources, extra = []) {
 }
 
 try {
+  run(process.execPath, ['scripts/test-skia-provider-ownership.mjs', ...(asan ? ['--asan'] : [])]);
   test('seek-policy', ['test/native/SeekPolicyTest.cpp']);
   test('decoder-window', ['test/native/DecoderWindowTest.cpp']);
   test('memory-budget', ['test/native/MemoryBudgetTest.cpp']);

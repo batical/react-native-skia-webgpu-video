@@ -475,3 +475,45 @@
    // Create offscreen surface
    sk_sp<SkSurface> MakeOffscreen(int width, int height,
                                   bool useP3ColorSpace = false) {
+--- a/node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h
++++ b/node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h
+@@ -21,7 +21,7 @@
+   ImageProvider() : fCache(kDefaultNumCachedImages) {}
+   ~ImageProvider() override {}
+
+-  static sk_sp<ImageProvider> Make() { return sk_ref_sp(new ImageProvider); }
++  static sk_sp<ImageProvider> Make() { return sk_make_sp<ImageProvider>(); }
+
+   sk_sp<SkImage>
+   findOrCreate(skgpu::graphite::Recorder *recorder, const SkImage *image,
+--- a/node_modules/react-native-skia/cpp/api/JsiSkApi.h
++++ b/node_modules/react-native-skia/cpp/api/JsiSkApi.h
+@@ -156,6 +156,19 @@
+   JSI_HOST_FUNCTION(Color) {
+     return JsiSkColor::createCtor()(runtime, thisValue, arguments, count);
+   }
++  // Private video-export cleanup. Only the calling thread's Recorder cache
++  // is trimmed; the shared Context cache and other Recorders are untouched.
++  JSI_HOST_FUNCTION(__rnskvTrimRecorderCache) {
++    auto &context = DawnContext::getInstance();
++    auto *recorder = context.getRecorder();
++    {
++      auto recording = recorder->snap();
++      context.submitRecordingChecked(recording.get(),
++                                     skgpu::graphite::SyncToCpu::kYes);
++    }
++    recorder->freeGpuResources();
++    return jsi::Value::undefined();
++  }
+   JSI_HOST_FUNCTION(getNativeDevice) {
+     // Raw WGPUDevice pointer of the Graphite device, as a BigInt. Consumed by
+     // react-native-webgpu's importDevice(), which AddRefs it; the pointer
+@@ -228,6 +241,8 @@
+   }
+
+   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
++    installHostMethod(runtime, prototype, "__rnskvTrimRecorderCache",
++                      &JsiSkApi::__rnskvTrimRecorderCache);
+     installHostMethod(runtime, prototype, "getNativeDevice",
+                       &JsiSkApi::getNativeDevice);
+     installHostMethod(runtime, prototype, "Font", &JsiSkApi::Font);

@@ -75,6 +75,7 @@ const mockMakeSurface = (_width: number, _height: number) => {
 };
 jest.mock("react-native-skia", () => ({
   Skia: {
+    __rnskvTrimRecorderCache: jest.fn(),
     Surface: {
       MakeOffscreen: jest.fn((width: number, height: number) =>
         mockMakeSurface(width, height),
@@ -99,6 +100,10 @@ jest.mock("../RNSkiaVideoModule", () => ({
   },
 }));
 const makeOffscreen = Skia.Surface.MakeOffscreen as jest.Mock;
+const cacheApi = Skia as typeof Skia & {
+  __rnskvTrimRecorderCache?: jest.Mock;
+};
+const trimRecorderCache = cacheApi.__rnskvTrimRecorderCache!;
 const createVideoEncoder = RNSkiaVideoModule.createVideoEncoder as jest.Mock;
 const createExtractor =
   RNSkiaVideoModule.createVideoCompositionFramesExtractorSync as jest.Mock;
@@ -207,6 +212,8 @@ beforeEach(() => {
   delete (globalThis as { __rnskwgpuExport?: unknown }).__rnskwgpuExport;
   delete (globalThis as { __rnskwgpuFrames?: unknown }).__rnskwgpuFrames;
   jest.clearAllMocks();
+  cacheApi.__rnskvTrimRecorderCache = trimRecorderCache;
+  trimRecorderCache.mockReset();
   mockSerializedRuntime = null;
   mockPoolDepth = 0;
   mockPoolReturnedThenables.length = 0;
@@ -1264,4 +1271,65 @@ describe("export native autorelease lifetimes", () => {
       }
     },
   );
+});
+
+describe("dedicated export recorder cleanup", () => {
+  it("trims once after consumers close and before memory reservations are released", async () => {
+    trimRecorderCache.mockImplementation(() => {
+      const surface = surfaceAt();
+      expect(surface.dispose).toHaveBeenCalledTimes(1);
+      expect(
+        surface.getCanvas.mock.results[0]?.value.dispose,
+      ).toHaveBeenCalledTimes(1);
+      expect(releaseMemory).not.toHaveBeenCalled();
+    });
+    const result = await runExport();
+    expect(result.drawFrame).toHaveBeenCalledTimes(4);
+    expect(trimRecorderCache).toHaveBeenCalledTimes(1);
+    expect(releaseMemory).toHaveBeenCalled();
+  });
+
+  it("rejects an old native binary before allocating export resources", async () => {
+    cacheApi.__rnskvTrimRecorderCache = undefined;
+    const result = prepareExport();
+    await pumpAll();
+    await expect(result.promise).rejects.toThrow(
+      "Skia export cache patch is missing",
+    );
+    expect(reserveMemory).not.toHaveBeenCalled();
+    expect(makeOffscreen).not.toHaveBeenCalled();
+    expect(createVideoEncoder).not.toHaveBeenCalled();
+  });
+
+  it("does not purge a recorder whose surface could not be drained", async () => {
+    const result = prepareExport();
+    await pumpTurn();
+    const failure = new Error("GPU drain failed");
+    surfaceAt().flush.mockImplementation(() => {
+      throw failure;
+    });
+    await pumpAll();
+    await expect(result.promise).rejects.toBe(failure);
+    expect(trimRecorderCache).not.toHaveBeenCalled();
+    expect(releaseMemory).not.toHaveBeenCalled();
+  });
+
+  it("quarantines a failed cache drain and refuses reuse of that runtime", async () => {
+    const failure = new Error("Recorder cache drain failed");
+    trimRecorderCache.mockImplementation(() => {
+      throw failure;
+    });
+    const first = prepareExport();
+    await pumpAll();
+    await expect(first.promise).rejects.toBe(failure);
+    expect(trimRecorderCache).toHaveBeenCalledTimes(1);
+    expect(releaseMemory).not.toHaveBeenCalled();
+    const second = prepareExport();
+    await pumpAll();
+    await expect(second.promise).rejects.toThrow(
+      "Previous export cleanup failed",
+    );
+    expect(trimRecorderCache).toHaveBeenCalledTimes(1);
+    expect(makeOffscreen).toHaveBeenCalledTimes(1);
+  });
 });

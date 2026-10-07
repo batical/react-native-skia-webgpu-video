@@ -41,6 +41,10 @@ This montage had a substantially higher physical memory cost than the simple pla
 
 Five existing JNI CPU-fallback ownership/refusal tests passed again on the current instrumentation artifact with zero skips in 0.896 s, separately from the six AHB tests. The benchmark app was force-stopped after testing to release KEEP_SCREEN_ON; no system settings were changed, and no owned test runner or sampler remains active.
 
+The subsequent [Android cache-retention investigation](ANDROID_MEMORY_RETENTION_306.md) separates process memory categories and measures Graphite caches with a diagnostic build. It identifies reclaimable cache retention and a separate upstream reference-count defect. These experiments do not change the production qualification above or establish that the remaining process memory is leak-free.
+
+The [export-cache follow-up](ANDROID_EXPORT_CACHE_306.md) records the later production changes and their own binary identity, pixel checks and repeated montage results. Keep those measurements separate from this original AHB checkpoint.
+
 ## Historical CPU diagnostic checkpoint
 
 The prior CPU implementation completed all six 1080p and six export operations, but its twelve full-resolution 4K attempts failed controlled ART allocation; every attempt failed strict cleanup. Neither quota nor cleanup thresholds were relaxed.
