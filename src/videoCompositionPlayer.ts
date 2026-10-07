@@ -108,7 +108,7 @@ type UseVideoCompositionPlayerReturnType = {
 /**
  * A hook that creates a video composition player.
  */
-export const useVideoCompositionPlayer = <T = undefined>({
+export const useVideoComposition = <T = undefined>({
   composition,
   drawFrame,
   beforeDrawFrame,
@@ -518,3 +518,6 @@ export const useVideoCompositionPlayer = <T = undefined>({
     player: framesExtractor,
   };
 };
+
+/** @deprecated Use useVideoComposition. Kept for existing Skia Video integrations. */
+export const useVideoCompositionPlayer = useVideoComposition;

@@ -39,8 +39,10 @@ jest.mock("../RNSkiaVideoModule", () => ({
 
 describe("public API", () => {
   it("exposes the hooks and the export function", () => {
-    expect(typeof api.useVideoPlayer).toBe("function");
-    expect(typeof api.useVideoCompositionPlayer).toBe("function");
+    expect(typeof api.useVideoPlayback).toBe("function");
+    expect(typeof api.useVideoComposition).toBe("function");
+    expect(api.useVideoPlayer).toBe(api.useVideoPlayback);
+    expect(api.useVideoCompositionPlayer).toBe(api.useVideoComposition);
     expect(typeof api.exportVideoComposition).toBe("function");
     expect(typeof api.isEncodingSupported).toBe("function");
   });

@@ -115,7 +115,7 @@ type UseVideoPlayerReturnType = {
  * @param options The options for the video player.
  * @returns
  */
-export const useVideoPlayer = ({
+export const useVideoPlayback = ({
   uri,
   resolution,
   textureMode,
@@ -316,3 +316,6 @@ export const useVideoPlayer = ({
     player,
   };
 };
+
+/** @deprecated Use useVideoPlayback. Kept for existing Skia Video integrations. */
+export const useVideoPlayer = useVideoPlayback;

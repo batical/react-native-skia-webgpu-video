@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="#status"><img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-f59e0b" /></a>
   <img alt="React Native Skia 3.0.6" src="https://img.shields.io/badge/Skia-3.0.6-38bdf8" />
   <img alt="React Native WebGPU 0.12.1" src="https://img.shields.io/badge/WebGPU-0.12.1-a78bfa" />
@@ -45,9 +46,11 @@ A native rebuild is required. Expo Go cannot load this module. For iOS, use the 
 
 ### Build the alpha from source
 
-These instructions use a local package archive and do not depend on an npm release. From this library's checkout:
+These instructions use a local package archive and do not depend on an npm release:
 
 ```sh
+git clone https://github.com/batical/react-native-skia-webgpu-video.git
+cd react-native-skia-webgpu-video
 npm ci
 npm run build
 npm pack
@@ -94,7 +97,7 @@ import { Canvas, Image } from 'react-native-skia';
 import {
   drawVideoFrame,
   exportVideoComposition,
-  useVideoCompositionPlayer,
+  useVideoComposition,
 } from 'react-native-skia-webgpu-video';
 import type {
   FrameDrawer,
@@ -128,7 +131,7 @@ export function VideoEditor({ inputPath, outputPath }: {
     }],
   }), [inputPath]);
 
-  const { currentFrame } = useVideoCompositionPlayer({
+  const { currentFrame } = useVideoComposition({
     composition,
     drawFrame,
     width: 320,
@@ -161,7 +164,7 @@ export function VideoEditor({ inputPath, outputPath }: {
 }
 ```
 
-Choose a writable output path. Preview dimensions are layout points; drawing callbacks receive physical pixel dimensions. Export dimensions are pixels. The [`useVideoPlayer`](src/videoPlayer.ts) hook is also available for single-video playback.
+Choose a writable output path. Preview dimensions are layout points; drawing callbacks receive physical pixel dimensions. Export dimensions are pixels. The [`useVideoPlayback`](src/videoPlayer.ts) hook is also available for single-video playback.
 
 ### Audio
 
@@ -171,7 +174,7 @@ Audio implementations are retained on iOS and Android, including AAC export. The
 
 ## Migrating from Skia Video
 
-Composition structure, timeline units, drawing callbacks, and familiar player/export controls are retained. Texture interop changes: replace `MakeImageFromNativeTextureUnstable(frame.texture)` with `drawVideoFrame` or `makeVideoFrameImage`.
+Use `useVideoComposition` for timelines and `useVideoPlayback` for single videos. The previous hook names remain deprecated compatibility aliases. Composition structure, timeline units, drawing callbacks, and player/export controls are retained. Texture interop changes: replace `MakeImageFromNativeTextureUnstable(frame.texture)` with `drawVideoFrame` or `makeVideoFrameImage`.
 
 **[Read the migration guide →](docs/MIGRATION.md)**
 
