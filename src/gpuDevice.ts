@@ -33,3 +33,8 @@ export const nativeVideoTextureUsage =
   GPUTextureUsage.RENDER_ATTACHMENT |
   GPUTextureUsage.TEXTURE_BINDING |
   GPUTextureUsage.COPY_SRC;
+
+// CPU RGBA uploads additionally need COPY_DST. Keep the native-buffer blit's
+// descriptor unchanged: that path renders into its destination attachment.
+export const rgbaVideoTextureUsage =
+  nativeVideoTextureUsage | GPUTextureUsage.COPY_DST;

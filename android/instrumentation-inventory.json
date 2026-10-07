@@ -1,13 +1,13 @@
 {
-  "status": "compiled-not-executed-no-connected-device",
+  "status": "partially-executed-on-physical-device",
   "originalNamedCases": 40,
   "originalPlannedExecutions": 86,
   "additionalCases": {
     "DirectTextureTest.oldPixelsRemainValidAcrossLaterFramesAndSessionDisposal": 5,
-    "NativeRgbaBufferTest": 3
+    "NativeRgbaBufferTest": 5
   },
-  "totalNamedCases": 44,
-  "totalPlannedExecutions": 94,
+  "totalNamedCases": 46,
+  "totalPlannedExecutions": 96,
   "codecUnavailableCases": "JUnit assumption skip, never counted as passed",
   "classes": [
     {
@@ -84,10 +84,12 @@
       "methods": [
         "readOnlySliceKeepsBudgetAndBytesAfterFrameIsDropped",
         "rejectedAllocationDoesNotLeaveReservation",
-        "snapshotsAreDistinctAndReadOnlyViewsCannotModifyPixels"
+        "snapshotsAreDistinctAndReadOnlyViewsCannotModifyPixels",
+        "artHeapRefusalDoesNotReserveOrAllocateTheHugeBacking",
+        "budgetRefusalPropagatesAndReleaseClosesDecoderAndFrames"
       ],
       "parameterSets": 1,
-      "plannedExecutions": 3
+      "plannedExecutions": 5
     },
     {
       "class": "OpenFailureTest",
@@ -117,5 +119,29 @@
       "parameterSets": 2,
       "plannedExecutions": 20
     }
-  ]
+  ],
+  "physicalDeviceEvidence": {
+    "model": "Google Pixel 8a",
+    "osVersion": "17",
+    "apiLevel": 37,
+    "currentArtOwnershipGuard": {
+      "executed": 5,
+      "passed": 5,
+      "skipped": 0
+    },
+    "beforeArtGuardFocusedDecodeEncode": {
+      "executed": 15,
+      "passed": 15,
+      "skipped": 0
+    },
+    "beforeArtGuardFullAttempt": {
+      "planned": 94,
+      "completedPassed": 2,
+      "completedFailed": 1,
+      "processCrash": 1,
+      "notExecuted": 90,
+      "failure": "Lazy 4K preview cadence assertion; eager eight-4K backing allocation exhausted ART heap"
+    },
+    "fullCurrentSuiteExecuted": false
+  }
 }

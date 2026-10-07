@@ -518,6 +518,3 @@ export const useVideoComposition = <T = undefined>({
     player: framesExtractor,
   };
 };
-
-/** @deprecated Use useVideoComposition. Kept for existing Skia Video integrations. */
-export const useVideoCompositionPlayer = useVideoComposition;

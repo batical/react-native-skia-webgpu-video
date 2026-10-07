@@ -28,16 +28,25 @@ const mockNativeSource = {
   release: jest.fn(),
 };
 const mockCopy = jest.fn();
-const mockCreateTexture = jest.fn(() => mockUploadTexture);
+const mockWriteTexture = jest.fn();
+const mockCreateTexture = jest.fn(
+  (_descriptor: GPUTextureDescriptor) => mockUploadTexture,
+);
 const mockWrapNative = jest.fn((_pointer: bigint) => mockNativeSource);
 jest.mock("../gpuDevice", () => ({
   getVideoGpuDevice: () => ({
     createTexture: mockCreateTexture,
-    queue: { copyExternalImageToTexture: mockCopy },
+    limits: { maxTextureDimension2D: 4096 },
+    queue: {
+      copyExternalImageToTexture: mockCopy,
+      writeTexture: mockWriteTexture,
+    },
   }),
   createNativeVideoGpuFrame: (pointer: bigint) => mockWrapNative(pointer),
   nativeVideoTextureUsage: 21,
+  rgbaVideoTextureUsage: 23,
 }));
+jest.mock("react-native", () => ({ Platform: { OS: "ios" } }));
 jest.mock("react-native-skia", () => ({
   Skia: {
     Surface: {
@@ -83,6 +92,297 @@ beforeEach(() => {
   reserve.mockImplementation(() => 17);
 });
 afterEach(() => clearVideoFrameImages(true));
+
+const withAndroidInterop = (
+  check: (context: {
+    interop: typeof import("../frameInterop");
+    skia: typeof Skia;
+    reserve: jest.Mock;
+    release: jest.Mock;
+  }) => void,
+) => {
+  jest.isolateModules(() => {
+    const rn = require("react-native") as { Platform: { OS: string } };
+    rn.Platform.OS = "android";
+    const interop =
+      require("../frameInterop") as typeof import("../frameInterop");
+    const skia = (require("react-native-skia") as { Skia: typeof Skia }).Skia;
+    const native = (
+      require("../RNSkiaVideoModule") as { default: typeof RNSkiaVideoModule }
+    ).default;
+    try {
+      check({
+        interop,
+        skia,
+        reserve: native.reserveMemory as jest.Mock,
+        release: native.releaseMemory as jest.Mock,
+      });
+    } finally {
+      interop.clearVideoFrameImages(true);
+    }
+  });
+};
+
+describe("Android RGBA Graphite upload", () => {
+  it("uploads into a bounded RGBA texture without creating a raster image and fences before closing pixels", () => {
+    withAndroidInterop(
+      ({ interop, skia, reserve: androidReserve, release: androidRelease }) => {
+        const frame = rgbaFrame();
+        const image = interop.imageFromVideoFrame(frame)!;
+        expect(mockCreateTexture).toHaveBeenCalledWith({
+          size: { width: 4, height: 2 },
+          format: "rgba8unorm",
+          usage: 23,
+          label: "video RGBA frame upload",
+        });
+        expect(mockWriteTexture).toHaveBeenCalledWith(
+          { texture: mockUploadTexture },
+          expect.any(Uint8Array),
+          { offset: 0, bytesPerRow: 16, rowsPerImage: 2 },
+          { width: 4, height: 2, depthOrArrayLayers: 1 },
+        );
+        expect(skia.Data.fromBytes).not.toHaveBeenCalled();
+        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(mockCopy).not.toHaveBeenCalled();
+        expect(mockWrapNative).not.toHaveBeenCalled();
+        expect(mockSurface.enableCheckedSubmissions).toHaveBeenCalledTimes(1);
+        const write = mockWriteTexture.mock.invocationCallOrder[0]!;
+        const snapshot =
+          mockSurface.makeImageSnapshot.mock.invocationCallOrder[0]!;
+        const fence = mockSurface.flush.mock.invocationCallOrder[0]!;
+        expect(androidReserve.mock.invocationCallOrder[1]!).toBeLessThan(
+          mockCreateTexture.mock.invocationCallOrder[0]!,
+        );
+        expect(write).toBeLessThan(snapshot);
+        expect(snapshot).toBeLessThan(fence);
+        expect(fence).toBeLessThan(
+          (frame.dispose as jest.Mock).mock.invocationCallOrder[0]!,
+        );
+        expect(
+          androidReserve.mock.calls.map((call) => call.slice(0, 2)),
+        ).toEqual([
+          [32, "owned video image"],
+          [32, "RGBA frame WebGPU upload texture"],
+        ]);
+        interop.releaseVideoFrameImage(frame);
+        expect(image.dispose).toHaveBeenCalledTimes(1);
+        expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(1);
+        expect(androidRelease).toHaveBeenCalledTimes(2);
+      },
+    );
+  });
+
+  it("uploads odd widths and padded rows through a bounded zero-offset view, excluding trailing storage", () => {
+    withAndroidInterop(({ interop, reserve: androidReserve }) => {
+      const storage = new ArrayBuffer(80);
+      const pixels = new Uint8Array(storage);
+      pixels.set([1, 2, 3, 255]);
+      pixels.set([4, 5, 6, 255], 16);
+      const frame = {
+        ...rgbaFrame(),
+        width: 3,
+        texture: { kind: "rgba", data: storage, bytesPerRow: 16 },
+      };
+      interop.imageFromVideoFrame(frame);
+      const view = mockWriteTexture.mock.calls[0]![1] as Uint8Array;
+      expect(view.buffer).toBe(storage);
+      expect(view.byteOffset).toBe(0);
+      expect(view.byteLength).toBe(32);
+      expect(Array.from(view.slice(0, 4))).toEqual([1, 2, 3, 255]);
+      expect(Array.from(view.slice(16, 20))).toEqual([4, 5, 6, 255]);
+      expect(mockWriteTexture.mock.calls[0]![2]).toEqual({
+        offset: 0,
+        bytesPerRow: 16,
+        rowsPerImage: 2,
+      });
+      expect(androidReserve.mock.calls.map((call) => call[0])).toEqual([
+        24, 24,
+      ]);
+    });
+  });
+
+  it("rejects misaligned, oversized or truncated layouts and unsupported extents before allocation", () => {
+    withAndroidInterop(({ interop, reserve: androidReserve }) => {
+      for (const bytesPerRow of [18, 16.5, NaN, Infinity, 0x100000000]) {
+        const frame = {
+          ...rgbaFrame(),
+          texture: { kind: "rgba", data: new ArrayBuffer(48), bytesPerRow },
+        };
+        expect(() => interop.imageFromVideoFrame(frame)).toThrow(
+          "Invalid RGBA",
+        );
+        expect(frame.dispose).toHaveBeenCalledTimes(1);
+      }
+      const short = {
+        ...rgbaFrame(),
+        texture: { kind: "rgba", data: new ArrayBuffer(31), bytesPerRow: 16 },
+      };
+      expect(() => interop.imageFromVideoFrame(short)).toThrow("Invalid RGBA");
+      const tooWide = {
+        ...rgbaFrame(),
+        width: 4097,
+        height: 1,
+        texture: {
+          kind: "rgba",
+          data: new ArrayBuffer(4097 * 4),
+          bytesPerRow: 4097 * 4,
+        },
+      };
+      expect(() => interop.imageFromVideoFrame(tooWide)).toThrow(
+        "texture extent limit",
+      );
+      expect(tooWide.dispose).toHaveBeenCalledTimes(1);
+      expect(androidReserve).not.toHaveBeenCalled();
+      expect(mockCreateTexture).not.toHaveBeenCalled();
+      expect(mockWriteTexture).not.toHaveBeenCalled();
+    });
+  });
+
+  it("reuses scratch storage but wraps a fresh surface so later writes cannot return an old snapshot", () => {
+    withAndroidInterop(({ interop }) => {
+      let version = 0;
+      const views: Array<{
+        snapshot: { version: number; dispose: jest.Mock } | null;
+        dispose: jest.Mock;
+      }> = [];
+      const wrap = () => {
+        const view = {
+          snapshot: null as (typeof views)[number]["snapshot"],
+          dispose: jest.fn(),
+        };
+        views.push(view);
+        return {
+          ...mockSurface,
+          dispose: view.dispose,
+          makeImageSnapshot: () => {
+            view.snapshot ??= { version, dispose: jest.fn() };
+            return view.snapshot;
+          },
+        };
+      };
+      const localSkia = (require("react-native-skia") as { Skia: typeof Skia })
+        .Skia;
+      (localSkia.Surface.MakeFromGPUTexture as jest.Mock)
+        .mockImplementationOnce(wrap)
+        .mockImplementationOnce(wrap);
+      mockWriteTexture
+        .mockImplementationOnce(() => {
+          version = 1;
+        })
+        .mockImplementationOnce(() => {
+          version = 2;
+        });
+      const firstFrame = rgbaFrame(1, 1);
+      const secondFrame = rgbaFrame(2, 2);
+      const first = interop.imageFromVideoFrame(firstFrame)!;
+      const second = interop.imageFromVideoFrame(secondFrame)!;
+      expect(first).toMatchObject({ version: 1 });
+      expect(second).toMatchObject({ version: 2 });
+      expect(first).not.toBe(second);
+      expect(interop.imageFromVideoFrame(firstFrame)).toBe(first);
+      expect(first.dispose).not.toHaveBeenCalled();
+      expect(mockWriteTexture).toHaveBeenCalledTimes(2);
+      expect(mockCreateTexture).toHaveBeenCalledTimes(1);
+      expect(views.every((view) => view.dispose.mock.calls.length === 1)).toBe(
+        true,
+      );
+    });
+  });
+
+  it("reallocates scratch on a format change without invalidating another producer's owned image", () => {
+    withAndroidInterop(({ interop }) => {
+      const rgbaTexture = { nativePointer: 456n, destroy: jest.fn() };
+      const bgraTexture = { nativePointer: 789n, destroy: jest.fn() };
+      mockCreateTexture
+        .mockReturnValueOnce(rgbaTexture)
+        .mockReturnValueOnce(bgraTexture);
+      const rgba = interop.imageFromVideoFrame(rgbaFrame(1, 1))!;
+      const native: VideoFrame = {
+        ...rgbaFrame(2, 2),
+        texture: { kind: "native-buffer", nativeBuffer: 123n },
+      };
+      interop.imageFromVideoFrame(native);
+      expect(
+        mockCreateTexture.mock.calls.map((call) => call[0].format),
+      ).toEqual(["rgba8unorm", "bgra8unorm"]);
+      expect(mockCreateTexture.mock.calls.map((call) => call[0].usage)).toEqual(
+        [23, 21],
+      );
+      expect(rgbaTexture.destroy).toHaveBeenCalledTimes(1);
+      expect(rgba.dispose).not.toHaveBeenCalled();
+      expect(mockCopy.mock.calls[0]![1].texture).toBe(bgraTexture);
+    });
+  });
+
+  it("retains the RGBA source and both reservations when a write throws after enqueue and its drain fails", () => {
+    withAndroidInterop(({ interop, release: androidRelease }) => {
+      const failure = new Error("Write failed after enqueue");
+      mockWriteTexture.mockImplementationOnce(() => {
+        throw failure;
+      });
+      mockSurface.flush.mockImplementationOnce(() => {
+        throw new Error("Drain failed");
+      });
+      const pending = rgbaFrame();
+      expect(() => interop.ownVideoFrames({ pending })).toThrow(failure);
+      expect(pending.dispose).not.toHaveBeenCalled();
+      expect(mockSurface.dispose).not.toHaveBeenCalled();
+      expect(mockUploadTexture.destroy).not.toHaveBeenCalled();
+      expect(androidRelease).not.toHaveBeenCalled();
+      expect(() => interop.imageFromVideoFrame(pending)).toThrow(
+        "could not drain",
+      );
+      expect(pending.dispose).not.toHaveBeenCalled();
+      const incoming = rgbaFrame(2, 2);
+      expect(() => interop.imageFromVideoFrame(incoming)).toThrow(
+        "could not drain",
+      );
+      expect(incoming.dispose).toHaveBeenCalledTimes(1);
+      interop.clearVideoFrameImages(true);
+      const fence = mockSurface.flush.mock.invocationCallOrder[1]!;
+      expect(fence).toBeLessThan(
+        (pending.dispose as jest.Mock).mock.invocationCallOrder[0]!,
+      );
+      expect(pending.dispose).toHaveBeenCalledTimes(1);
+      expect(androidRelease).toHaveBeenCalledTimes(2);
+      expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("keeps the previous producer image if replacement snapshot allocation fails", () => {
+    withAndroidInterop(({ interop, release: androidRelease }) => {
+      const previousFrame = rgbaFrame(1, 1);
+      const previous = interop.imageFromVideoFrame(previousFrame)!;
+      mockSurface.makeImageSnapshot.mockReturnValueOnce(null as never);
+      const replacement = rgbaFrame(2, 1);
+      expect(() => interop.imageFromVideoFrame(replacement)).toThrow(
+        "Cannot create a video frame image",
+      );
+      expect(replacement.dispose).toHaveBeenCalledTimes(1);
+      expect(previous.dispose).not.toHaveBeenCalled();
+      expect(interop.imageFromVideoFrame(previousFrame)).toBe(previous);
+      expect(androidRelease).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("releases a reserved image if the scratch allocation is refused before any write", () => {
+    withAndroidInterop(
+      ({ interop, reserve: androidReserve, release: androidRelease }) => {
+        androidReserve.mockReturnValueOnce(17).mockImplementationOnce(() => {
+          throw new Error("Scratch budget exceeded");
+        });
+        const frame = rgbaFrame();
+        expect(() => interop.imageFromVideoFrame(frame)).toThrow(
+          "Scratch budget exceeded",
+        );
+        expect(frame.dispose).toHaveBeenCalledTimes(1);
+        expect(androidRelease).toHaveBeenCalledTimes(1);
+        expect(mockWriteTexture).not.toHaveBeenCalled();
+        expect(mockCreateTexture).not.toHaveBeenCalled();
+      },
+    );
+  });
+});
 
 describe("owned video frame transport", () => {
   it("caches immutable pixels after releasing the native source exactly once", () => {

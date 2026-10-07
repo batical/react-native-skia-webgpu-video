@@ -17,7 +17,14 @@ Apply the required Skia patch in the consuming app, install pods on iOS, and reb
 
 ## Frame drawing
 
-New code uses `useVideoComposition` for a timeline and `useVideoPlayback` for a single video. The previous names `useVideoCompositionPlayer` and `useVideoPlayer` remain deprecated aliases with the same options, return values, and function identity. You can update imports independently from the texture migration.
+Replace the hook names in your imports and call sites. The old names are not exported as compatibility aliases:
+
+| Previous hook | Required replacement |
+| --- | --- |
+| `useVideoCompositionPlayer` | `useVideoComposition` |
+| `useVideoPlayer` | `useVideoPlayback` |
+
+Use `useVideoComposition` for a timeline and `useVideoPlayback` for a single video. Their composition options, playback controls and return values retain the same shape; migrating the hook names and frame drawing is required.
 
 A native Metal or OpenGL texture handle is not a Dawn texture. Replace calls to `Skia.Image.MakeImageFromNativeTextureUnstable(frame.texture, ...)` with the library helper:
 
@@ -48,7 +55,7 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 - Preview width/height are layout points; the drawing callback receives pixel dimensions. Export width/height are pixels.
 - Use `lazyDecoders` for sequential timelines. A preview decode limit such as `maxLongSide` also limits source detail if reused during export; use separate settings when necessary.
 - `copy` and `direct` remain API options. Both currently export through CPU readback. Inspect `getVideoResourceStats().backend` for the actual transport instead of inferring it from the requested mode.
-- Private APIs are retained for compatibility, but their frames use the new ownership protocol. Code that directly consumes native textures needs a dedicated review.
+- Review application code that calls internal extractors or directly consumes native textures. Its frames must follow the new ownership protocol; the renamed hooks do not preserve the old texture representation.
 
 ## Audio
 
@@ -59,6 +66,8 @@ Audio is implemented on both native platforms, but the current 3.0.6 device perf
 ## Memory and extensions
 
 Set `configureVideoMemory({ maxBytes })` before allocating sessions. The budget covers tracked resources only; codecs and drivers can retain additional memory. A budget rejection does not silently reduce export dimensions.
+
+Android still decodes through its private EGL context and reads owned RGBA pixels on the CPU. Those pixels now upload to one reusable WebGPU texture, then become an independent Graphite snapshot after a checked GPU fence. This avoids Skia's image-count raster-upload cache; it does not remove the CPU readback or transfer. Java/JSI backing buffers remain accounted until their aliases and ART/Hermes owners are collected. The new path has host tests; its physical memory/performance qualification is pending. See the [upstream cache notes](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider).
 
 The optional `createFrameProcessor` export factory creates a processor once per export. Its asynchronous `prepareFrame` runs at the requested composition timestamp and its `dispose` must finish all frame readers. Drive animated effects from that timestamp, not an independent display animation loop.
 

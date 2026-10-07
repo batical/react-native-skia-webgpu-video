@@ -266,7 +266,7 @@ test('the actual draw callback records scalar identities from invisible prefetch
     reanimated: { runOnUI: (fn) => fn, runOnJS: (fn) => fn, useSharedValue: (value) => {
       shared = { value, modify: (fn) => { shared.value = fn(shared.value); } }; return shared;
     } },
-    video: { drawVideoFrame: () => {}, useVideoCompositionPlayer: (config) => {
+    video: { drawVideoFrame: () => {}, useVideoComposition: (config) => {
       playerConfig = config; return { player: {}, currentFrame: null };
     } } });
   const screen = Screen({ options: { autorun: false } });

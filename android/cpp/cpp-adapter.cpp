@@ -28,6 +28,7 @@ void install(jsi::Runtime& jsiRuntime) {
         info.setProperty(runtime, "encodeTransport", jsi::String::createFromAscii(runtime, "cpu-rgba-upload"));
         info.setProperty(runtime, "decodeCpuCopiesBeforeSkia", 0);
         info.setProperty(runtime, "ownedFrameTransport", jsi::String::createFromAscii(runtime, "direct-buffer-shared-java-jsi"));
+        info.setProperty(runtime, "skiaImportTransport", jsi::String::createFromAscii(runtime, "cpu-rgba-webgpu-upload-snapshot"));
         info.setProperty(runtime, "zeroCopyDecode", false);
         info.setProperty(runtime, "zeroCopyEncode", false);
         return info;

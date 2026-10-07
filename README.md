@@ -26,7 +26,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Alpha software.** iOS has been exercised on a physical device. Android builds and host tests pass, but validation on an Android device is still pending. See [status](#status) before adopting this in production.
+> **Alpha software.** iOS and focused Android tests have run on physical devices. Android memory and performance qualification is still incomplete. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -174,7 +174,7 @@ Audio implementations are retained on iOS and Android, including AAC export. The
 
 ## Migrating from Skia Video
 
-Use `useVideoComposition` for timelines and `useVideoPlayback` for single videos. The previous hook names remain deprecated compatibility aliases. Composition structure, timeline units, drawing callbacks, and player/export controls are retained. Texture interop changes: replace `MakeImageFromNativeTextureUnstable(frame.texture)` with `drawVideoFrame` or `makeVideoFrameImage`.
+Use `useVideoComposition` for timelines and `useVideoPlayback` for single videos. Rename the previous hook imports and calls; the old names are no longer exported. Composition structure, timeline units, drawing callbacks, and player/export controls are retained. Texture interop changes: replace `MakeImageFromNativeTextureUnstable(frame.texture)` with `drawVideoFrame` or `makeVideoFrameImage`.
 
 **[Read the migration guide →](docs/MIGRATION.md)**
 
@@ -201,7 +201,7 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 | Area | Current evidence |
 | --- | --- |
 | iOS | Initial 3.0.6 build: 50 native XCTest passes. Optimized build: 5 device smoke cases passed; before/after comparison: 96 executions passed across both builds. |
-| Android | Debug/Release builds and 31 JVM tests passed; device tests pending. |
+| Android | Debug/Release builds and 35 host JVM tests passed; 5 focused ownership/allocation tests passed on Pixel 8a. Full device coverage and memory/performance qualification remain incomplete. |
 | Audio / image fidelity | Implemented paths; dedicated audio, pixel fidelity, and synchronization validation remains pending. |
 | Long sessions | Tracked cleanup is exercised; sustained memory stability and absence of leaks are not established. |
 

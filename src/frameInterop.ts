@@ -1,4 +1,5 @@
 import { getVideoCanvas } from "./canvas";
+import { Platform } from "react-native";
 import { AlphaType, BlendMode, ColorType, Skia } from "react-native-skia";
 import type { SkCanvas, SkImage, SkSurface } from "react-native-skia";
 import type { VideoFrame } from "./types";
@@ -7,6 +8,7 @@ import {
   getVideoGpuDevice,
   createNativeVideoGpuFrame,
   nativeVideoTextureUsage,
+  rgbaVideoTextureUsage,
 } from "./gpuDevice";
 import {
   frameByteSize,
@@ -33,10 +35,15 @@ type Cache = {
   canvas: SkCanvas | null;
   width: number;
   height: number;
+  format: GPUTextureFormat | null;
   uploadTexture: GPUTexture | null;
   uploadReservation: number;
   pendingSources: PendingSource[];
 };
+
+// Capture a scalar on the RN runtime instead of importing Platform inside a
+// worklet. iOS keeps its existing native-buffer and RGBA compatibility paths.
+const uploadAndroidRgba = Platform.OS === "android";
 
 const getCache = (): Cache => {
   "worklet";
@@ -50,6 +57,7 @@ const getCache = (): Cache => {
       canvas: null,
       width: 0,
       height: 0,
+      format: null,
       uploadTexture: null,
       uploadReservation: 0,
       pendingSources: [],
@@ -88,6 +96,7 @@ const clearStagingSurface = (cache: Cache) => {
   releaseVideoMemory(cache.uploadReservation);
   cache.uploadReservation = 0;
   cache.width = cache.height = 0;
+  cache.format = null;
 };
 
 /** Record explicit recovery work after a possibly submitted external copy.
@@ -152,10 +161,10 @@ export const releaseVideoFrameImage = (frame: VideoFrame): void => {
   if (cache.images.size === 0) clearVideoFrameImages(true);
 };
 
-/** Returns immutable, owned pixels. WebGPU copies native decoded buffers
- * into one reusable GPU texture, then snapshots a fresh Skia view of it. Waiting
- * for completion before releasing both native leases prevents the decoder from
- * recycling its IOSurface underneath the submitted GPU work. */
+/** Returns immutable, owned pixels. WebGPU uploads Android RGBA pixels or blits
+ * native buffers into one reusable texture, then snapshots a fresh Skia view.
+ * Graphite-backed snapshots bypass the raster ImageProvider's image-count LRU.
+ * Wait for completion before releasing sources or rewriting the scratch texture. */
 export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   "worklet";
   const cache = getCache();
@@ -208,6 +217,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         "Too many cached video producers; close unused extractors",
       );
     }
+    let rgbaPixels: Uint8Array<ArrayBuffer> | null = null;
     if (texture.kind === "rgba") {
       const pixels = new Uint8Array(texture.data);
       const required = texture.bytesPerRow * frame.height;
@@ -215,51 +225,83 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         !Number.isSafeInteger(texture.bytesPerRow) ||
         !Number.isSafeInteger(required) ||
         texture.bytesPerRow < frame.width * 4 ||
+        (uploadAndroidRgba &&
+          (texture.bytesPerRow > 0xffffffff ||
+            texture.bytesPerRow % 4 !== 0)) ||
         pixels.byteLength < required
       ) {
         throw new Error("Invalid RGBA video frame storage");
       }
-      // Skia.Data.fromBytes copies the entire underlying ArrayBuffer, including
-      // row padding/trailing storage; account its actual allocation size.
-      reservation = reserveVideoMemory(pixels.byteLength, "owned video image");
-      const data = Skia.Data.fromBytes(pixels);
-      try {
-        image = Skia.Image.MakeImage(
-          {
-            width: frame.width,
-            height: frame.height,
-            colorType: ColorType.RGBA_8888,
-            alphaType: AlphaType.Opaque,
-          },
-          data,
-          texture.bytesPerRow,
+      if (uploadAndroidRgba) {
+        // Exclude unused trailing storage without allocating another pixel copy.
+        // RN WebGPU's converter honors this view's byteOffset and byteLength.
+        rgbaPixels = new Uint8Array(texture.data, 0, required);
+      } else {
+        // The compatibility raster path copies the complete underlying buffer.
+        reservation = reserveVideoMemory(
+          pixels.byteLength,
+          "owned video image",
         );
-      } finally {
-        data.dispose();
+        const data = Skia.Data.fromBytes(pixels);
+        try {
+          image = Skia.Image.MakeImage(
+            {
+              width: frame.width,
+              height: frame.height,
+              colorType: ColorType.RGBA_8888,
+              alphaType: AlphaType.Opaque,
+            },
+            data,
+            texture.bytesPerRow,
+          );
+        } finally {
+          data.dispose();
+        }
       }
-    } else {
+    }
+    if (texture.kind === "native-buffer" || rgbaPixels) {
+      const device = getVideoGpuDevice();
+      if (rgbaPixels) {
+        const extentLimit = device.limits.maxTextureDimension2D;
+        if (
+          !Number.isSafeInteger(extentLimit) ||
+          extentLimit <= 0 ||
+          frame.width > extentLimit ||
+          frame.height > extentLimit
+        )
+          throw new Error(
+            "RGBA video frame exceeds the WebGPU texture extent limit",
+          );
+      }
+      const format = rgbaPixels ? "rgba8unorm" : "bgra8unorm";
       reservation = reserveVideoMemory(bytes, "owned video image");
       if (
         !cache.uploadTexture ||
         cache.width !== frame.width ||
-        cache.height !== frame.height
+        cache.height !== frame.height ||
+        cache.format !== format
       ) {
         clearStagingSurface(cache);
         cache.uploadReservation = reserveVideoMemory(
           bytes,
-          "native frame WebGPU upload texture",
+          rgbaPixels
+            ? "RGBA frame WebGPU upload texture"
+            : "native frame WebGPU upload texture",
         );
         try {
           // One scratch texture per runtime. COPY_SRC lets Graphite snapshot
           // it with a GPU blit rather than draw into another staging target.
-          cache.uploadTexture = getVideoGpuDevice().createTexture({
+          cache.uploadTexture = device.createTexture({
             size: { width: frame.width, height: frame.height },
-            format: "bgra8unorm",
-            usage: nativeVideoTextureUsage,
-            label: "video native frame upload",
+            format,
+            usage: rgbaPixels ? rgbaVideoTextureUsage : nativeVideoTextureUsage,
+            label: rgbaPixels
+              ? "video RGBA frame upload"
+              : "video native frame upload",
           });
           cache.width = frame.width;
           cache.height = frame.height;
+          cache.format = format;
         } catch (error) {
           try {
             clearStagingSurface(cache);
@@ -277,25 +319,41 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
       if (!cache.stage) throw new Error("Cannot wrap video upload texture");
       ownsSurfaceView = true;
       cache.canvas = getVideoCanvas(cache.stage);
-      nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
-      if (
-        nativeSource.width !== frame.width ||
-        nativeSource.height !== frame.height ||
-        nativeSource.pixelFormat !== "bgra8"
-      ) {
-        throw new Error(
-          "Native video buffer dimensions or BGRA layout mismatch",
+      if (rgbaPixels && texture.kind === "rgba") {
+        // Dawn consumes this typed-array view synchronously. Keep the source
+        // alive through the checked fence, including a throw after enqueue.
+        copyPending = true;
+        device.queue.writeTexture(
+          { texture: cache.uploadTexture! },
+          rgbaPixels,
+          {
+            offset: 0,
+            bytesPerRow: texture.bytesPerRow,
+            rowsPerImage: frame.height,
+          },
+          { width: frame.width, height: frame.height, depthOrArrayLayers: 1 },
+        );
+      } else if (texture.kind === "native-buffer") {
+        nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
+        if (
+          nativeSource.width !== frame.width ||
+          nativeSource.height !== frame.height ||
+          nativeSource.pixelFormat !== "bgra8"
+        ) {
+          throw new Error(
+            "Native video buffer dimensions or BGRA layout mismatch",
+          );
+        }
+        // The native call can throw after submitting; retain leases until a
+        // checked queue drain even when it does not return normally.
+        copyPending = true;
+        device.queue.copyExternalImageToTexture(
+          // Keep decoded orientation: drawVideoFrame applies rotation once.
+          { source: nativeSource, rotation: 0, mirrored: false, flipY: false },
+          { texture: cache.uploadTexture!, premultipliedAlpha: false },
+          { width: frame.width, height: frame.height },
         );
       }
-      // The native call can throw after submitting; retain leases until a
-      // checked queue drain even when it does not return normally.
-      copyPending = true;
-      getVideoGpuDevice().queue.copyExternalImageToTexture(
-        // Keep decoded orientation: drawVideoFrame applies rotation once.
-        { source: nativeSource, rotation: 0, mirrored: false, flipY: false },
-        { texture: cache.uploadTexture!, premultipliedAlpha: false },
-        { width: frame.width, height: frame.height },
-      );
       // Snapshot records an independent texture copy and submits it after
       // the external blit on the shared queue. The wrapper never draws.
       image = cache.stage.makeImageSnapshot();

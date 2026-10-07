@@ -11,8 +11,8 @@ import { PixelRatio } from "react-native";
 import { create, type ReactTestRenderer } from "react-test-renderer";
 import { Skia } from "react-native-skia";
 import RNSkiaVideoModule from "../RNSkiaVideoModule";
-import { useVideoPlayer } from "../videoPlayer";
-import { useVideoCompositionPlayer } from "../videoCompositionPlayer";
+import { useVideoPlayback } from "../videoPlayer";
+import { useVideoComposition } from "../videoCompositionPlayer";
 import type { VideoComposition, VideoFrame } from "../types";
 import { createSerializedUiRuntime } from "../../test/utils/serializedUiRuntime";
 
@@ -268,7 +268,7 @@ describe("serialized UI worklets", () => {
     };
     const rendered = renderHook(
       () =>
-        useVideoCompositionPlayer({
+        useVideoComposition({
           composition,
           width: 320,
           height: 180,
@@ -302,7 +302,7 @@ describe("serialized UI worklets", () => {
     };
     const rendered = renderHook(
       () =>
-        useVideoCompositionPlayer({
+        useVideoComposition({
           composition,
           width: 320,
           height: 180,
@@ -333,7 +333,7 @@ describe("serialized UI worklets", () => {
     const onError = jest.fn();
     const rendered = renderHook(
       () =>
-        useVideoCompositionPlayer({
+        useVideoComposition({
           composition,
           width: 320,
           height: 180,
@@ -375,7 +375,7 @@ describe("serialized UI worklets", () => {
     };
     const rendered = renderHook(
       () =>
-        useVideoCompositionPlayer({
+        useVideoComposition({
           composition,
           width: 320,
           height: 180,
@@ -418,7 +418,7 @@ describe("serialized UI worklets", () => {
     const warning = jest.spyOn(console, "warn").mockImplementation(() => {});
     const rendered = renderHook(
       () =>
-        useVideoCompositionPlayer({
+        useVideoComposition({
           composition,
           width: 320,
           height: 180,
@@ -449,7 +449,7 @@ describe("serialized UI worklets", () => {
     player.decodeNextFrame.mockReturnValue(frame);
     createVideoPlayer.mockReturnValue(player);
     const rendered = renderHook(
-      () => useVideoPlayer({ uri: "file:///videos/clip.mp4" }),
+      () => useVideoPlayback({ uri: "file:///videos/clip.mp4" }),
       undefined,
     );
     tick();
@@ -460,17 +460,17 @@ describe("serialized UI worklets", () => {
 });
 
 // ---------------------------------------------------------------------------
-// useVideoPlayer
+// useVideoPlayback
 // ---------------------------------------------------------------------------
 
-describe("useVideoPlayer", () => {
-  type Options = Parameters<typeof useVideoPlayer>[0];
+describe("useVideoPlayback", () => {
+  type Options = Parameters<typeof useVideoPlayback>[0];
 
   const setup = (options: Partial<Options> = {}) => {
     // A fresh native player per creation, as the real module does: the hook
     // tells them apart by identity when it re-creates one.
     createVideoPlayer.mockImplementation(createPlayerMock);
-    const rendered = renderHook((props: Options) => useVideoPlayer(props), {
+    const rendered = renderHook((props: Options) => useVideoPlayback(props), {
       uri: "file:///videos/clip.mp4",
       ...options,
     });
@@ -604,7 +604,7 @@ describe("useVideoPlayer", () => {
   it("does not allocate a native player for a React render that never commits", () => {
     const pending = new Promise<void>(() => {});
     function Abandoned(): ReactNode {
-      useVideoPlayer({ uri: "file:///videos/clip.mp4" });
+      useVideoPlayback({ uri: "file:///videos/clip.mp4" });
       throw pending;
     }
     let renderer!: ReactTestRenderer;
@@ -634,7 +634,7 @@ describe("useVideoPlayer", () => {
     createVideoPlayer.mockImplementationOnce(() => {
       throw error;
     });
-    const rendered = renderHook((options: Options) => useVideoPlayer(options), {
+    const rendered = renderHook((options: Options) => useVideoPlayback(options), {
       uri: "/missing.mp4",
       onError,
     });
@@ -648,7 +648,7 @@ describe("useVideoPlayer", () => {
       throw new Error("missing asset");
     });
     createVideoPlayer.mockImplementation(createPlayerMock);
-    const rendered = renderHook((options: Options) => useVideoPlayer(options), {
+    const rendered = renderHook((options: Options) => useVideoPlayback(options), {
       uri: "/missing.mp4",
     });
     expect(rendered.result.current.player).toBeNull();
@@ -762,18 +762,18 @@ describe("useVideoPlayer", () => {
 });
 
 // ---------------------------------------------------------------------------
-// useVideoCompositionPlayer
+// useVideoComposition
 // ---------------------------------------------------------------------------
 
-describe("useVideoCompositionPlayer", () => {
-  type Options = Parameters<typeof useVideoCompositionPlayer>[0];
+describe("useVideoComposition", () => {
+  type Options = Parameters<typeof useVideoComposition>[0];
 
   const setup = (options: Partial<Options> = {}) => {
     const extractor = createExtractorMock();
     createFramesExtractor.mockReturnValue(extractor);
     const drawFrame = jest.fn();
     const rendered = renderHook(
-      (props: Options) => useVideoCompositionPlayer(props),
+      (props: Options) => useVideoComposition(props),
       { composition, drawFrame, width: 100, height: 50, ...options },
     );
     return { extractor, drawFrame, ...rendered };
@@ -1080,7 +1080,7 @@ describe("useVideoCompositionPlayer", () => {
     createFramesExtractor.mockImplementation(createExtractorMock);
     const drawFrame = jest.fn();
     const rendered = renderHook(
-      (options: Options) => useVideoCompositionPlayer(options),
+      (options: Options) => useVideoComposition(options),
       {
         composition,
         drawFrame,
@@ -1103,7 +1103,7 @@ describe("useVideoCompositionPlayer", () => {
   it("does not create an extractor for a React render that never commits", () => {
     const pending = new Promise<void>(() => {});
     function Abandoned(): ReactNode {
-      useVideoCompositionPlayer({
+      useVideoComposition({
         composition,
         drawFrame: jest.fn(),
         width: 100,

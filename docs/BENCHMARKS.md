@@ -50,7 +50,7 @@ Construire deux applications identiques en mode release :
 
 Utiliser le même appareil, la même version de React Native, les mêmes assets et la même fréquence d'écran. Les deux noms de paquet Skia ne doivent pas être installés ensemble. Les importations du harness sont injectées depuis le build actif ; aucun module du harness ne charge les deux backends.
 
-Le profil Android initial expose `decodeTransport: cpu-rgba-readback`, `encodeTransport: cpu-rgba-upload` et `zeroCopy: false`. Cela permet de vérifier les pixels et la gestion des ressources avant de remplacer le transport. Ses temps doivent être présentés comme ceux de ce chemin CPU. Le JSON conserve ces informations et le comparateur signale les changements de transport.
+Le décodage Android reste un readback RGBA depuis un contexte EGL privé, et l'export garde son readback CPU puis l'entrée native de l'encodeur. L'import RGBA courant utilise `queue.writeTexture` vers une texture WebGPU réutilisable, puis un snapshot Graphite indépendant ; il évite l'image raster et son cache amont. Le transfert CPU reste présent et `zeroCopy` reste faux. Les relevés d'un ancien binaire ne qualifient pas cette modification : conserver le transport effectif de chaque binaire dans son JSON et distinguer les [réservations Java/JSI et caches Skia](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider).
 
 ## Protocole actuel sur iPhone
 
