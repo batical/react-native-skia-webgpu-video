@@ -1,0 +1,3837 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-07T10:51:23.015021+00:00",
+  "status": "qualified-focused-ahb-follow-up; historical-cpu-failures-preserved",
+  "physicalTarget": {
+    "model": "Google Pixel 8a",
+    "osVersion": "17",
+    "apiLevel": 37,
+    "abi": "arm64-v8a",
+    "buildMode": "release",
+    "executionTarget": "physical-device"
+  },
+  "versions": {
+    "skia": "3.0.6",
+    "webgpu": "0.12.1",
+    "reactNative": "0.86.2"
+  },
+  "artifactIdentity": {
+    "apkSha256": "352f728d99ab6b69e75b732580c3cab12c8905bebe31f400f6afc8f399e7e08e",
+    "bundleSha256": "fa577288aa58d4beecb8aa71ce8b51f14ceb1eee84f17942043461ea786d5c22",
+    "nativeLibrarySha256": "5a9a9bb4f10b0d2b4baa9092023022b7bbb2bac2aa646183c9cf9cc385c0f907",
+    "sourceSnapshotSha256": "82ef4f57aca124e1725649f314cdf7ee425442f261894ce54e89587c78cb9b97",
+    "sourceCommit": "2ab84c8",
+    "rawEvidence": "Ignored local reports; no device IDs or raw file paths published"
+  },
+  "backend": {
+    "name": "react-native-skia-webgpu-video",
+    "version": "0.1.0-alpha.0",
+    "skiaVersion": "3.0.6",
+    "webgpuVersion": "0.12.1",
+    "paths": {
+      "platform": "android",
+      "decodeTransport": "cpu-rgba-readback",
+      "encodeTransport": "cpu-rgba-upload",
+      "decodeCpuCopiesBeforeSkia": 0,
+      "ownedFrameTransport": "direct-buffer-shared-java-jsi",
+      "skiaImportTransport": "cpu-rgba-webgpu-upload-snapshot",
+      "zeroCopyDecode": false,
+      "zeroCopyEncode": false
+    }
+  },
+  "campaign": {
+    "finishedAt": "2026-10-07T10:41:03.236625+00:00",
+    "workloadVersion": "2026-10-07.1",
+    "seed": 1397446195,
+    "cases": 8,
+    "repetitions": 3,
+    "attempts": 24,
+    "distinctColdProcesses": 24,
+    "passed": 0,
+    "failed": 24,
+    "operationsCompleted": 12,
+    "controlled4kOom": 12,
+    "cleanupFailed": 24,
+    "previewPhysicalPixels": [
+      720,
+      720
+    ],
+    "previewDurationSeconds": 4,
+    "sourceResolution": "Uncapped original 1080p or 4K",
+    "memoryBudget": {
+      "requestedMaxBytes": 536870912,
+      "applied": true,
+      "reportedMaxBytes": 536870912
+    },
+    "conditions": {
+      "nativeSamples": 911,
+      "allNominalNormalActive": true,
+      "droppedCollectionSamples": 0,
+      "acPowered": true,
+      "batteryTemperatureBeforeCampaignCelsius": 37.7
+    }
+  },
+  "caseSummaries": [
+    {
+      "caseId": "steady-playback-h264-1080p30-audio",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 3,
+      "controlledOom": 0,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 642080768,
+      "medianPeakPssBytes": 590970880,
+      "settledOwnedBytes": [
+        49766442,
+        49766442,
+        41472035
+      ],
+      "settledOwnedResources": [
+        6,
+        6,
+        5
+      ],
+      "medianCallbacksPerSecond": 56.88544163251919,
+      "callbackP95UpperBucketMs": 0.25
+    },
+    {
+      "caseId": "steady-playback-h264-4k30",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 0,
+      "controlledOom": 3,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 755212288,
+      "medianPeakPssBytes": 791078912,
+      "settledOwnedBytes": [
+        232243249,
+        232243249,
+        232243249
+      ],
+      "settledOwnedResources": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 0,
+      "controlledOom": 3,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 760135680,
+      "medianPeakPssBytes": 818410496,
+      "settledOwnedBytes": [
+        232243249,
+        232243249,
+        232243249
+      ],
+      "settledOwnedResources": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio-direct",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 3,
+      "controlledOom": 0,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 636715008,
+      "medianPeakPssBytes": 595268608,
+      "settledOwnedBytes": [
+        49766442,
+        41472035,
+        41472035
+      ],
+      "settledOwnedResources": [
+        6,
+        5,
+        5
+      ],
+      "medianCallbacksPerSecond": 55.820332943204825,
+      "callbackP95UpperBucketMs": 0.25
+    },
+    {
+      "caseId": "steady-playback-h264-4k30-direct",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 0,
+      "controlledOom": 3,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 780427264,
+      "medianPeakPssBytes": 805560320,
+      "settledOwnedBytes": [
+        232243249,
+        232243249,
+        232243249
+      ],
+      "settledOwnedResources": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30-direct",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 0,
+      "controlledOom": 3,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 780193792,
+      "medianPeakPssBytes": 791198720,
+      "settledOwnedBytes": [
+        132710428,
+        232243249,
+        232243249
+      ],
+      "settledOwnedResources": [
+        4,
+        7,
+        7
+      ]
+    },
+    {
+      "caseId": "encode-h264-copy",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 3,
+      "controlledOom": 0,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 383037440,
+      "medianPeakPssBytes": 294501376,
+      "settledOwnedBytes": [
+        2740869,
+        2740869,
+        2740869
+      ],
+      "settledOwnedResources": [
+        3,
+        3,
+        3
+      ],
+      "encodeMs": 2168.2254649996758,
+      "probeMs": 360.31762699969113,
+      "exportMs": 2612.349692000076
+    },
+    {
+      "caseId": "encode-h264-direct",
+      "attempts": 3,
+      "passed": 0,
+      "operationCompleted": 3,
+      "controlledOom": 0,
+      "cleanupPassed": 0,
+      "medianPeakRssBytes": 381562880,
+      "medianPeakPssBytes": 292622336,
+      "settledOwnedBytes": [
+        2740869,
+        2740869,
+        2740869
+      ],
+      "settledOwnedResources": [
+        3,
+        3,
+        3
+      ],
+      "encodeMs": 2100.0736909992993,
+      "probeMs": 352.34977299999446,
+      "exportMs": 2547.482219999656
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "steady-playback-h264-1080p30-audio",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "341a3a05900ca4fd7b909939cb57481f4c824ecf13da613b687d67c3c26f5e35",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 40,
+      "peakRssBytes": 643026944,
+      "peakPssBytes": 587526144,
+      "settledOwnedBytes": 49766442,
+      "settledOwnedResources": 6,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3832.2634709998965,
+        "callbacks": 218,
+        "callbacksPerSecond": 56.88544163251919,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "98b940abf6f944702025be2fa22501fb189b04ba9003bc05fa7f990f37cbdd2c",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 40,
+      "peakRssBytes": 642080768,
+      "peakPssBytes": 596025344,
+      "settledOwnedBytes": 49766442,
+      "settledOwnedResources": 6,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3846.0509859994054,
+        "callbacks": 219,
+        "callbacksPerSecond": 56.94152282359625,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "3748d8e7a0ec3fe5b41bab863a4877e6e20c3dcdc1f9931a0e983f9d118c9962",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 40,
+      "peakRssBytes": 628273152,
+      "peakPssBytes": 590970880,
+      "settledOwnedBytes": 41472035,
+      "settledOwnedResources": 5,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3831.506594000384,
+        "callbacks": 211,
+        "callbacksPerSecond": 55.06972122412556,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-4k30",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "13328cf04d79a6eefc5d1eccbc94f9ca2f6688ef532526755bc5196d6f80bccb",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 35,
+      "peakRssBytes": 755212288,
+      "peakPssBytes": 770287616,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-h264-4k30",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "2bad06aefc4367fdbb30369cdf0d128b3e2b29ec15c2665f1a5c9863c5950cb3",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 32,
+      "peakRssBytes": 753868800,
+      "peakPssBytes": 791078912,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-h264-4k30",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "911e5eb469924af437f311cd2aa0a682b90fa7a294610691ac1712d34e4699fb",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 32,
+      "peakRssBytes": 781578240,
+      "peakPssBytes": 843702272,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "b624b65771827fc085362f3376c081e2ad8aeec281ff65e9c7b75e7d85067c6c",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 35,
+      "peakRssBytes": 760135680,
+      "peakPssBytes": 818410496,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "01420ca7a735da27939bb23ef35ae4c0bc23a5a94d7617e6791ee50eb6f6f6d6",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 34,
+      "peakRssBytes": 783962112,
+      "peakPssBytes": 830801920,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "3bdeff7e9b058feb07a322b97a9273d4ac3ea3fb4e174a5837b13b305abb56d5",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 33,
+      "peakRssBytes": 754204672,
+      "peakPssBytes": 803744768,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio-direct",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "a2a18aa93e6f0846d4cbc02618f487772e9f99d5e73111521d28b0e7137f4a85",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 40,
+      "peakRssBytes": 632426496,
+      "peakPssBytes": 588089344,
+      "settledOwnedBytes": 49766442,
+      "settledOwnedResources": 6,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3837.71220099926,
+        "callbacks": 219,
+        "callbacksPerSecond": 57.06524839016771,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio-direct",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "be1c9ded61e58cb6ca903b35e970cb8955a83664bacff21bf26e0379cea90364",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 39,
+      "peakRssBytes": 642076672,
+      "peakPssBytes": 595268608,
+      "settledOwnedBytes": 41472035,
+      "settledOwnedResources": 5,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3833.728477000259,
+        "callbacks": 214,
+        "callbacksPerSecond": 55.820332943204825,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-1080p30-audio-direct",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "572343d28b11a2030b0d34927d853bbd43d0f8bc65ac54e4fb6eb101cbfa981f",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 41,
+      "peakRssBytes": 636715008,
+      "peakPssBytes": 595853312,
+      "settledOwnedBytes": 41472035,
+      "settledOwnedResources": 5,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "callbackDiagnostics": {
+        "durationMs": 3813.8338240003213,
+        "callbacks": 211,
+        "callbacksPerSecond": 55.324906573586,
+        "callbackP95UpperBucketMs": 0.25,
+        "missingFrameAvailability": 0,
+        "droppedDecoderFrames": null,
+        "gpuTimeMs": null
+      }
+    },
+    {
+      "caseId": "steady-playback-h264-4k30-direct",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "72b885a27e877310b27ec29b49a6f05317e6674df29f01b8da58e81d23b700dd",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 34,
+      "peakRssBytes": 780427264,
+      "peakPssBytes": 805560320,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-h264-4k30-direct",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "f3400a3c0c0b9d9bc815f34fd439c8bc009f622fe1f9162e4bb945f4009d6c79",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 36,
+      "peakRssBytes": 755179520,
+      "peakPssBytes": 785262592,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-h264-4k30-direct",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "b26a09ea0cd8a9c6a6d1cceff69a366aeb8eac3259ceb3fef2aa351bd42b4b1f",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 32,
+      "peakRssBytes": 783007744,
+      "peakPssBytes": 830515200,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30-direct",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "a0f9200fec06b0fde3469a1aab5133316f6ed3de533d73bb8d2e6bdeddfefeca",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 36,
+      "peakRssBytes": 780550144,
+      "peakPssBytes": 779486208,
+      "settledOwnedBytes": 132710428,
+      "settledOwnedResources": 4,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30-direct",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "786418453a3a2b8ba6edb38ed161b7f8249038e4bc81fdba422ad6ee0143308f",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 31,
+      "peakRssBytes": 780193792,
+      "peakPssBytes": 843285504,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "steady-playback-hevc-4k30-direct",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "d76b409245f2585c0112ecec9c08891bf58f3996a47b852c7695e78342ba3a47",
+      "status": "failed",
+      "operationComplete": false,
+      "operationFailure": "controlled-ART-allocation-OOM",
+      "cleanupPassed": false,
+      "memorySampleCount": 35,
+      "peakRssBytes": 751583232,
+      "peakPssBytes": 791198720,
+      "settledOwnedBytes": 232243249,
+      "settledOwnedResources": 7,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null
+    },
+    {
+      "caseId": "encode-h264-copy",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "e1709cea65099d7db1a72f1a0a461cb2354ade48cf2dd5203b3b0e26adbc708e",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 46,
+      "peakRssBytes": 383037440,
+      "peakPssBytes": 296034304,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 2266.2454029992223,
+        "probeMs": 392.4401860004291,
+        "exportMs": 2728.996217000298,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "copy"
+        }
+      }
+    },
+    {
+      "caseId": "encode-h264-copy",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "99e4790b247484f5c9006969ae1b31cbe9ca0cc75708d863631d4a30fb7cd16e",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 45,
+      "peakRssBytes": 381276160,
+      "peakPssBytes": 294275072,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 2168.2254649996758,
+        "probeMs": 360.31762699969113,
+        "exportMs": 2612.349692000076,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "copy"
+        }
+      }
+    },
+    {
+      "caseId": "encode-h264-copy",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "dd54f18830cc8b9471a792befc6d34b9556776a3b4d6c63c5cc1a34f5d539cc7",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 42,
+      "peakRssBytes": 383406080,
+      "peakPssBytes": 294501376,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 1874.981567999348,
+        "probeMs": 311.7499599996954,
+        "exportMs": 2304.396160000004,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "copy"
+        }
+      }
+    },
+    {
+      "caseId": "encode-h264-direct",
+      "repetition": 0,
+      "rawRepetition": 0,
+      "rawSha256": "2fd112beb753be800245f1ef4655f3949a80131f61e7c5b542f4ddca408165bc",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 44,
+      "peakRssBytes": 373354496,
+      "peakPssBytes": 286947328,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 2136.140096999705,
+        "probeMs": 304.24479199945927,
+        "exportMs": 2564.6553149996325,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "direct"
+        }
+      }
+    },
+    {
+      "caseId": "encode-h264-direct",
+      "repetition": 1,
+      "rawRepetition": 0,
+      "rawSha256": "2c1e8eb6b69bf10a5b2dd1a71e954f484bad97293edf9e9ef4f67c995beb2936",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 45,
+      "peakRssBytes": 381562880,
+      "peakPssBytes": 295595008,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 2022.1288670003414,
+        "probeMs": 409.8267009994015,
+        "exportMs": 2507.330648999661,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "direct"
+        }
+      }
+    },
+    {
+      "caseId": "encode-h264-direct",
+      "repetition": 2,
+      "rawRepetition": 0,
+      "rawSha256": "2e8d36188b3546014a163e83f76ea9f46b6069d80c5d0ba9075d086e378f6a21",
+      "status": "failed",
+      "operationComplete": true,
+      "operationFailure": null,
+      "cleanupPassed": false,
+      "memorySampleCount": 44,
+      "peakRssBytes": 382705664,
+      "peakPssBytes": 292622336,
+      "settledOwnedBytes": 2740869,
+      "settledOwnedResources": 3,
+      "settledDecoderCount": null,
+      "settledInFlightFrames": null,
+      "exportDiagnostics": {
+        "encodeMs": 2100.0736909992993,
+        "probeMs": 352.34977299999446,
+        "exportMs": 2547.482219999656,
+        "bytes": 140879,
+        "actualOutput": {
+          "audioTracks": 0,
+          "timestampsMonotonic": true,
+          "lastPresentationTime": 1.966666,
+          "firstPresentationTime": 0,
+          "width": 640,
+          "presentationTimesExact": true,
+          "frameCount": 60,
+          "duration": 2,
+          "fps": 30,
+          "height": 360,
+          "rotation": 0,
+          "codec": "h264"
+        },
+        "framesCompleted": 60,
+        "expectedFrames": 60,
+        "progressEvents": 60,
+        "requestedOutput": {
+          "width": 640,
+          "height": 360,
+          "frameRate": 30,
+          "bitRate": 2000000,
+          "codec": "h264",
+          "encoderMode": "direct"
+        }
+      }
+    }
+  ],
+  "exportValidation": {
+    "completedExports": 6,
+    "decodedOutputFrames": 360,
+    "eachOutput": {
+      "width": 640,
+      "height": 360,
+      "codec": "h264",
+      "fps": 30,
+      "frameCount": 60,
+      "firstPtsSeconds": 0,
+      "lastPtsSeconds": 1.966666,
+      "exactPts": true
+    },
+    "pixelValidation": "unavailable",
+    "audioValidation": "unavailable"
+  },
+  "boundedRetryFollowUp": {
+    "apkSha256": "a883499979179fa6c17ae4887a6eafd4d411043ac40a4a5a75f689f2e39d8924",
+    "sourceSnapshotSha256": "916ef9be19848ab5b0469a0549683f8062cd4a626a13602333a500240e344af3",
+    "change": "One backing allocation retry after draining only queued phantom references; same owner/token; no forced GC",
+    "caseId": "steady-playback-h264-4k30",
+    "attempts": 1,
+    "status": "failed",
+    "operationComplete": false,
+    "allocationAttempts": 2,
+    "controlledArtOom": true,
+    "cleanupPassed": false,
+    "rawSha256": "dff0e0ed79429d88ddb799d85e84d60bb5ec8cbcc56c2e2ed80ab63c1548f6b0",
+    "jvm": {
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "jniOwnership": {
+      "tests": 5,
+      "passed": 5,
+      "skipped": 0,
+      "durationSeconds": 0.691,
+      "instrumentationApkSha256": "5e4dcdd2972d8fd71dc0c08cf7723037ccbb42b6ff42cc7ee53cd22247d1e82b",
+      "logSha256": "5e76147222866966b8c9e1c5a4c5d508b2c1c46a7f7b63590e78277e0b8ce225"
+    }
+  },
+  "limitations": [
+    "Strict two-second cleanup remains FAILED for every campaign attempt; outstanding owned reservations are reported, not hidden or reclassified as a pass.",
+    "Deferred Java/Hermes GC ownership and Graphite caching are separate mechanisms; this measurement alone does not prove a permanent memory leak.",
+    "RSS and PSS peaks are sampled independently; neither is complete GPU attribution. Native heap metric is PSS, not allocator size. GPU total and physical footprint are unavailable.",
+    "Callback cadence is not decoded-video or presented FPS. Callback duration excludes frame preload/upload, GPU execution and display latency. Zero missingFrames measures frame availability; dropped decoder frames remain unknown.",
+    "encodeMs covers the full export pipeline including readback/preparation. probeMs is stat/probe; exportMs includes probe and file removal. elapsedMs includes pre-export settling and is not an export duration.",
+    "No valid frozen-baseline A/B performance or memory gain is established. The earlier background-started smoke is invalid for performance comparison.",
+    "No cross-platform speed or memory comparison, no simulator performance, no full 96-case instrumentation pass, no pixel/audio correctness qualification."
+  ],
+  "scopedCopyFollowUp": {
+    "apkSha256": "789735e095937cc168865986a353613d29f065feeff40bca8676ab0895b2ef0a",
+    "sourceSnapshotSha256": "0a842f1f6f02ca4bb6f274050adcb15897b2cbc78aa76770b1aa94171ccfca3f",
+    "bundleSha256": "cf5b020e546b6edd6b41cb531205205172e7f3df88a4245dc16aa255cf634779",
+    "attempts": 8,
+    "operationsCompleted": 8,
+    "controlledOom": 0,
+    "strictPasses": 0,
+    "cleanupFailed": 8,
+    "sourceResolution": "Same uncapped original inputs",
+    "memoryBudgetMaxBytes": 536870912,
+    "nativeJniOwnership": {
+      "tests": 5,
+      "passed": 5,
+      "skipped": 0,
+      "durationSeconds": 0.572,
+      "instrumentationApkSha256": "a86b13b3b4ec9a157d1291e61569ac0c7e38c7e1376a39df27d192488d5922ee"
+    },
+    "attemptResults": [
+      {
+        "caseId": "steady-playback-h264-4k30",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "5ce8b8c6f09e744b9281c81eb8532dcd89d8816749003f3c37668be3bfb120f8",
+        "peakRssBytes": 806260736,
+        "peakPssBytes": 893193216,
+        "settledOwnedBytes": 66355214,
+        "settledOwnedResources": 2,
+        "nativeSamples": 31,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3856.48803899996,
+          "durationMs": 3853.06396599859,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              90,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 92,
+            "sumMs": 11.32226100936532,
+            "maxMs": 1.8036700002849102
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              0,
+              4,
+              16,
+              8,
+              4,
+              2,
+              1,
+              17,
+              34,
+              5,
+              0,
+              0
+            ],
+            "total": 91,
+            "sumMs": 3830.8431409988552,
+            "maxMs": 127.16145799867809
+          },
+          "draws": 92,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "67ab5a15f4c09cf467a778e58d142e7a3d9487db0799ed4609422f095a70388e",
+        "peakRssBytes": 641433600,
+        "peakPssBytes": 598184960,
+        "settledOwnedBytes": 157593733,
+        "settledOwnedResources": 19,
+        "nativeSamples": 39,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3841.876426000148,
+          "durationMs": 3838.8701189998537,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              142,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 142,
+            "sumMs": 13.146124003455043,
+            "maxMs": 0.219522999599576
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              4,
+              10,
+              18,
+              4,
+              4,
+              13,
+              38,
+              41,
+              9,
+              0,
+              0,
+              0
+            ],
+            "total": 141,
+            "sumMs": 3789.973431000486,
+            "maxMs": 76.659872001037
+          },
+          "draws": 142,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "a406a00ff760fbc5ae585ecdc1deacce237df535390ba7edbe9922f53d4c06ff",
+        "peakRssBytes": 808505344,
+        "peakPssBytes": 883250176,
+        "settledOwnedBytes": 132710428,
+        "settledOwnedResources": 4,
+        "nativeSamples": 30,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3892.48120299913,
+          "durationMs": 3889.44124600105,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              88,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 91,
+            "sumMs": 10.597902998328209,
+            "maxMs": 0.3021240010857582
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              2,
+              4,
+              11,
+              10,
+              4,
+              2,
+              1,
+              13,
+              42,
+              1,
+              0,
+              0
+            ],
+            "total": 90,
+            "sumMs": 3742.009686000645,
+            "maxMs": 117.28373200073838
+          },
+          "draws": 91,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio-direct",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "21f478cb1b6b7b1ef74eb56a67ae9023c914f729620b6a5d1eb4957036e5eafa",
+        "peakRssBytes": 640417792,
+        "peakPssBytes": 595526656,
+        "settledOwnedBytes": 116121698,
+        "settledOwnedResources": 14,
+        "nativeSamples": 39,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3889.6923840008676,
+          "durationMs": 3885.3173840008676,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              144,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 146,
+            "sumMs": 15.46216001920402,
+            "maxMs": 1.1233319994062185
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              1,
+              11,
+              16,
+              6,
+              8,
+              19,
+              35,
+              43,
+              6,
+              0,
+              0,
+              0
+            ],
+            "total": 145,
+            "sumMs": 3770.9506449997425,
+            "maxMs": 69.44795699976385
+          },
+          "draws": 146,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30-direct",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "c6c66348ccd842ab84456a35bf082bf62a0a95e7cc81653e818df3eeca5d9f9b",
+        "peakRssBytes": 780169216,
+        "peakPssBytes": 870108160,
+        "settledOwnedBytes": 132710428,
+        "settledOwnedResources": 4,
+        "nativeSamples": 30,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3841.0666519999504,
+          "durationMs": 3837.774944998324,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              85,
+              2,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 88,
+            "sumMs": 11.091312006115913,
+            "maxMs": 1.8038329984992743
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              2,
+              3,
+              9,
+              10,
+              9,
+              2,
+              0,
+              8,
+              43,
+              1,
+              0,
+              0
+            ],
+            "total": 87,
+            "sumMs": 3786.24218999967,
+            "maxMs": 130.02140299975872
+          },
+          "draws": 88,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30-direct",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "7d4beecbbbf3d9a41b330af148643fa6bbd8937bb567d52dbbf4f2831fb94c9e",
+        "peakRssBytes": 807464960,
+        "peakPssBytes": 883300352,
+        "settledOwnedBytes": 132710428,
+        "settledOwnedResources": 4,
+        "nativeSamples": 32,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "perf",
+          "elapsedMs": 3924.4359959997237,
+          "durationMs": 3918.1818860005587,
+          "drawHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              94,
+              2,
+              0,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "total": 97,
+            "sumMs": 11.977821007370949,
+            "maxMs": 1.9342449996620417
+          },
+          "callbackGapHistogram": {
+            "bounds": [
+              0.25,
+              0.5,
+              1,
+              2,
+              4,
+              8,
+              12,
+              16.667,
+              25,
+              33.333,
+              50,
+              100,
+              250,
+              1000
+            ],
+            "counts": [
+              0,
+              0,
+              0,
+              0,
+              9,
+              18,
+              5,
+              4,
+              4,
+              0,
+              13,
+              41,
+              2,
+              0,
+              0
+            ],
+            "total": 96,
+            "sumMs": 3771.3707289993763,
+            "maxMs": 100.42586299963295
+          },
+          "draws": 97,
+          "missingFrames": 0,
+          "droppedFrames": null,
+          "gpuTimeMs": null,
+          "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+        }
+      },
+      {
+        "caseId": "encode-h264-copy",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "942646f8f31774f3061f52097d33da4c006779898ee45c8d37f1318149cc5d91",
+        "peakRssBytes": 373665792,
+        "peakPssBytes": 287381504,
+        "settledOwnedBytes": 54817380,
+        "settledOwnedResources": 60,
+        "nativeSamples": 45,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "export",
+          "elapsedMs": 4807.12992599979,
+          "bytes": 140879,
+          "encodeMs": 2272.090496001765,
+          "probeMs": 378.90250699967146,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "mediaValidation": null,
+          "exportMs": 2734.6529549993575,
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "copy"
+          }
+        }
+      },
+      {
+        "caseId": "encode-h264-direct",
+        "status": "failed",
+        "operationComplete": true,
+        "cleanupPassed": false,
+        "rawSha256": "34657b774801f4eee587a8fc33c5b0ef5fba18c804cac61ecf2a914971ffcd94",
+        "peakRssBytes": 373964800,
+        "peakPssBytes": 284421120,
+        "settledOwnedBytes": 54817380,
+        "settledOwnedResources": 60,
+        "nativeSamples": 47,
+        "allNominalNormalActive": true,
+        "operation": {
+          "operation": "export",
+          "elapsedMs": 4767.4792099986225,
+          "bytes": 140879,
+          "encodeMs": 2192.955038001761,
+          "probeMs": 415.98714199848473,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "mediaValidation": null,
+          "exportMs": 2689.9844580013305,
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "direct"
+          }
+        }
+      }
+    ]
+  },
+  "historicalCpuStatus": "not-qualified-memory-cleanup-and-uncapped-4k-failures",
+  "scope": "Top-level artifact/campaign/attempts describe the preserved pre-AHB CPU checkpoint. Current AHB evidence is currentAhbFollowUp.",
+  "currentAhbFollowUp": {
+    "recordedAt": "2026-10-07T15:04:36.714227+00:00",
+    "status": "passed-focused-workloads-and-sampled-pixel-oracle",
+    "artifactIdentity": {
+      "apkSha256": "59afb795cfc9fe86d5bbbbaaa487cf0129130dd6538d0f5faf5d6bc11a6edbfa",
+      "bundleSha256": "4e02a04173fd471cd93520ee2b90ff2d3f0bda589649bd791ac1bbda0454e178",
+      "nativeLibrarySha256": "8a5cb7606f82bd829cda52e62644d0152844e7d37ab8bd4273ac425b449772e6",
+      "sourceSnapshotSha256": "35c1f59a69c1a2d6cb04170fed083e3c6f81c51cd94efc35a490181cdd06ee43",
+      "sourceFiles": 123,
+      "sourceCommit": "2ab84c8 plus frozen AHB working files; exact source hashes preserved locally",
+      "instrumentationApkSha256": "81aa5c0fc0ea43bbb3296c6380b8a9d55a5d51931e41c46d456c2e9bd680a34d"
+    },
+    "backend": {
+      "name": "react-native-skia-webgpu-video",
+      "version": "0.1.0-alpha.0",
+      "skiaVersion": "3.0.6",
+      "webgpuVersion": "0.12.1",
+      "paths": {
+        "platform": "android",
+        "decodeTransport": "ahardwarebuffer-rgba-egl",
+        "encodeTransport": "cpu-rgba-upload",
+        "decodeCpuCopiesBeforeSkia": 0,
+        "cpuReadbackDecode": false,
+        "ownedFrameTransport": "immutable-ahardwarebuffer-shared-leases",
+        "skiaImportTransport": "native-buffer-webgpu-blit-snapshot",
+        "zeroCopyDecode": false,
+        "zeroCopyEncode": false
+      }
+    },
+    "campaign": {
+      "startedAt": "2026-10-07T14:58:28.942581+00:00",
+      "finishedAt": "2026-10-07T15:02:31.990405+00:00",
+      "workloadVersion": "2026-10-07.1",
+      "seed": 1397446195,
+      "cases": 8,
+      "repetitions": 3,
+      "attempts": 24,
+      "distinctColdProcesses": 24,
+      "passed": 24,
+      "failed": 0,
+      "operationsCompleted": 24,
+      "controlledOom": 0,
+      "cleanupPassed": 24,
+      "previewPhysicalPixels": [
+        720,
+        720
+      ],
+      "previewDurationSeconds": 4,
+      "sourceResolution": "Uncapped original 1080p or 4K",
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "conditions": {
+        "nativeSamples": 986,
+        "allNominalNormalActive": true,
+        "droppedCollectionSamples": 0,
+        "acPowered": true,
+        "batteryTemperatureBeforeAdditionalRepetitionsCelsius": 31.1,
+        "batteryLevelBeforeAdditionalRepetitionsPercent": 100
+      }
+    },
+    "caseSummaries": [
+      {
+        "caseId": "steady-playback-h264-1080p30-audio",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 354078720,
+        "medianPeakPssBytes": 323404800,
+        "medianSettledRssBytes": 342851584,
+        "medianSettledPssBytes": 255461376,
+        "medianPeakNativeHeapPssBytes": 37314560,
+        "medianPeakOwnedBytes": 37324800,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 57.70659172580628,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "steady-playback-h264-4k30",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 428843008,
+        "medianPeakPssBytes": 577356800,
+        "medianSettledRssBytes": 417931264,
+        "medianSettledPssBytes": 329482240,
+        "medianPeakNativeHeapPssBytes": 37015552,
+        "medianPeakOwnedBytes": 136857600,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 45.44243866823476,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 428670976,
+        "medianPeakPssBytes": 568104960,
+        "medianSettledRssBytes": 418111488,
+        "medianSettledPssBytes": 330093568,
+        "medianPeakNativeHeapPssBytes": 37052416,
+        "medianPeakOwnedBytes": 136857600,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 44.57766871226474,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio-direct",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 354095104,
+        "medianPeakPssBytes": 322941952,
+        "medianSettledRssBytes": 343252992,
+        "medianSettledPssBytes": 255555584,
+        "medianPeakNativeHeapPssBytes": 37289984,
+        "medianPeakOwnedBytes": 37324800,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 58.088342343654915,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "steady-playback-h264-4k30-direct",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 428969984,
+        "medianPeakPssBytes": 580492288,
+        "medianSettledRssBytes": 416788480,
+        "medianSettledPssBytes": 329119744,
+        "medianPeakNativeHeapPssBytes": 37310464,
+        "medianPeakOwnedBytes": 136857600,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 42.79461058933138,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30-direct",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 428617728,
+        "medianPeakPssBytes": 536636416,
+        "medianSettledRssBytes": 417275904,
+        "medianSettledPssBytes": 329211904,
+        "medianPeakNativeHeapPssBytes": 36986880,
+        "medianPeakOwnedBytes": 136857600,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "medianCallbacksPerSecond": 43.35189463852903,
+        "callbackP95UpperBucketMs": 0.25
+      },
+      {
+        "caseId": "encode-h264-copy",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 324931584,
+        "medianPeakPssBytes": 237256704,
+        "medianSettledRssBytes": 301219840,
+        "medianSettledPssBytes": 205299712,
+        "medianPeakNativeHeapPssBytes": 50143232,
+        "medianPeakOwnedBytes": 6424992,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "encodeMs": 2354.8666190002114,
+        "probeMs": 386.23640899918973,
+        "exportMs": 2819.1460379995406
+      },
+      {
+        "caseId": "encode-h264-direct",
+        "attempts": 3,
+        "passed": 3,
+        "operationCompleted": 3,
+        "cleanupPassed": 3,
+        "medianPeakRssBytes": 324681728,
+        "medianPeakPssBytes": 237627392,
+        "medianSettledRssBytes": 300818432,
+        "medianSettledPssBytes": 205378560,
+        "medianPeakNativeHeapPssBytes": 50073600,
+        "medianPeakOwnedBytes": 6424992,
+        "settledOwnedBytes": [
+          0,
+          0,
+          0
+        ],
+        "settledOwnedResources": [
+          0,
+          0,
+          0
+        ],
+        "encodeMs": 2227.4707859996706,
+        "probeMs": 370.3460290003568,
+        "exportMs": 2767.2447109986097
+      }
+    ],
+    "attempts": [
+      {
+        "caseId": "steady-playback-h264-1080p30-audio",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "3c7f375c45c0c61feeaccaa1c4a72130d58dbf2caf62eed32f32478def9d520c",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 40,
+        "peakRssBytes": 353292288,
+        "peakPssBytes": 319154176,
+        "peakNativeHeapPssBytes": 37293056,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 342564864,
+        "settledPssBytes": 255461376,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3823.9466570001096,
+          "callbacks": 220,
+          "callbacksPerSecond": 57.53218330001241,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "94fb9c11662245eba840d37f6b7bfaee257605845346a5c810f875cd33ef444d",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 39,
+        "peakRssBytes": 428785664,
+        "peakPssBytes": 580855808,
+        "peakNativeHeapPssBytes": 36957184,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 417931264,
+        "settledPssBytes": 329482240,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3877.880983998999,
+          "callbacks": 170,
+          "callbacksPerSecond": 43.838374798364846,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "dbad8de1849b3c983c47a80edd8a076a3553e914286670a6bd3b17a5083b1736",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 428359680,
+        "peakPssBytes": 568104960,
+        "peakNativeHeapPssBytes": 36847616,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 418217984,
+        "settledPssBytes": 329862144,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3839.6612979993224,
+          "callbacks": 165,
+          "callbacksPerSecond": 42.972540334735825,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio-direct",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "ec3c36d5184768a19d5ae94685a263bba5fa02a39f0b08e265d2a40305ffaba1",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 41,
+        "peakRssBytes": 353898496,
+        "peakPssBytes": 316253184,
+        "peakNativeHeapPssBytes": 37289984,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 343252992,
+        "settledPssBytes": 255555584,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3838.9802669994533,
+          "callbacks": 223,
+          "callbacksPerSecond": 58.088342343654915,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30-direct",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "18263fb7852df6092d1f696bacf245319d3b3313df4e45e66aed2ae9d59e9939",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 428969984,
+        "peakPssBytes": 548942848,
+        "peakNativeHeapPssBytes": 37121024,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 416989184,
+        "settledPssBytes": 328931328,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3852.4353859983385,
+          "callbacks": 168,
+          "callbacksPerSecond": 43.60877812788122,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30-direct",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "35b482e320e4ee3926c615ced1bad6b01b34989e4186f20219717844d41a5f03",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 39,
+        "peakRssBytes": 428617728,
+        "peakPssBytes": 536636416,
+        "peakNativeHeapPssBytes": 36986880,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 416563200,
+        "settledPssBytes": 328859648,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3820.0601829998195,
+          "callbacks": 170,
+          "callbacksPerSecond": 44.50191668616652,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "encode-h264-copy",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "ce615537420c959c5ad3d57bc3a0e7c357dddc174ea732a365ffdafc240b1e23",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 46,
+        "peakRssBytes": 324132864,
+        "peakPssBytes": 236774400,
+        "peakNativeHeapPssBytes": 49994752,
+        "peakOwnedBytes": 6424992,
+        "settledRssBytes": 300122112,
+        "settledPssBytes": 204890112,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2252.5724700000137,
+          "probeMs": 419.8775639999658,
+          "exportMs": 2755.584881000221,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "copy"
+          }
+        }
+      },
+      {
+        "caseId": "encode-h264-direct",
+        "repetition": 0,
+        "rawRepetition": 0,
+        "rawSha256": "ca0f15694fa357d036ee88e9af7f3e296f3881dcb7f79342da3a6997cb6d2317",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 47,
+        "peakRssBytes": 324681728,
+        "peakPssBytes": 238090240,
+        "peakNativeHeapPssBytes": 50204672,
+        "peakOwnedBytes": 6424992,
+        "settledRssBytes": 300818432,
+        "settledPssBytes": 205378560,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2210.368572000414,
+          "probeMs": 359.4204099997878,
+          "exportMs": 2644.278566000983,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "direct"
+          }
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "2bd3764a2773519c9975f89f05ffbd74dbb2732829cbe5713cf4164944ae7135",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 41,
+        "peakRssBytes": 354086912,
+        "peakPssBytes": 323404800,
+        "peakNativeHeapPssBytes": 37314560,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 342851584,
+        "settledPssBytes": 255894528,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3814.533530998975,
+          "callbacks": 222,
+          "callbacksPerSecond": 58.1984659974561,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "730ad2313818a9216509c20ebdfd1301ac927245239b763f0f799afc98fc2f4f",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 40,
+        "peakRssBytes": 354078720,
+        "peakPssBytes": 324493312,
+        "peakNativeHeapPssBytes": 37329920,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 343150592,
+        "settledPssBytes": 254853120,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3829.718467000872,
+          "callbacks": 221,
+          "callbacksPerSecond": 57.70659172580628,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "e76e78bba480e7f8a22ca7ae85a45d385ff61a3eaa024bcdb1e7014d986d3a65",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 39,
+        "peakRssBytes": 429297664,
+        "peakPssBytes": 577356800,
+        "peakNativeHeapPssBytes": 37015552,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 418279424,
+        "settledPssBytes": 330010624,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3845.7265240009874,
+          "callbacks": 175,
+          "callbacksPerSecond": 45.505055782784794,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "83a48369aaf19598c7640ecd0fafd1111acb0f4172d7ef8dc2c517e494d57277",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 40,
+        "peakRssBytes": 428843008,
+        "peakPssBytes": 549331968,
+        "peakNativeHeapPssBytes": 37026816,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 416440320,
+        "settledPssBytes": 329254912,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3851.025717999786,
+          "callbacks": 175,
+          "callbacksPerSecond": 45.44243866823476,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "dd43d4a7def7c22cdbb923a586bba1af6049f5419309b03ad2601a9d0a9ac77d",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 429641728,
+        "peakPssBytes": 569106432,
+        "peakNativeHeapPssBytes": 37203968,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 417882112,
+        "settledPssBytes": 330120192,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3833.8296329993755,
+          "callbacks": 172,
+          "callbacksPerSecond": 44.86375673022193,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "5e06d35472cfc6ea7ddf5e941db2d3d887e239554961862dc8c43853728b90a8",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 428670976,
+        "peakPssBytes": 536797184,
+        "peakNativeHeapPssBytes": 37052416,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 418111488,
+        "settledPssBytes": 330093568,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3858.4341659992933,
+          "callbacks": 172,
+          "callbacksPerSecond": 44.57766871226474,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio-direct",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "8e34f5e3914b4c7ff35c4a1b38b69862e7c156d0ae00feb37c6c68eb60e00ca0",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 41,
+        "peakRssBytes": 354095104,
+        "peakPssBytes": 322941952,
+        "peakNativeHeapPssBytes": 37403648,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 343908352,
+        "settledPssBytes": 255890432,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3837.378948999569,
+          "callbacks": 223,
+          "callbacksPerSecond": 58.11258230259944,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-1080p30-audio-direct",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "677b22362e847286b3f07aa34d56538d01dbd73b869b4161ed3835d8fa05f4ee",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 40,
+        "peakRssBytes": 354353152,
+        "peakPssBytes": 324364288,
+        "peakNativeHeapPssBytes": 37179392,
+        "peakOwnedBytes": 37324800,
+        "settledRssBytes": 342532096,
+        "settledPssBytes": 254564352,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3832.0360129997134,
+          "callbacks": 220,
+          "callbacksPerSecond": 57.41073394239431,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30-direct",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "63917e9bb82c1b511fe807dd440d875a8867a4e2292cd0453b98a3509a12c0ff",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 39,
+        "peakRssBytes": 429215744,
+        "peakPssBytes": 581977088,
+        "peakNativeHeapPssBytes": 37428224,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 416718848,
+        "settledPssBytes": 329199616,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3832.2582619991153,
+          "callbacks": 164,
+          "callbacksPerSecond": 42.79461058933138,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-h264-4k30-direct",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "3e71bec01d86da8b0b0c00106f9172eb527bf076aec8e8d2cab2b232362f4977",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 428101632,
+        "peakPssBytes": 580492288,
+        "peakNativeHeapPssBytes": 37310464,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 416788480,
+        "settledPssBytes": 329119744,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3863.2421080004424,
+          "callbacks": 162,
+          "callbacksPerSecond": 41.9336907890168,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30-direct",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "6a35083a294594809c35bda0a95b5b9268dbe0d1736706696d1bab84c5b80572",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 429334528,
+        "peakPssBytes": 569037824,
+        "peakNativeHeapPssBytes": 37272576,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 417275904,
+        "settledPssBytes": 329211904,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3829.129070000723,
+          "callbacks": 166,
+          "callbacksPerSecond": 43.35189463852903,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "steady-playback-hevc-4k30-direct",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "8346bfa993b3024f87e42dd5cc7788c527902f9cb19340cd31ab36a4ae5c9ae7",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 38,
+        "peakRssBytes": 428490752,
+        "peakPssBytes": 536510464,
+        "peakNativeHeapPssBytes": 36854784,
+        "peakOwnedBytes": 136857600,
+        "settledRssBytes": 417722368,
+        "settledPssBytes": 329709568,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "callbackDiagnostics": {
+          "durationMs": 3869.2936219982803,
+          "callbacks": 162,
+          "callbacksPerSecond": 41.86810716017354,
+          "callbackP95UpperBucketMs": 0.25,
+          "missingFrameAvailability": 0,
+          "droppedDecoderFrames": null,
+          "gpuTimeMs": null
+        }
+      },
+      {
+        "caseId": "encode-h264-copy",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "d6df09c9222f37105a69a56de94531e3d914fc9fd3983f15e720ff93ae1e8427",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 48,
+        "peakRssBytes": 325320704,
+        "peakPssBytes": 237256704,
+        "peakNativeHeapPssBytes": 50143232,
+        "peakOwnedBytes": 6424992,
+        "settledRssBytes": 301219840,
+        "settledPssBytes": 205299712,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2354.8666190002114,
+          "probeMs": 386.23640899918973,
+          "exportMs": 2819.1460379995406,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "copy"
+          }
+        }
+      },
+      {
+        "caseId": "encode-h264-copy",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "57f7e93c8df414e47cf7180d144303d9c7cf850c671ad3368391578602be6c06",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 47,
+        "peakRssBytes": 324931584,
+        "peakPssBytes": 238976000,
+        "peakNativeHeapPssBytes": 50159616,
+        "peakOwnedBytes": 6422128,
+        "settledRssBytes": 301248512,
+        "settledPssBytes": 205353984,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2393.1709809992462,
+          "probeMs": 347.73506600037217,
+          "exportMs": 2861.3427749983966,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "copy"
+          }
+        }
+      },
+      {
+        "caseId": "encode-h264-direct",
+        "repetition": 1,
+        "rawRepetition": 0,
+        "rawSha256": "262731106b3b05ce54e4a2917a5e7220dd5457eda502ffb87eca2cbc4fc0b2d5",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 46,
+        "peakRssBytes": 324571136,
+        "peakPssBytes": 237627392,
+        "peakNativeHeapPssBytes": 50073600,
+        "peakOwnedBytes": 6424992,
+        "settledRssBytes": 299847680,
+        "settledPssBytes": 205105152,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2227.4707859996706,
+          "probeMs": 441.4626059997827,
+          "exportMs": 2798.170004999265,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "direct"
+          }
+        }
+      },
+      {
+        "caseId": "encode-h264-direct",
+        "repetition": 2,
+        "rawRepetition": 0,
+        "rawSha256": "56ad21923c7194d851e50c8600fd1c46fe616b2e7808024fd2aca200d3e960d8",
+        "status": "passed",
+        "operationComplete": true,
+        "cleanupPassed": true,
+        "memorySampleCount": 47,
+        "peakRssBytes": 325484544,
+        "peakPssBytes": 237197312,
+        "peakNativeHeapPssBytes": 50061312,
+        "peakOwnedBytes": 6424992,
+        "settledRssBytes": 301400064,
+        "settledPssBytes": 205432832,
+        "settledOwnedBytes": 0,
+        "settledOwnedResources": 0,
+        "settledDecoderCount": null,
+        "settledInFlightFrames": null,
+        "ownedCleanup": {
+          "ownedBytes": {
+            "before": 0,
+            "after": 0
+          },
+          "ownedResources": {
+            "before": 0,
+            "after": 0
+          }
+        },
+        "exportDiagnostics": {
+          "encodeMs": 2284.183920999989,
+          "probeMs": 370.3460290003568,
+          "exportMs": 2767.2447109986097,
+          "bytes": 140879,
+          "actualOutput": {
+            "audioTracks": 0,
+            "timestampsMonotonic": true,
+            "lastPresentationTime": 1.966666,
+            "firstPresentationTime": 0,
+            "width": 640,
+            "presentationTimesExact": true,
+            "frameCount": 60,
+            "duration": 2,
+            "fps": 30,
+            "height": 360,
+            "rotation": 0,
+            "codec": "h264"
+          },
+          "framesCompleted": 60,
+          "expectedFrames": 60,
+          "progressEvents": 60,
+          "requestedOutput": {
+            "width": 640,
+            "height": 360,
+            "frameRate": 30,
+            "bitRate": 2000000,
+            "codec": "h264",
+            "encoderMode": "direct"
+          }
+        }
+      }
+    ],
+    "pixelOracle": {
+      "cases": 10,
+      "passed": 10,
+      "failed": 0,
+      "rawSha256": "47d6b4fb568a71febee5c71154670ab352161b92e914e207275787e52f9125a2",
+      "fixtures": [
+        "h264-1080p-rot90",
+        "h264-1080x1920",
+        "h264-4k30",
+        "h264-638x358",
+        "hevc-4k30"
+      ],
+      "modes": [
+        "copy",
+        "direct"
+      ],
+      "timestampsPerCase": 2,
+      "comparedChannels": 66560,
+      "maximumChannelError": 0,
+      "retainedFrameAfterProducerTeardown": true,
+      "scope": "Sampled SDR patches only; functional readback oracle excluded from performance measurements"
+    },
+    "jniAhbOwnership": {
+      "tests": 6,
+      "passed": 6,
+      "skipped": 0,
+      "durationSeconds": 0.168,
+      "logSha256": "bb6f49823d82414a9c0ee1c7f962ea38e7cc25547aa695b3505279756129f4ee",
+      "testSourceSha256": "2bbfd0a87602dd9730963cf5fbf7aeb25c3f19c017e31991f620fa85f8debfbd"
+    },
+    "hostJvm": {
+      "tests": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "exportValidation": {
+      "completedExports": 6,
+      "decodedOutputFrames": 360,
+      "eachOutput": {
+        "width": 640,
+        "height": 360,
+        "codec": "h264",
+        "fps": 30,
+        "frameCount": 60,
+        "firstPtsSeconds": 0,
+        "lastPtsSeconds": 1.966666,
+        "exactPts": true
+      },
+      "genericPixelValidator": "unavailable",
+      "genericAudioValidator": "unavailable"
+    },
+    "limitations": [
+      "Focused workload pass preserves the existing two-second owned-reservation cleanup criterion; it does not prove permanent leak absence, whole-driver cleanup, or full 102-execution instrumentation qualification.",
+      "Decoder-count and in-flight-frame collectors remain unavailable; only tracked owned bytes and resource reservations are confirmed zero.",
+      "RSS and PSS peaks are sampled independently. Native heap is PSS, not allocator heap size; complete GPU allocation and physical footprint are unavailable.",
+      "Callback cadence is not decoded-video or presented FPS. Callback duration excludes preload/import/upload, GPU execution and display latency. Missing frame availability is not a dropped-frame count.",
+      "encodeMs includes the whole export pipeline; probeMs is stat/probe; exportMs includes probe and file removal. elapsedMs includes pre-export settling.",
+      "The CPU scoped-copy reference has one attempt per case on a different binary; descriptive differences are not a controlled A/B speed or memory claim. No comparison with the background-invalid smoke or iOS.",
+      "AHB rendering keeps an owned GPU snapshot and synchronous fences, so no zero-copy end-to-end claim. Production AHB CPU_READ_RARELY layout costs are not isolated.",
+      "The lazy eight-4K montage completed once with 25 churn cycles and 40 remounts. A 256 MiB budget, eager/concurrent decoder pressure, longer duration and broader full-suite coverage remain unqualified."
+    ],
+    "lifecycleFollowUp": {
+      "startedAt": "2026-10-07T15:08:18.357042+00:00",
+      "finishedAt": "2026-10-07T15:11:04.068261+00:00",
+      "sameFrozenApk": true,
+      "attempts": 4,
+      "passed": 4,
+      "repetitions": 1,
+      "distinctColdProcesses": 4,
+      "conditions": {
+        "nativeSamples": 1267,
+        "allNominalNormalActive": true,
+        "droppedCollectionSamples": 0
+      },
+      "cases": [
+        {
+          "caseId": "paused-clock-and-resume",
+          "rawSha256": "d3d9a10bac2d1f327e11e660c26058ec131ec64c2644ba577e6d5d6d8a0d375e",
+          "status": "passed",
+          "elapsedMs": 3319.1267510000616,
+          "operationNames": [
+            "pause-resume"
+          ],
+          "operations": [
+            {
+              "operation": "pause-resume",
+              "elapsedMs": 882.1278900001198,
+              "pausedDelta": 0,
+              "resumedDelta": 0.42558700000000005
+            }
+          ],
+          "validations": [],
+          "memorySampleCount": 12,
+          "peakRssBytes": 319143936,
+          "peakPssBytes": 237563904,
+          "peakOwnedBytes": 7807392,
+          "settledOwnedBytes": 0,
+          "settledOwnedResources": 0,
+          "settledDecoderCount": null,
+          "settledInFlightFrames": null,
+          "cleanupPassed": true,
+          "settledRssBytes": 308117504,
+          "settledPssBytes": 220874752,
+          "settledPhysicalSamples": [
+            {
+              "elapsedMs": 3270.4531260002404,
+              "rssBytes": 308117504,
+              "pssBytes": 220874752,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            }
+          ]
+        },
+        {
+          "caseId": "closed-item-leaves-frame-map",
+          "rawSha256": "0ff873b14fd154796406e415afe0946eac7cd50f4f6a15fa9f071034cc3c01af",
+          "status": "passed",
+          "elapsedMs": 2802.939902000129,
+          "operationNames": [
+            "frame-map-pruning"
+          ],
+          "operations": [
+            {
+              "operation": "frame-map-pruning",
+              "elapsedMs": 362.43074500001967,
+              "removedIds": [
+                "clip-0",
+                "clip-1"
+              ],
+              "remainingIds": [
+                "clip-2"
+              ]
+            }
+          ],
+          "validations": [],
+          "memorySampleCount": 8,
+          "peakRssBytes": 317255680,
+          "peakPssBytes": 230937600,
+          "peakOwnedBytes": 6890912,
+          "settledOwnedBytes": 0,
+          "settledOwnedResources": 0,
+          "settledDecoderCount": null,
+          "settledInFlightFrames": null,
+          "cleanupPassed": true,
+          "settledRssBytes": 307380224,
+          "settledPssBytes": 219769856,
+          "settledPhysicalSamples": [
+            {
+              "elapsedMs": 2745.787070000544,
+              "rssBytes": 307380224,
+              "pssBytes": 219769856,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            }
+          ]
+        },
+        {
+          "caseId": "held-image-survives-seek",
+          "rawSha256": "5e4a5d8a3cb455164b6b42a5f8394f25a7b14b0b53ac9a6d1d2de0f2b22ef014",
+          "status": "passed",
+          "elapsedMs": 5387.593507999554,
+          "operationNames": [
+            "hold",
+            "seek"
+          ],
+          "operations": [
+            {
+              "operation": "hold",
+              "elapsedMs": 2714.1208110004663
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 152.76725200004876,
+              "latencies": {
+                "samples": 5,
+                "medianMs": 30.45438599959016,
+                "p95Ms": 39.47058920040727,
+                "p99Ms": 40.45420904055238,
+                "maxMs": 40.700114000588655
+              },
+              "seekCount": 5,
+              "whilePlaying": false,
+              "seekObservations": [
+                {
+                  "requestedTime": 3.213,
+                  "elapsedMs": 40.19974800013006,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 0.2,
+                  "elapsedMs": 24.830444999039173,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 2,
+                  "elapsedMs": 21.277222000062466,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 3.9,
+                  "elapsedMs": 30.29504399932921,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 1.333,
+                  "elapsedMs": 34.38012699969113,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                }
+              ],
+              "seekObservationLimit": 10,
+              "seekObservationsDropped": 0
+            }
+          ],
+          "validations": [
+            {
+              "check": "held-image-immutable-after-seek",
+              "status": "unavailable",
+              "reason": "No pixel/audio/timestamp validator attached; performance is not a correctness proof"
+            }
+          ],
+          "memorySampleCount": 31,
+          "peakRssBytes": 317718528,
+          "peakPssBytes": 232619008,
+          "peakOwnedBytes": 6890912,
+          "settledOwnedBytes": 0,
+          "settledOwnedResources": 0,
+          "settledDecoderCount": null,
+          "settledInFlightFrames": null,
+          "cleanupPassed": true,
+          "settledRssBytes": 308641792,
+          "settledPssBytes": 221327360,
+          "settledPhysicalSamples": [
+            {
+              "elapsedMs": 5339.01041899994,
+              "rssBytes": 308641792,
+              "pssBytes": 221327360,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            }
+          ]
+        },
+        {
+          "caseId": "4k-x8-lazy-direct",
+          "rawSha256": "7a2112561f9d49f65955cf1539ebfe4a4d5476cc535a4523637fe1ee75c81284",
+          "status": "passed",
+          "elapsedMs": 144241.5435680002,
+          "operationNames": [
+            "play",
+            "seek",
+            "scrub",
+            "loop",
+            "export",
+            "churn",
+            "perf",
+            "leak"
+          ],
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12368.45329400152,
+              "draws": 629,
+              "missingFrames": 0,
+              "droppedFrames": null,
+              "droppedFramesReason": "No backend drop counter attached"
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2352.2605389989913,
+              "latencies": {
+                "samples": 10,
+                "medianMs": 225.58917200099677,
+                "p95Ms": 409.7870732994749,
+                "p99Ms": 443.5945242599025,
+                "maxMs": 452.0463870000094
+              },
+              "seekCount": 10,
+              "whilePlaying": false,
+              "seekObservations": [
+                {
+                  "requestedTime": 9.613000000000001,
+                  "elapsedMs": 447.83280500024557,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 0.2,
+                  "elapsedMs": 309.5975750014186,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 0.75,
+                  "elapsedMs": 41.243246000260115,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 2.25,
+                  "elapsedMs": 152.73828100040555,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 3.75,
+                  "elapsedMs": 156.35432999953628,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 5.25,
+                  "elapsedMs": 140.94978900067508,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 6.75,
+                  "elapsedMs": 233.67626999877393,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 8.25,
+                  "elapsedMs": 195.93863900005817,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 11.9,
+                  "elapsedMs": 357.8732509985566,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                },
+                {
+                  "requestedTime": 3.973,
+                  "elapsedMs": 273.1693110000342,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                }
+              ],
+              "seekObservationLimit": 10,
+              "seekObservationsDropped": 0
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3103.397341001779,
+              "latencies": {
+                "samples": 1,
+                "medianMs": 291.2502030003816,
+                "p95Ms": 291.2502030003816,
+                "p99Ms": 291.2502030003816,
+                "maxMs": 291.2502030003816
+              },
+              "seekCount": 81,
+              "whilePlaying": false,
+              "seekObservations": [
+                {
+                  "requestedTime": 7.212999999999999,
+                  "elapsedMs": 284.75272599980235,
+                  "settlementKind": "paused-clock-and-item-ids",
+                  "frameValidation": "clock-and-visible-item-ids",
+                  "nativeIdentityValidation": "unavailable",
+                  "playerTime": null,
+                  "drawnTime": null,
+                  "isPlaying": null,
+                  "renderSequence": null,
+                  "drawnFrameIds": [],
+                  "frameMapIds": [],
+                  "frameIdentities": [],
+                  "nativeFramePTS": null,
+                  "nativeFramePTSReason": "VideoFrame API does not expose presentation timestamps"
+                }
+              ],
+              "seekObservationLimit": 10,
+              "seekObservationsDropped": 0
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1506.9926360007375,
+              "wrapped": true
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 33329.73418799974,
+              "bytes": 1672922,
+              "encodeMs": 28434.824518000707,
+              "probeMs": 2650.255046999082,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "mediaValidation": null,
+              "exportMs": 31229.2764229998,
+              "framesCompleted": 360,
+              "expectedFrames": 360,
+              "progressEvents": 360,
+              "requestedOutput": {
+                "width": 1080,
+                "height": 1080,
+                "frameRate": 30,
+                "bitRate": 8000000,
+                "codec": "h264",
+                "encoderMode": "copy"
+              }
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 22996.49138400145,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8555.738895999268,
+              "durationMs": 8059.305993000045,
+              "drawHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  416,
+                  2,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 418,
+                "sumMs": 44.25647900626063,
+                "maxMs": 0.34594699926674366
+              },
+              "callbackGapHistogram": {
+                "bounds": [
+                  0.25,
+                  0.5,
+                  1,
+                  2,
+                  4,
+                  8,
+                  12,
+                  16.667,
+                  25,
+                  33.333,
+                  50,
+                  100,
+                  250,
+                  1000
+                ],
+                "counts": [
+                  0,
+                  0,
+                  0,
+                  2,
+                  104,
+                  67,
+                  10,
+                  4,
+                  39,
+                  108,
+                  79,
+                  4,
+                  0,
+                  0,
+                  0
+                ],
+                "total": 417,
+                "sumMs": 8034.991824999452,
+                "maxMs": 78.70243399962783
+              },
+              "draws": 418,
+              "missingFrames": 0,
+              "droppedFrames": null,
+              "gpuTimeMs": null,
+              "gpuTimeReason": "Draw callback duration measures CPU submission, not GPU execution"
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 57087.2889679987,
+              "cycles": 40
+            }
+          ],
+          "validations": [],
+          "memorySampleCount": 1216,
+          "peakRssBytes": 839122944,
+          "peakPssBytes": 1088325632,
+          "peakOwnedBytes": 269568000,
+          "settledOwnedBytes": 0,
+          "settledOwnedResources": 0,
+          "settledDecoderCount": null,
+          "settledInFlightFrames": null,
+          "cleanupPassed": true,
+          "settledRssBytes": 823988224,
+          "settledPssBytes": 731645952,
+          "settledPhysicalSamples": [
+            {
+              "elapsedMs": 21939.76246199943,
+              "rssBytes": 498135040,
+              "pssBytes": 408187904,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 21955.97714300081,
+              "rssBytes": 498135040,
+              "pssBytes": 408204288,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 55289.42951099947,
+              "rssBytes": 713764864,
+              "pssBytes": 622199808,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 63238.70661400072,
+              "rssBytes": 779419648,
+              "pssBytes": 687171584,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 63239.782256999984,
+              "rssBytes": 779419648,
+              "pssBytes": 687187968,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 71251.81774299964,
+              "rssBytes": 805863424,
+              "pssBytes": 713566208,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 71318.91100499965,
+              "rssBytes": 805863424,
+              "pssBytes": 713590784,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 76225.49303800054,
+              "rssBytes": 808947712,
+              "pssBytes": 716679168,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 76241.5050009992,
+              "rssBytes": 808947712,
+              "pssBytes": 716699648,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 87029.74780400097,
+              "rssBytes": 810663936,
+              "pssBytes": 718589952,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 87079.68652500026,
+              "rssBytes": 810663936,
+              "pssBytes": 718606336,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 100689.36638200097,
+              "rssBytes": 813801472,
+              "pssBytes": 721518592,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 100773.85043100081,
+              "rssBytes": 814010368,
+              "pssBytes": 721543168,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 114449.82464100048,
+              "rssBytes": 816816128,
+              "pssBytes": 724488192,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 114517.08172100037,
+              "rssBytes": 816816128,
+              "pssBytes": 724504576,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 128380.7664599996,
+              "rssBytes": 820580352,
+              "pssBytes": 728152064,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 128396.792258,
+              "rssBytes": 820580352,
+              "pssBytes": 728168448,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 141972.1659629997,
+              "rssBytes": 827944960,
+              "pssBytes": 735500288,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 142056.10142800026,
+              "rssBytes": 827944960,
+              "pssBytes": 735520768,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            },
+            {
+              "elapsedMs": 144192.75487199984,
+              "rssBytes": 823988224,
+              "pssBytes": 731645952,
+              "ownedBytes": 0,
+              "ownedResources": 0
+            }
+          ]
+        }
+      ],
+      "scope": "Pause/resume clock, frame-map pruning and lifecycle/cleanup completion. The held-image case only performs paused seek/2.5s wait then five seeks; it does not preserve and compare an independent SkImage, and its pixel validator remains unavailable. Separate CPU/AHB oracle supplies sampled retained-frame pixel proof. Single lazy montage stress does not establish a memory plateau or endurance.",
+      "memoryLimit": "Lazy eight-4K montage peak RSS 800.250 MiB, PSS 1037.908 MiB, tracked owned 257.080 MiB; final settled RSS 785.816 MiB despite tracked owned bytes/reservations zero. Physical retained memory is not attributed to a specific component; no plateau or leak-absence claim."
+    },
+    "jniCpuOwnership": {
+      "tests": 5,
+      "passed": 5,
+      "skipped": 0,
+      "durationSeconds": 0.896,
+      "sameInstrumentationApk": true,
+      "logSha256": "5b66817815dce1f017a59d777de8362cdcf02d0dc4a2adfa06cd56cd523ed8f8"
+    },
+    "deviceCleanup": {
+      "ownBenchmarkAppForceStopped": true,
+      "keepScreenOnReleased": true,
+      "systemSettingsChanged": false,
+      "ownedTestRunnerAndSamplerActive": false
+    }
+  }
+}

@@ -486,6 +486,8 @@ export type ExportOptions = {
 
 export type RNSkiaVideoModule = {
   frameProtocolVersion?: number;
+  /** Internal Android capability negotiation, before creating a decoder. */
+  configureNativeBufferInterop?: (enabled: boolean) => void;
   reserveMemory?: (bytes: number, label: string) => number;
   releaseMemory?: (reservation: number) => void;
   configureMemoryBudget?: (maxBytes: number) => void;

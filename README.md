@@ -192,6 +192,8 @@ configureVideoMemory({ maxBytes: 256 * 1024 * 1024 });
 
 This budget covers **tracked video resources**, not all memory held by codecs, Skia, or GPU drivers. Use lazy decoders for sequential compositions, keep preview resolution appropriate, and measure process memory on your target device. Images returned by the frame helpers belong to the library; do not dispose them independently.
 
+On capable Android devices, decoded frames render into immutable AHardwareBuffers and pass through WebGPU into independent Graphite snapshots. Normal playback avoids the RGBA CPU readback/upload; this path passed the focused Pixel 8a tests below. Capability selection happens before decoder preparation, with a scoped-copy CPU fallback for unsupported devices. Both paths keep checked GPU completion before releasing source frames. Export still reads composed pixels back to the CPU; the pipeline is not end-to-end zero-copy.
+
 For advanced exports, `createFrameProcessor` supports asynchronous preparation at each composition timestamp. The optional `react-native-skia-webgpu-video/gpu` entry point provides a resource scope whose asynchronous disposal waits for tracked work. See the [WebGPU cube example](examples/webgpu-overlay.ts).
 
 These are integration building blocks. Three.js adapters, Core ML models, and automatic Neural Engine acceleration are not included. Browser video support is not provided by this native library.
@@ -201,11 +203,16 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 | Area | Current evidence |
 | --- | --- |
 | iOS | Initial 3.0.6 build: 50 native XCTest passes. Optimized build: 5 device smoke cases passed; before/after comparison: 96 executions passed across both builds. |
-| Android | Debug/Release builds and 35 host JVM tests passed; 5 focused ownership/allocation tests passed on Pixel 8a. Full device coverage and memory/performance qualification remain incomplete. |
-| Audio / image fidelity | Implemented paths; dedicated audio, pixel fidelity, and synchronization validation remains pending. |
-| Long sessions | Tracked cleanup is exercised; sustained memory stability and absence of leaks are not established. |
+| JavaScript / types | 191 tests passed in 8 suites; typecheck passed. The benchmark harness passed 112 tests. |
+| Android | AHardwareBuffer Release on Pixel 8a: 24/24 focused attempts passed, including H264/HEVC 4K and export, with tracked cleanup zero at a 512 MiB budget. Six AHB and five CPU ownership tests passed on device; 43 host JVM tests passed. [Device diagnostics](docs/ANDROID_DEVICE_306.md). |
+| Audio / image fidelity | Android CPU/AHB comparison passed 10/10 cases with identical sampled SDR pixels. Whole-image fidelity, HDR, audible output and synchronization remain unqualified. |
+| Lifecycle / long sessions | Four additional Android cases passed, including eight lazy-decoded 4K clips, 25 short cycles and 40 remounts. Sustained memory stability and absence of leaks are not established. |
 
 On one iPhone 15 Pro, the latest **3.0.6 before/after optimization** comparison observed roughly **11% less peak physical footprint during 4K playback**, with similar RSS. Small exports took **3.5–6% longer**. The phone was warm and used for tethering; these are descriptive results, not a general speed claim. [Protocol, measurements, and limitations](docs/PERFORMANCE_IPHONE_306_OPTIMIZATION.md).
+
+The Android report preserves the earlier CPU checkpoints: **0/24 strict passes** in the original campaign, then **8/8 operations completed without OOM but 0/8 strict cleanup passes** with scoped-copy. That latter reference has one attempt per case and does not establish an A/B speed gain. The current AHB results cover the selected scenarios; zero tracked reservations do not prove zero driver memory or absence of leaks in longer use.
+
+The eight-clip 4K lifecycle case remained memory intensive: sampled peaks reached **800 MiB RSS / 1,038 MiB PSS**, and RSS remained around **786 MiB after cleanup**, despite zero tracked reservations. RSS and PSS are separate process metrics; their sampled peaks occur independently. The [Android report](docs/ANDROID_DEVICE_306.md) retains these results and the limits of seek/pixel validation.
 
 ## Development
 

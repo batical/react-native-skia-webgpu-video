@@ -18,9 +18,19 @@ import {
 
 type FrameTexture =
   | { kind: "native-buffer"; nativeBuffer: bigint }
-  | { kind: "rgba"; data: ArrayBuffer; bytesPerRow: number }
+  | {
+      kind: "rgba";
+      data: ArrayBuffer;
+      bytesPerRow: number;
+      copyPixelsTo?: (destination: ArrayBuffer) => void;
+    }
   | { kind: "skia-image"; image: SkImage };
-type Entry = { id: number; image: SkImage | null; reservation: number };
+type Entry = {
+  id: number;
+  image: SkImage | null;
+  reservation: number;
+  releasedSources: WeakSet<VideoFrame>;
+};
 type PendingSource = {
   owned: SkImage | null;
   reservation: number;
@@ -38,6 +48,9 @@ type Cache = {
   format: GPUTextureFormat | null;
   uploadTexture: GPUTexture | null;
   uploadReservation: number;
+  cpuPixels: Uint8Array<ArrayBuffer> | null;
+  cpuReservation: number;
+  cpuBytesPerRow: number;
   pendingSources: PendingSource[];
 };
 
@@ -60,6 +73,9 @@ const getCache = (): Cache => {
       format: null,
       uploadTexture: null,
       uploadReservation: 0,
+      cpuPixels: null,
+      cpuReservation: 0,
+      cpuBytesPerRow: 0,
       pendingSources: [],
     };
   }
@@ -87,6 +103,14 @@ const clearSurfaceView = (cache: Cache) => {
   cache.stage = null;
 };
 
+const clearCpuPixels = (cache: Cache) => {
+  "worklet";
+  cache.cpuPixels = null;
+  releaseVideoMemory(cache.cpuReservation);
+  cache.cpuReservation = 0;
+  cache.cpuBytesPerRow = 0;
+};
+
 const clearStagingSurface = (cache: Cache) => {
   "worklet";
   cache.stage?.flush(true);
@@ -95,6 +119,7 @@ const clearStagingSurface = (cache: Cache) => {
   cache.uploadTexture = null;
   releaseVideoMemory(cache.uploadReservation);
   cache.uploadReservation = 0;
+  clearCpuPixels(cache);
   cache.width = cache.height = 0;
   cache.format = null;
 };
@@ -171,7 +196,16 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   const producer = frame.producerId ?? frame.id;
   if (producer !== undefined && frame.id !== undefined) {
     const existing = cache.images.get(producer);
-    if (existing?.id === frame.id && existing.image) return existing.image;
+    if (existing?.id === frame.id && existing.image) {
+      // Android can issue a fresh lease for the same paused picture. The
+      // snapshot already owns its pixels, so close that unused native lease.
+      // Weak tracking avoids retaining raw buffers or closing one wrapper twice.
+      if (!existing.releasedSources.has(frame)) {
+        frame.dispose?.();
+        existing.releasedSources.add(frame);
+      }
+      return existing.image;
+    }
   }
   let reservation = 0;
   let image: SkImage | null = null;
@@ -218,50 +252,60 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
       );
     }
     let rgbaPixels: Uint8Array<ArrayBuffer> | null = null;
+    let requiredRgbaBytes = 0;
+    let copyRgbaPixels = false;
     if (texture.kind === "rgba") {
-      const pixels = new Uint8Array(texture.data);
       const required = texture.bytesPerRow * frame.height;
       if (
         !Number.isSafeInteger(texture.bytesPerRow) ||
         !Number.isSafeInteger(required) ||
         texture.bytesPerRow < frame.width * 4 ||
         (uploadAndroidRgba &&
-          (texture.bytesPerRow > 0xffffffff ||
-            texture.bytesPerRow % 4 !== 0)) ||
-        pixels.byteLength < required
+          (texture.bytesPerRow > 0xffffffff || texture.bytesPerRow % 4 !== 0))
       ) {
         throw new Error("Invalid RGBA video frame storage");
       }
-      if (uploadAndroidRgba) {
-        // Exclude unused trailing storage without allocating another pixel copy.
-        // RN WebGPU's converter honors this view's byteOffset and byteLength.
-        rgbaPixels = new Uint8Array(texture.data, 0, required);
-      } else {
-        // The compatibility raster path copies the complete underlying buffer.
-        reservation = reserveVideoMemory(
-          pixels.byteLength,
-          "owned video image",
-        );
-        const data = Skia.Data.fromBytes(pixels);
-        try {
-          image = Skia.Image.MakeImage(
-            {
-              width: frame.width,
-              height: frame.height,
-              colorType: ColorType.RGBA_8888,
-              alphaType: AlphaType.Opaque,
-            },
-            data,
-            texture.bytesPerRow,
+      requiredRgbaBytes = required;
+      // Native Android data is lazy. Inspect the optional copy protocol before
+      // reading that getter, which would otherwise retain a Java backing per
+      // external ArrayBuffer until Hermes and ART have both collected it.
+      copyRgbaPixels =
+        uploadAndroidRgba && typeof texture.copyPixelsTo === "function";
+      if (!copyRgbaPixels) {
+        const pixels = new Uint8Array(texture.data);
+        if (pixels.byteLength < required)
+          throw new Error("Invalid RGBA video frame storage");
+        if (uploadAndroidRgba) {
+          // Exclude unused trailing storage without another pixel copy.
+          rgbaPixels = new Uint8Array(texture.data, 0, required);
+        } else {
+          // Preserve the iOS compatibility raster path.
+          reservation = reserveVideoMemory(
+            pixels.byteLength,
+            "owned video image",
           );
-        } finally {
-          data.dispose();
+          const data = Skia.Data.fromBytes(pixels);
+          try {
+            image = Skia.Image.MakeImage(
+              {
+                width: frame.width,
+                height: frame.height,
+                colorType: ColorType.RGBA_8888,
+                alphaType: AlphaType.Opaque,
+              },
+              data,
+              texture.bytesPerRow,
+            );
+          } finally {
+            data.dispose();
+          }
         }
       }
     }
-    if (texture.kind === "native-buffer" || rgbaPixels) {
+    if (texture.kind === "native-buffer" || rgbaPixels || copyRgbaPixels) {
       const device = getVideoGpuDevice();
-      if (rgbaPixels) {
+      const uploadRgba = texture.kind === "rgba";
+      if (uploadRgba || uploadAndroidRgba) {
         const extentLimit = device.limits.maxTextureDimension2D;
         if (
           !Number.isSafeInteger(extentLimit) ||
@@ -270,10 +314,11 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           frame.height > extentLimit
         )
           throw new Error(
-            "RGBA video frame exceeds the WebGPU texture extent limit",
+            "Video frame exceeds the WebGPU texture extent limit",
           );
       }
-      const format = rgbaPixels ? "rgba8unorm" : "bgra8unorm";
+      const format =
+        uploadRgba || uploadAndroidRgba ? "rgba8unorm" : "bgra8unorm";
       reservation = reserveVideoMemory(bytes, "owned video image");
       if (
         !cache.uploadTexture ||
@@ -284,7 +329,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         clearStagingSurface(cache);
         cache.uploadReservation = reserveVideoMemory(
           bytes,
-          rgbaPixels
+          uploadRgba
             ? "RGBA frame WebGPU upload texture"
             : "native frame WebGPU upload texture",
         );
@@ -294,8 +339,14 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           cache.uploadTexture = device.createTexture({
             size: { width: frame.width, height: frame.height },
             format,
-            usage: rgbaPixels ? rgbaVideoTextureUsage : nativeVideoTextureUsage,
-            label: rgbaPixels
+            // Android AHB and CPU frames share the RGBA scratch. Include
+            // COPY_DST even for a first AHB frame, so a later CPU fallback
+            // cannot reuse a texture that forbids writeTexture.
+            usage:
+              uploadRgba || uploadAndroidRgba
+                ? rgbaVideoTextureUsage
+                : nativeVideoTextureUsage,
+            label: uploadRgba
               ? "video RGBA frame upload"
               : "video native frame upload",
           });
@@ -310,6 +361,41 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           }
           throw error;
         }
+      }
+      if (copyRgbaPixels && texture.kind === "rgba") {
+        if (
+          !cache.cpuPixels ||
+          cache.cpuPixels.byteLength !== requiredRgbaBytes ||
+          cache.cpuBytesPerRow !== texture.bytesPerRow
+        ) {
+          clearCpuPixels(cache);
+          cache.cpuReservation = reserveVideoMemory(
+            requiredRgbaBytes,
+            "RGBA frame CPU upload buffer",
+          );
+          try {
+            cache.cpuPixels = new Uint8Array(
+              new ArrayBuffer(requiredRgbaBytes),
+            );
+            cache.cpuBytesPerRow = texture.bytesPerRow;
+          } catch (error) {
+            try {
+              clearCpuPixels(cache);
+            } catch {
+              /* unfinished accounting stays reachable */
+            }
+            throw error;
+          }
+        }
+        // The host function finishes memcpy synchronously. The private buffer
+        // is never exposed as texture.data and is rewritten only after the
+        // preceding import's checked fence. Saved raw aliases remain separate.
+        texture.copyPixelsTo!(cache.cpuPixels.buffer);
+        rgbaPixels = cache.cpuPixels;
+      } else {
+        // Native AHB frames and raw compatibility frames need no private CPU
+        // scratch. This also closes CPU scratch on same-format RGBA -> AHB.
+        clearCpuPixels(cache);
       }
       clearSurfaceView(cache);
       // WebGPU writes do not invalidate SkSurface's cached snapshot. A fresh
@@ -335,6 +421,9 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         );
       } else if (texture.kind === "native-buffer") {
         nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
+        // RN WebGPU 0.12.1 labels a single-plane Android RGBA AHB "bgra8".
+        // Dawn reads the actual AHB format; the string distinguishes RGB from
+        // NV12 and must not be interpreted as Android's physical byte order.
         if (
           nativeSource.width !== frame.width ||
           nativeSource.height !== frame.height ||
@@ -373,7 +462,10 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
     frame.dispose?.();
     releaseSource = false;
     clearEntry(cache, key);
-    cache.images.set(key, { id: frame.id ?? -1, image, reservation });
+    cache.images.set(key, {
+      id: frame.id ?? -1, image, reservation,
+      releasedSources: new WeakSet([frame]),
+    });
     return image;
   } catch (error) {
     importFailed = true;

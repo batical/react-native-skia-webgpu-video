@@ -61,12 +61,19 @@ final class RgbaBufferAllocator {
     checkHeap.accept(size);
     try {
       owner.backing = allocateBacking.apply(size);
-    } catch (OutOfMemoryError error) {
-      // Catch only backing allocation. No backing or pixel alias escaped.
-      // The already registered owner releases its quota after GC; error paths
-      // never decrement a reservation for memory that could still be live.
-      throw new IllegalStateException("Android RGBA memory budget exhausted during allocation; "
-        + "reduce maxLongSide or use lazyDecoders (requested=" + size + ")", error);
+    } catch (OutOfMemoryError firstError) {
+      // ART may have queued dead JNI roots during its allocation GC. Drain them
+      // before one retry, so their backing owners can be reclaimed by that next
+      // natural allocation GC. Live aliases are not queued and remain untouched.
+      lifetimes.drain();
+      try {
+        owner.backing = allocateBacking.apply(size);
+      } catch (OutOfMemoryError finalError) {
+        // Retry only the backing allocation, once, with the same reserved owner.
+        // No alias escaped. Never return its token early while storage might live.
+        throw new IllegalStateException("Android RGBA memory budget exhausted during allocation; "
+          + "reduce maxLongSide or use lazyDecoders (requested=" + size + ", attempts=2)", finalError);
+      }
     }
     ByteBuffer exposed = alias.apply(owner.backing);
     lifetimes.track(exposed, owner, 0);

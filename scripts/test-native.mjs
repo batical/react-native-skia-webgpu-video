@@ -35,6 +35,7 @@ try {
   test('seek-policy', ['test/native/SeekPolicyTest.cpp']);
   test('decoder-window', ['test/native/DecoderWindowTest.cpp']);
   test('memory-budget', ['test/native/MemoryBudgetTest.cpp']);
+  test('rgba-frame-lease', ['android/tests/RgbaFrameLeaseTest.cpp']);
   test('checked-sizes', ['test/native/CheckedSizesTest.cpp']);
   run(compiler, [...flags, ...includes, '-fsyntax-only',
     'cpp/RNSVEventEmitter.cpp', 'cpp/RNSVHostObject.cpp', monitor,

@@ -48,8 +48,12 @@ add_library(${PACKAGE_NAME}
         cpp/VideoPlayer.cpp
         cpp/VideoFrame.h
         cpp/VideoFrame.cpp
+        cpp/RgbaFrameLease.h
+        cpp/ReturnedVideoFrames.h
         cpp/NativeRgbaBuffer.h
         cpp/NativeRgbaBuffer.cpp
+        cpp/NativeHardwareBuffer.h
+        cpp/NativeHardwareBuffer.cpp
 )
 
 # Specifies a path to native header files.

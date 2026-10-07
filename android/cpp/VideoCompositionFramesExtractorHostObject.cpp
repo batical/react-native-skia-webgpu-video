@@ -1,5 +1,6 @@
 #include "RNSVCheckedSizes.h"
 #include "VideoCompositionFramesExtractorHostObject.h"
+#include "ReturnedVideoFrames.h"
 #include "JNIHelpers.h"
 
 namespace RNSkiaVideo {
@@ -67,12 +68,29 @@ jsi::Value VideoCompositionFramesExtractorHostObject::get(
             return jsi::Object(runtime);
           }
           auto frames = player->decodeCompositionFrames();
+          ReturnedVideoFrames returned(frames);
           auto version = player->getFramesVersion();
+          bool hardware = false;
+          for (auto& entry : *frames) {
+            auto frame = entry.second;
+            if (frame->isHardwareBuffer()) { hardware = true; break; }
+          }
+          if (hardware) {
+            // A previous JS frame may already have been disposed after copying
+            // into its owned Skia image. New leases keep paused rewrapping valid.
+            auto result = jsi::Object(runtime);
+            for (auto& entry : *frames) {
+              auto frame = entry.second;
+              result.setProperty(runtime, entry.first->toStdString().c_str(), frame->toJS(runtime));
+            }
+            returned.close();
+            return result;
+          }
           // The frames object is only rebuilt when the decoder produced a
           // new frame. On a 120 Hz display most calls see the same frames as
           // the previous one, and rewrapping them would be several JNI calls
           // and JS allocations per item per vsync.
-          return getVersionedObject(
+          auto result = getVersionedObject(
               runtime, "frames", (double)version,
               [&](jsi::Object& result) {
                 for (auto& entry : *frames) {
@@ -81,6 +99,8 @@ jsi::Value VideoCompositionFramesExtractorHostObject::get(
                   result.setProperty(runtime, id.c_str(), frame->toJS(runtime));
                 }
               });
+          returned.close();
+          return result;
         });
   } else if (propName == "play") {
     return getFunction(

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as native from 'react-native';
 import * as skia from 'react-native-skia';
 import * as reanimated from 'react-native-reanimated';
@@ -6,6 +6,7 @@ import * as video from '../src';
 import { createBenchmarkScreen } from '../benchmark/screen.mjs';
 import manifest from './fixtures/manifest.json';
 import device from './device.local.json';
+import { runAndroidInteropSmoke } from './android-interop-smoke';
 
 const isAndroid = native.Platform.OS === 'android';
 const helper = native.NativeModules.VideoBenchmarkHarness;
@@ -25,8 +26,40 @@ const files = {
   },
 };
 const Screen = createBenchmarkScreen({ React, native, skia, reanimated, video,
-  files, memory: { sample: () => helper.sampleMemory(),
+  files, validation: undefined, memory: { sample: () => helper.sampleMemory(),
     operatingConditions: () => helper.sampleOperatingConditions() } });
+
+function AndroidInteropScreen() {
+  const [status, setStatus] = useState('Vérification des pixels CPU / GPU…');
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      const requireForeground = async () => {
+        const conditions = await helper.sampleOperatingConditions();
+        if (conditions.applicationState !== 'active') throw new Error('Le test exige une application au premier plan.');
+      };
+      // Wait for the launch lifecycle callback, before opening a decoder.
+      const deadline = Date.now() + 10000;
+      while ((await helper.sampleOperatingConditions()).applicationState !== 'active') {
+        if (Date.now() >= deadline) throw new Error('Application non active après le lancement.');
+        await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      }
+      const report = await runAndroidInteropSmoke(details.fixtureDirectory, manifest.files, requireForeground);
+      await files.writeResult({ ...report, benchmarkRunId: details.benchmarkRunId,
+        processIdentifier: details.processIdentifier, buildMode: __DEV__ ? 'debug' : 'release' });
+      if (mounted) setStatus(`${report.completedCases}/${report.plannedCases} cas exécutés — ${report.status}${report.failure ? ` : ${report.failure}` : ''}`);
+    };
+    run().catch(async (error: unknown) => {
+      const failure = error instanceof Error ? error.message : String(error);
+      if (mounted) setStatus(failure);
+      try { await files.writeResult({ schema: 1, kind: 'android-ahardwarebuffer-pixel-comparison',
+        status: 'failed', failure, benchmarkRunId: details.benchmarkRunId }); }
+      catch (writeError) { console.error('Cannot save Android pixel diagnostic', writeError); }
+    });
+    return () => { mounted = false; };
+  }, []);
+  return <native.SafeAreaView style={{ padding: 20 }}><native.Text>{status}</native.Text></native.SafeAreaView>;
+}
 
 export default function App() {
   const [profile, setProfile] = useState<string | null>(details.benchmarkProfile ?? null);
@@ -47,6 +80,7 @@ export default function App() {
       skiaVersion: '3.0.6', webgpuVersion: '0.12.1', paths: video.getVideoResourceStats().backend },
   }), [profile]);
   if (!helper) return <native.Text>Recompilez l’application de test : le module de mesure manque.</native.Text>;
+  if (isAndroid && profile === 'interop') return <AndroidInteropScreen />;
   if (!profile) return <native.SafeAreaView style={{ flex: 1, padding: 20, gap: 16 }}>
     <native.Text style={{ fontSize: 24 }}>Skia WebGPU Tests</native.Text>
     <native.Text>Lecture, export, mémoire et fermeture des ressources sur cet appareil.</native.Text>

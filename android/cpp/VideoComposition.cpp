@@ -1,6 +1,7 @@
 #include "RNSVCheckedSizes.h"
 #include <set>
 #include "VideoComposition.h"
+#include "NativeHardwareBuffer.h"
 
 namespace RNSkiaVideo {
 
@@ -147,6 +148,8 @@ VideoComposition::fromJSIObject(jsi::Runtime& runtime,
     items->add(item);
   }
   auto composition = VideoComposition::create(duration, items);
+  composition->setFieldValue(VideoComposition::javaClassStatic()->getField<jboolean>(
+      "hardwareBufferEnabled"), static_cast<jboolean>(NativeHardwareBuffer::isEnabled()));
   if (jsComposition.hasProperty(runtime, "lazyDecoders")) {
     auto lazyProp = jsComposition.getProperty(runtime, "lazyDecoders");
     if (lazyProp.isBool() && lazyProp.getBool()) {

@@ -18,6 +18,10 @@ struct VideoFrame : JavaClass<VideoFrame> {
   jlong getId();
   jlong getProducerId();
   local_ref<JByteBuffer> getPixelBuffer();
+  jboolean isHardwareBuffer();
+  jlong getNativeHardwareBufferHandle();
+  void close();
   jsi::Value toJS(jsi::Runtime& runtime);
+  jsi::Value toJSInternal(jsi::Runtime& runtime);
 };
 } // namespace RNSkiaVideo

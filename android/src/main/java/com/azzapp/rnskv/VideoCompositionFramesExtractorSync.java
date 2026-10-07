@@ -33,7 +33,8 @@ public class VideoCompositionFramesExtractorSync {
   private Handler handler;
 
   private static final long DECODE_TIMEOUT_MS = 30000;
-  private final DecodeRequests<Map<String, VideoFrame>> requests = new DecodeRequests<>();
+  private final DecodeRequests<Map<String, VideoFrame>> requests =
+    new DecodeRequests<>(VideoCompositionDecoder::closeFrames);
   private volatile CompletableFuture<Void> startup;
 
   public VideoCompositionFramesExtractorSync(VideoComposition composition) {
@@ -210,7 +211,8 @@ public class VideoCompositionFramesExtractorSync {
   }
 
   private void resolveIfReady() {
-    Map<String, VideoFrame> videoFrames = decoder.updateVideosFrames();
+    if (!requests.isPending()) return;
+    Map<String, VideoFrame> videoFrames = decoder.updateInternalFrames();
     for (VideoComposition.Item item : composition.getItems()) {
       if (!item.isVideo() || !decoder.isOpen(item)) {
         continue;
@@ -232,6 +234,8 @@ public class VideoCompositionFramesExtractorSync {
         return;
       }
     }
-    requests.complete(videoFrames);
+    // Never publish the producer's owning wrappers. The completed request owns
+    // these aliases until await hands them over, or cancellation discards them.
+    requests.complete(VideoCompositionDecoder.retainFrames(videoFrames));
   }
 }

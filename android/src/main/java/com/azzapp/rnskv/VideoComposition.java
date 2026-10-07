@@ -12,6 +12,8 @@ public class VideoComposition {
   private final double duration;
 
   private boolean lazyDecoders = false;
+  private boolean hardwareBufferEnabled = false;
+  public boolean isHardwareBufferEnabled() { return hardwareBufferEnabled; }
 
   public VideoComposition(
     double duration,

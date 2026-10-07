@@ -4,10 +4,11 @@
   "originalPlannedExecutions": 86,
   "additionalCases": {
     "DirectTextureTest.oldPixelsRemainValidAcrossLaterFramesAndSessionDisposal": 5,
-    "NativeRgbaBufferTest": 5
+    "NativeRgbaBufferTest": 5,
+    "NativeHardwareBufferTest": 6
   },
-  "totalNamedCases": 46,
-  "totalPlannedExecutions": 96,
+  "totalNamedCases": 52,
+  "totalPlannedExecutions": 102,
   "codecUnavailableCases": "JUnit assumption skip, never counted as passed",
   "classes": [
     {
@@ -80,6 +81,19 @@
       "plannedExecutions": 36
     },
     {
+      "class": "NativeHardwareBufferTest",
+      "methods": [
+        "finishPublishesCompletedRgbaPixelsWithPackedRows",
+        "retainedLeaseSurvivesOriginalCloseAndEglProducerTeardown",
+        "videoFrameRetainKeepsIdentityAndIndependentOwnership",
+        "abortIsIdempotentAndCannotPublishAClosedWriter",
+        "quotaRefusalPreservesAnExistingLeaseAndReleasesPartialAllocation",
+        "invalidReadDestinationAndClosedLeaseCannotExposePixels"
+      ],
+      "parameterSets": 1,
+      "plannedExecutions": 6
+    },
+    {
       "class": "NativeRgbaBufferTest",
       "methods": [
         "readOnlySliceKeepsBudgetAndBytesAfterFrameIsDropped",
@@ -124,11 +138,6 @@
     "model": "Google Pixel 8a",
     "osVersion": "17",
     "apiLevel": 37,
-    "currentArtOwnershipGuard": {
-      "executed": 5,
-      "passed": 5,
-      "skipped": 0
-    },
     "beforeArtGuardFocusedDecodeEncode": {
       "executed": 15,
       "passed": 15,
@@ -142,6 +151,28 @@
       "notExecuted": 90,
       "failure": "Lazy 4K preview cadence assertion; eager eight-4K backing allocation exhausted ART heap"
     },
-    "fullCurrentSuiteExecuted": false
+    "fullCurrentSuiteExecuted": false,
+    "scopedCopyArtOwnershipGuard": {
+      "executed": 5,
+      "passed": 5,
+      "skipped": 0
+    },
+    "currentAhbOwnership": {
+      "executed": 6,
+      "passed": 6,
+      "skipped": 0,
+      "durationSeconds": 0.168,
+      "instrumentationApkSha256": "81aa5c0fc0ea43bbb3296c6380b8a9d55a5d51931e41c46d456c2e9bd680a34d",
+      "testSourceSha256": "2bbfd0a87602dd9730963cf5fbf7aeb25c3f19c017e31991f620fa85f8debfbd",
+      "logSha256": "bb6f49823d82414a9c0ee1c7f962ea38e7cc25547aa695b3505279756129f4ee"
+    },
+    "currentCpuOwnership": {
+      "executed": 5,
+      "passed": 5,
+      "skipped": 0,
+      "durationSeconds": 0.896,
+      "instrumentationApkSha256": "81aa5c0fc0ea43bbb3296c6380b8a9d55a5d51931e41c46d456c2e9bd680a34d",
+      "logSha256": "5b66817815dce1f017a59d777de8362cdcf02d0dc4a2adfa06cd56cd523ed8f8"
+    }
   }
 }

@@ -90,4 +90,55 @@ public class RgbaBufferAllocatorTest {
     assertEquals(List.of(15L), released);
   }
 
+  @Test public void oneBackingRetryDrainsQueuedCleanupAndKeepsLiveAliases() {
+    List<Long> released = new ArrayList<>();
+    BufferLifetime lifetime = new BufferLifetime(released::add);
+    Object dead = new Object(), live = new Object();
+    BufferLifetime.Tracked queued = lifetime.track(dead, null, 2);
+    lifetime.track(live, null, 3);
+    java.util.concurrent.atomic.AtomicInteger allocations = new java.util.concurrent.atomic.AtomicInteger();
+    java.util.concurrent.atomic.AtomicInteger reservations = new java.util.concurrent.atomic.AtomicInteger();
+    java.util.concurrent.atomic.AtomicInteger aliases = new java.util.concurrent.atomic.AtomicInteger();
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime,
+      size -> { reservations.incrementAndGet(); return 9; }, released::add,
+      size -> {
+        if (allocations.incrementAndGet() == 1) {
+          queued.enqueue();
+          throw new OutOfMemoryError("ART queued a dead root");
+        }
+        assertEquals(List.of(2L), released);
+        ByteBuffer pixels = ByteBuffer.allocateDirect(size); pixels.put(0, (byte) 91); return pixels;
+      }, pixels -> { aliases.incrementAndGet(); return pixels; });
+    ByteBuffer pixels = allocator.allocate(64);
+    assertEquals(91, pixels.get(0));
+    assertEquals(2, allocations.get());
+    assertEquals(1, reservations.get());
+    assertEquals(1, aliases.get());
+    assertEquals(List.of(2L), released); // token 3 remains owned by the unrelated live alias.
+    assertEquals(3, lifetime.trackedCount()); // live alias, allocation owner, exposed root.
+    assertNotNull(live); // keep the unrelated alias live through the assertions.
+  }
+
+  @Test public void persistentBackingOomAttemptsExactlyTwiceWithOnePendingToken() {
+    List<Long> released = new ArrayList<>();
+    BufferLifetime lifetime = new BufferLifetime(released::add);
+    java.util.concurrent.atomic.AtomicInteger allocations = new java.util.concurrent.atomic.AtomicInteger();
+    java.util.concurrent.atomic.AtomicInteger reservations = new java.util.concurrent.atomic.AtomicInteger();
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime,
+      size -> { reservations.incrementAndGet(); return 7; }, released::add,
+      size -> { throw new OutOfMemoryError("attempt " + allocations.incrementAndGet()); },
+      pixels -> { fail("Alias must not be created after failed allocation"); return null; });
+    try { allocator.allocate(64); fail("Expected controlled allocation refusal"); }
+    catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("attempts=2"));
+      assertEquals("attempt 2", expected.getCause().getMessage());
+    }
+    assertEquals(2, allocations.get());
+    assertEquals(1, reservations.get());
+    assertTrue(released.isEmpty());
+    assertEquals(1, lifetime.trackedCount());
+    lifetime.onlyTracked().enqueue(); lifetime.drain();
+    assertEquals(List.of(7L), released);
+  }
+
 }
