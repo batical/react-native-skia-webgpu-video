@@ -1,3 +1,7 @@
+import {
+  assertExportRecorderCacheSupport,
+  trimExportRecorderCache,
+} from "./exportCache";
 import { getVideoCanvas } from "./canvas";
 import {
   createWorkletRuntime,
@@ -94,6 +98,7 @@ type ExportState = {
   index: number;
   setupError?: unknown;
   poisoned?: boolean;
+  hasRecorder?: boolean;
 };
 
 let exportRuntime: WorkletRuntime | null = null;
@@ -253,6 +258,12 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 clean(() => state.surface?.dispose())
               )
                 state.surface = null;
+            }
+            // The export runtime is private and serialized. Its unused cache
+            // need not survive a completed session; leave the shared Context
+            // and the UI/runtime caches alone. A failed drain stays quarantined.
+            if (cleanup.safeToRelease && state.hasRecorder) {
+              if (clean(trimExportRecorderCache)) state.hasRecorder = false;
             }
             if (cleanup.safeToRelease) {
               for (let i = state.reservations.length - 1; i >= 0; i--) {
@@ -478,6 +489,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
               return;
             }
             runWithVideoAutoreleasePool(() => {
+              assertExportRecorderCacheSupport();
               // Render target + transient full-frame CPU readback. Native decoder
               // and encoder reservations are additional entries in the same budget.
               state.reservations.push(
@@ -490,6 +502,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 ),
               );
               state.readback = new Uint8Array(bytes);
+              state.hasRecorder = true;
               state.surface = Skia.Surface.MakeOffscreen(
                 options.width,
                 options.height,

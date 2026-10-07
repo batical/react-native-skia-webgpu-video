@@ -1,0 +1,132 @@
+--- a/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
++++ b/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
+@@ -1,6 +1,12 @@
+ #pragma once
+
+ #include <memory>
++#include <array>
++#include <atomic>
++#include <thread>
++#ifdef __ANDROID__
++#include <android/log.h>
++#endif
+ #include <mutex>
+ #include <stdexcept>
+
+@@ -167,6 +173,40 @@
+     }
+
+     return surface;
++  }
++
++  // LOCAL DIAGNOSTIC ONLY. All recorder access stays on its owning thread.
++  void setVideoCacheProbeMode(int mode) { videoCacheProbeMode.store(mode); }
++  void probeVideoCaches() {
++    auto* recorder = getRecorder();
++    std::lock_guard<std::mutex> lock(_mutex);
++    const int mode = videoCacheProbeMode.load();
++    const auto stats = [&]() -> std::array<size_t, 6> {
++      return {recorder->currentBudgetedBytes(), recorder->currentPurgeableBytes(),
++              recorder->maxBudgetedBytes(), fGraphiteContext->currentBudgetedBytes(),
++              fGraphiteContext->currentPurgeableBytes(), fGraphiteContext->maxBudgetedBytes()};
++    };
++    const auto before = stats();
++    if (mode >= 1) {
++      auto recording = recorder->snap();
++      if (!recording) throw std::runtime_error("Memory probe cannot snap recorder");
++      skgpu::graphite::InsertRecordingInfo info;
++      info.fRecording = recording.get();
++      if (!static_cast<bool>(fGraphiteContext->insertRecording(info)))
++        throw std::runtime_error("Memory probe recording rejected");
++      if (!fGraphiteContext->submit(skgpu::graphite::SyncToCpu::kYes))
++        throw std::runtime_error("Memory probe queue drain failed");
++    }
++    if (mode >= 2) recorder->freeGpuResources();
++    if (mode >= 3) fGraphiteContext->freeGpuResources();
++    const auto after = stats();
++#ifdef __ANDROID__
++    __android_log_print(ANDROID_LOG_INFO, "VideoCacheProbe",
++      "mode=%d thread=%zu before=%zu,%zu,%zu,%zu,%zu,%zu after=%zu,%zu,%zu,%zu,%zu,%zu",
++      mode, std::hash<std::thread::id>{}(std::this_thread::get_id()),
++      before[0],before[1],before[2],before[3],before[4],before[5],
++      after[0],after[1],after[2],after[3],after[4],after[5]);
++#endif
+   }
+
+   // Get the wgpu::Instance for WebGPU bindings
+@@ -359,6 +399,7 @@
+   std::unique_ptr<skgpu::graphite::Context> fGraphiteContext;
+   skgpu::graphite::DawnBackendContext backendContext;
+   std::mutex _mutex;
++  std::atomic<int> videoCacheProbeMode{0};
+
+   DawnContext() {
+     // No dawnProcSetProcs() here: the monolithic libwebgpu_dawn (shared with
+--- a/node_modules/react-native-skia/cpp/api/JsiSkApi.h
++++ b/node_modules/react-native-skia/cpp/api/JsiSkApi.h
+@@ -156,6 +156,17 @@
+   JSI_HOST_FUNCTION(Color) {
+     return JsiSkColor::createCtor()(runtime, thisValue, arguments, count);
+   }
++  JSI_HOST_FUNCTION(__setVideoCacheProbeMode) {
++    const auto mode = count > 0 ? arguments[0].asNumber() : 0;
++    if (mode < 0 || mode > 3 || mode != static_cast<int>(mode))
++      throw jsi::JSError(runtime, "Invalid video cache probe mode");
++    DawnContext::getInstance().setVideoCacheProbeMode(static_cast<int>(mode));
++    return jsi::Value::undefined();
++  }
++  JSI_HOST_FUNCTION(__probeVideoCaches) {
++    DawnContext::getInstance().probeVideoCaches();
++    return jsi::Value::undefined();
++  }
+   JSI_HOST_FUNCTION(getNativeDevice) {
+     // Raw WGPUDevice pointer of the Graphite device, as a BigInt. Consumed by
+     // react-native-webgpu's importDevice(), which AddRefs it; the pointer
+@@ -228,6 +239,8 @@
+   }
+
+   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
++    installHostMethod(runtime, prototype, "__setVideoCacheProbeMode", &JsiSkApi::__setVideoCacheProbeMode);
++    installHostMethod(runtime, prototype, "__probeVideoCaches", &JsiSkApi::__probeVideoCaches);
+     installHostMethod(runtime, prototype, "getNativeDevice",
+                       &JsiSkApi::getNativeDevice);
+     installHostMethod(runtime, prototype, "Font", &JsiSkApi::Font);
+--- a/src/previewLifecycle.ts
++++ b/src/previewLifecycle.ts
+@@ -1,4 +1,4 @@
+-import type { SkCanvas, SkImage, SkSurface } from "react-native-skia";
++import { Skia, type SkCanvas, type SkImage, type SkSurface } from "react-native-skia";
+ import { releaseVideoFrameImage } from "./frameInterop";
+ import { releaseVideoMemory } from "./memory";
+ import type { VideoFrame } from "./types";
+@@ -56,5 +56,7 @@
+     };
+     (runtime.__rnskwgpuPreviewQuarantine ??= []).push(resources);
+   }
++  if (!failure.failed)
++    (Skia as typeof Skia & { __probeVideoCaches?: () => void }).__probeVideoCaches?.();
+   return failure;
+ };
+--- a/src/exportVideoComposition.ts
++++ b/src/exportVideoComposition.ts
+@@ -264,6 +264,7 @@
+               state.frames = {};
+               state.readback = null;
+               delete storage.__rnskwgpuExport;
++              (Skia as typeof Skia & { __probeVideoCaches?: () => void }).__probeVideoCaches?.();
+             } else {
+               // One retained session at most; subsequent exports fail before
+               // allocating anything. Runtime teardown is the recovery boundary.
+--- a/example/App.tsx
++++ b/example/App.tsx
+@@ -11,6 +11,10 @@
+ const isAndroid = native.Platform.OS === 'android';
+ const helper = native.NativeModules.VideoBenchmarkHarness;
+ const details = helper?.getConstants?.() ?? helper ?? {};
++// LOCAL DIAGNOSTIC ONLY; select intervention before decoders are constructed.
++const probeMatch = String(details.benchmarkRunId ?? "").match(/cache-probe-mode([0-3])/);
++(skia.Skia as typeof skia.Skia & { __setVideoCacheProbeMode?: (mode: number) => void })
++  .__setVideoCacheProbeMode?.(probeMatch ? Number(probeMatch[1]) : 0);
+ const files = {
+   outputPath: async (id: string, repetition: number, cycle: number) => {
+     const directory = await helper.prepareOutputDirectory();

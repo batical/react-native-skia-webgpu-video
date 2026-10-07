@@ -76,7 +76,7 @@ module.exports = {
 
 ### Apply the required Skia patch
 
-This alpha includes a small, version-checked Skia patch for canvas ownership and checked GPU submissions. Apply it in the **application**, before compiling native code:
+This alpha includes a version-checked Skia patch for canvas/image-provider ownership, checked GPU submissions and cleanup of the dedicated export recorder cache. Apply it in the **application**, before compiling native code:
 
 ```sh
 npx --no-install skia-video-patch-canvas
@@ -85,6 +85,8 @@ pod install
 ```
 
 Add `skia-video-patch-canvas` to your application's existing `postinstall` process so it runs after clean dependency installs. The script checks every target file before changing anything and is safe to run again. An unknown version or conflicting patch stops with an error. Review the [patch and upstream notes](docs/UPSTREAM_NOTES.md) when upgrading Skia, then rebuild the native app.
+
+After an export closes its consumers, the library releases unused resources from its private export recorder. It preserves the shared Skia context cache and the preview/UI recorder cache. This reduces retained export resources without adding per-frame purges; it does not impose a limit on total process memory. Upgrading an already-patched application also requires rebuilding its native binary.
 
 ## One composition, preview and export
 

@@ -127,3 +127,23 @@ test("recovers a partially applied patch after an interrupted installation", () 
     f.clean();
   }
 });
+
+test("upgrades the previously installed canvas patch with the ownership/cache fixes", () => {
+  const f = fixture();
+  try {
+    const additions = new Set([
+      "cpp/rnskia/RNImageProvider.h",
+      "cpp/api/JsiSkApi.h",
+    ]);
+    for (const [path, change] of Object.entries(definition.files)) {
+      if (additions.has(path)) continue;
+      let source = readFileSync(join(f.peer, path), "utf8");
+      for (const edit of change.edits) source = source.replace(edit.before, edit.after);
+      writeFileSync(join(f.peer, path), source);
+    }
+    assert.equal(f.run().status, 0);
+    f.verify("after");
+  } finally {
+    f.clean();
+  }
+});

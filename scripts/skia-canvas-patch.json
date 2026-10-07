@@ -266,6 +266,30 @@
       ],
       "before": "0db452abdcad7baa2c1d76fa0a81ebec47a447bfe9a706c13ac8d2ed08e4f4f0",
       "after": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476"
+    },
+    "cpp/rnskia/RNImageProvider.h": {
+      "before": "8b9a552bfcf088058eb06366ba78984b7e54d6ae0442633ecbc0cdd726205fc2",
+      "after": "f6c329e5d43fcecfcecc95c8516df159e1bfb68582d27ce92b67facfcd84b4eb",
+      "edits": [
+        {
+          "before": "  static sk_sp<ImageProvider> Make() { return sk_ref_sp(new ImageProvider); }",
+          "after": "  static sk_sp<ImageProvider> Make() { return sk_make_sp<ImageProvider>(); }"
+        }
+      ]
+    },
+    "cpp/api/JsiSkApi.h": {
+      "before": "67cb4f045263f10ec53876d1ce1df980e2477d8ebf8f49eec030b06f6ed6d121",
+      "after": "c609adcb77b219b69785d9d8ecef22f5d3b8329d060a470c0b451df1a46959b6",
+      "edits": [
+        {
+          "before": "  JSI_HOST_FUNCTION(getNativeDevice) {",
+          "after": "  // Private video-export cleanup. Only the calling thread's Recorder cache\n  // is trimmed; the shared Context cache and other Recorders are untouched.\n  JSI_HOST_FUNCTION(__rnskvTrimRecorderCache) {\n    auto &context = DawnContext::getInstance();\n    auto *recorder = context.getRecorder();\n    {\n      auto recording = recorder->snap();\n      context.submitRecordingChecked(recording.get(),\n                                     skgpu::graphite::SyncToCpu::kYes);\n    }\n    recorder->freeGpuResources();\n    return jsi::Value::undefined();\n  }\n  JSI_HOST_FUNCTION(getNativeDevice) {"
+        },
+        {
+          "before": "  static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {",
+          "after": "  static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {\n    installHostMethod(runtime, prototype, \"__rnskvTrimRecorderCache\",\n                      &JsiSkApi::__rnskvTrimRecorderCache);"
+        }
+      ]
     }
   }
 }
