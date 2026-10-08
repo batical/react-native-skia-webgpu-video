@@ -205,10 +205,10 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 | Area | Current evidence |
 | --- | --- |
 | iOS | Initial 3.0.6 build: 50 native XCTest passes. Optimized build: 5 device smoke cases passed; before/after comparison: 96 executions passed across both builds. |
-| JavaScript / types | 191 tests passed in 8 suites; typecheck passed. The benchmark harness passed 112 tests. |
+| JavaScript / types | 196 tests passed in 8 suites; typecheck passed. The benchmark harness passed 112 tests. |
 | Android | AHardwareBuffer Release on Pixel 8a: 24/24 focused attempts passed, including H264/HEVC 4K and export, with tracked cleanup zero at a 512 MiB budget. Six AHB and five CPU ownership tests passed on device; 43 host JVM tests passed. [Device diagnostics](docs/ANDROID_DEVICE_306.md). |
 | Audio / image fidelity | Android CPU/AHB comparison passed 10/10 cases with identical sampled SDR pixels. Whole-image fidelity, HDR, audible output and synchronization remain unqualified. |
-| Lifecycle / long sessions | Four additional Android cases passed, including eight lazy-decoded 4K clips, 25 short cycles and 40 remounts. Sustained memory stability and absence of leaks are not established. |
+| Lifecycle / long sessions | Latest Release runs: 6/6 consecutive iPhone montages and 4/4 Android montages passed (240 and 160 remounts). Late memory readings flatten or decrease; unlimited endurance and absence of every leak are not established. |
 
 On one iPhone 15 Pro, an earlier **3.0.6 before/after optimization** comparison observed roughly **11% less peak physical footprint during 4K playback**, with similar RSS. Small exports took **3.5–6% longer**. The phone was warm and used for tethering; these are descriptive results, not a general speed claim. [Protocol, measurements, and limitations](docs/PERFORMANCE_IPHONE_306_OPTIMIZATION.md).
 
@@ -216,7 +216,7 @@ The Android report preserves the earlier CPU checkpoints: **0/24 strict passes**
 
 The eight-clip 4K lifecycle case remained memory intensive: sampled peaks reached **800 MiB RSS / 1,038 MiB PSS**, and RSS remained around **786 MiB after cleanup**, despite zero tracked reservations. RSS and PSS are separate process metrics; their sampled peaks occur independently. The [Android report](docs/ANDROID_DEVICE_306.md) retains these results and the limits of seek/pixel validation.
 
-A subsequent export-worklet fix reduces repeated-session allocation overhead. In matched two-montage Release runs, memory after 60 seconds idle fell from **426 to 258 MiB physical footprint on iPhone 15 Pro**, and from **738 to 577 MiB PSS on Pixel 8a**. These are different platform metrics, not a cross-device comparison. Six consecutive iPhone workloads passed with a much flatter late-run trend; bounded tests do not prove zero leaks. See the [native memory investigation](docs/NATIVE_MEMORY_INVESTIGATION_306.md) for checkpoints and limits.
+A subsequent export-worklet fix reduces repeated-session allocation overhead. In matched two-montage Release runs, memory after 60 seconds idle fell from **426 to 258 MiB physical footprint on iPhone 15 Pro**, and from **738 to 577 MiB PSS on Pixel 8a**. These are different platform metrics, not a cross-device comparison. Six consecutive iPhone workloads and four Android workloads passed with flatter or decreasing late-run readings; bounded tests do not prove zero leaks. See the [native memory investigation](docs/NATIVE_MEMORY_INVESTIGATION_306.md) for checkpoints and limits.
 
 ## Development
 

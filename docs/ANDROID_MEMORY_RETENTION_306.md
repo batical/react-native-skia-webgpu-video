@@ -1,5 +1,7 @@
 # Android memory retention — Skia 3.0.6
 
+Historical diagnostic checkpoint. Production follow-ups are documented in [export cache/provider ownership](ANDROID_EXPORT_CACHE_306.md) and the [October 8 export-worklet memory measurements](NATIVE_MEMORY_INVESTIGATION_306.md). The experimental broad purge below is not the production cleanup policy.
+
 The eight-clip 4K montage completes, but substantial process memory remains after its resources close. A controlled diagnostic build shows that unused Graphite resources account for a reclaimable part of this retention. A separate source review also identifies an unbalanced reference in Skia's image-provider factory. Neither finding explains all remaining memory.
 
 ## Device experiment

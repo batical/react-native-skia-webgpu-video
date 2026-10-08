@@ -1,6 +1,8 @@
 # Android physical-device diagnostics — Skia 3.0.6
 
-The current AHardwareBuffer Release checkpoint passed all 24 focused physical-device attempts on a Google Pixel 8a (Android 17, API 37): three repetitions of eight playback/export scenarios, including H264/HEVC full 4K in copy and direct modes. Tracked owned bytes and resource reservations returned to zero after each strict two-second cleanup. The earlier CPU failures are preserved below. This qualifies these focused operations, not the full instrumentation suite or permanent leak absence.
+Latest follow-up (2026-10-08): the export-worklet fix passed two comparison workloads and four consecutive full montages on Pixel 8a. Two-montage idle PSS fell from 737.83 to 577.20 MiB; the fourth extended-run settled PSS decreased from 603.57 to 593.80 MiB. See [current memory results](NATIVE_MEMORY_INVESTIGATION_306.md). The frozen transport campaigns below retain their original binaries and results.
+
+The earlier AHardwareBuffer Release transport checkpoint passed all 24 focused physical-device attempts on a Google Pixel 8a (Android 17, API 37): three repetitions of eight playback/export scenarios, including H264/HEVC full 4K in copy and direct modes. Tracked owned bytes and resource reservations returned to zero after each strict two-second cleanup. The earlier CPU failures are preserved below. This qualifies these focused operations, not the full instrumentation suite or permanent leak absence.
 
 [Machine-readable evidence](../benchmark/android-device-306-verification.json) preserves per-attempt status, raw-file hashes, outstanding reservations and binary/source fingerprints. Raw reports stay local and ignored because they include device identifiers. This is a candidate-only diagnostic campaign, without a valid old-library A/B comparison or a cross-platform performance comparison.
 

@@ -4,7 +4,7 @@ Initial checkpoint: 2026-10-07; updated 2026-10-08. Base: `6c0c0556019b404e2601d
 
 **The large export-related growth is reduced by reusing one frame worklet per export.** Clean physical-device comparisons and extended runs pass on both platforms. Memory still warms up and fluctuates; these bounded runs do not prove zero leaks in arbitrary long sessions. The provider ownership and export-recorder cache fixes were already on the baseline `main`; the change here addresses JavaScript-to-native worklet reconstruction.
 
-## Clean iPhone measurement
+## Baseline iPhone measurement — before the worklet fix
 
 Physical iPhone 15 Pro, Release, Skia 3.0.6 / WebGPU 0.12.1. Two consecutive `4k-x8-lazy-direct` full workloads in one process, followed by 60 seconds idle. Each workload includes preview, seeks/scrubbing, looping, a 360-frame export, 25 churn cycles and 40 remounts.
 
@@ -39,27 +39,23 @@ A separate iPhone Instruments Allocations recording is saved locally. Instrument
 
 Private raw traces, device identifiers, signed binaries and command logs remain in ignored benchmark results. Do not commit them.
 
-## Investigation method
+## Investigation sequence and remaining limits
 
-1. Validate the completed Android trace for dropped/truncated data; identify the actual workload PID separately from the idle reference process.
-2. Attribute retained allocations by call stack and time across both exports; inspect Hermes, Skia/Dawn, codec and benchmark-harness contributions.
-3. Compare iPhone allocation stacks with the clean per-phase growth. Distinguish live objects, allocator retention and driver caches.
-4. Implement a fix only after attribution, add a targeted regression check, then repeat clean Release measurements on both physical devices.
-5. Merge validated production changes through the protected-main workflow. The initial checkpoint did not claim a new production fix.
+The Android heap captures were rejected as attribution evidence after their client errors were checked. The saved iPhone call tree then identified the worklet reconstruction path; a targeted fix and regression test were followed by clean Release measurements on both devices.
 
+The fix is merged in [PR #4](https://github.com/batical/react-native-skia-webgpu-video/pull/4), commit `cd543506ab4fd3666350b3b2f632969d78447300`. The remaining qualification covers longer sessions, other devices and workloads, HDR/audio fidelity and application-specific 3D/ML resources. A valid Android allocation-stack capture remains unavailable; category PSS alone does not identify owners.
 
-## 2026-10-08: export closure attribution and candidate fix
+## 2026-10-08: export closure attribution and merged fix
 
 The saved iPhone Allocations call tree attributes 32.44 MB (inclusive, as displayed by Instruments) on its heaviest persistent path to `RetainingSerializable<SerializableWorklet>::toJSValue`, followed by nested worklet/object reconstruction. These nested values must not be added together or equated with process footprint.
 
-The export loop constructed its entire frame worklet inside the per-frame RN callback. Worklets 0.11.3 retains serialized worklets and caches serialization by function identity; constructing a fresh function for every image defeats that reuse. The candidate creates one frame worklet per export and schedules that same function for subsequent frames. It preserves yielding between frames, progress delivery, cancellation, asynchronous processor waits and cleanup ordering. No global garbage collection or reduced video resolution is introduced.
+The export loop constructed its entire frame worklet inside the per-frame RN callback. Worklets 0.11.3 retains serialized worklets and caches serialization by function identity; constructing a fresh function for every image defeats that reuse. The corrected implementation creates one frame worklet per export and schedules that same function for subsequent frames. It preserves yielding between frames, progress delivery, cancellation, asynchronous processor waits and cleanup ordering. No global garbage collection or reduced video resolution is introduced.
 
 A regression test submits two separate 360-frame exports, checks that each export reuses its frame closure while isolating the next export, and verifies resource disposal. All 196 Jest tests, TypeScript, package build and package validation pass. Android and iPhone Release builds succeed.
 
-The first candidate iPhone run is excluded from the two-workload comparison: the first case failed during playback while the application became inactive/background, before export; the second case passed. A fresh comparison is required.
+The first candidate iPhone run is excluded from the two-workload comparison: the first case failed during playback while the application became inactive/background, before export; the second case passed. The fresh comparison below replaces this interrupted attempt.
 
 The Android profiler's error code 2 means `CLIENT_ERROR_INVALID_STACK_BOUNDS` in the [Perfetto protocol](https://github.com/google/perfetto/blob/main/protos/perfetto/trace/profiling/profile_packet.proto). The failed capture cannot attribute retained allocations. Clean Android memory comparisons can still run without that profiler.
-
 
 ### Candidate clean iPhone comparison
 
@@ -73,20 +69,17 @@ A fresh two-workload run passed both cases, with every memory sample nominal/nor
 
 The second export no longer shows the large footprint increase: its surrounding settled checkpoints are 237.69 → 237.35 MiB. Full-workload growth is still 25.92 MiB between the first and second settled endpoints, so two successful cases do not establish an endurance plateau. The separate six-workload run below checks the longer trend.
 
-
 ### Candidate clean Android comparison
 
 Two full workloads passed on the physical Pixel 8a. All 2,347 samples were nominal/normal/active. The candidate APK is a normal Release build without the allocation-profiling manifest flag. At 60 seconds idle, total PSS fell from 737.83 to 577.20 MiB (21.8%). Native Heap PSS fell from 142.26 to 79.51 MiB; Unknown PSS fell from 136.93 to 41.87 MiB. Category PSS is not live malloc size, and GL driver accounting is not a unique owner counter.
 
 The two candidate exports encoded in 24.41 and 25.21 seconds, versus 28.81 and 29.40 seconds in the saved reference. This small sample is encouraging but does not establish a general speedup or presented FPS. The four-workload check below assesses the remaining growth.
 
-
 ### Six consecutive iPhone workloads
 
 All six full workloads passed, each at nominal temperature, normal power and foreground execution. Settled physical footprint after each workload was **232.02, 252.81, 259.10, 268.41, 264.75 and 271.94 MiB**. After serializing the larger six-case report and waiting 60 seconds, footprint was **277.74 MiB**. This is consistent with a much flatter late-run trend (last three settled points span 7.19 MiB); it is not a proof of unlimited endurance or zero retention.
 
 This run includes six 360-frame exports, 150 churn cycles and 240 remounts. No forced garbage collection, global cache purge, resolution reduction or larger memory quota was used. The iPhone application is stopped after the idle collector finishes.
-
 
 ### Four consecutive Android workloads
 
