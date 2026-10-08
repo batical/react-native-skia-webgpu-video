@@ -37,6 +37,11 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     sourceSets { main.assets.srcDirs += ["../../fixtures"] }
+    // Opt-in only for allocation tracing of this standalone benchmark app.
+    // Normal Release artifacts retain their existing manifest.
+    if (providers.gradleProperty("profileMemory").getOrElse("false") == "true") {
+        sourceSets.release.manifest.srcFile "src/profileMemory/AndroidManifest.xml"
+    }
     buildTypes {
         debug { }
         release {
