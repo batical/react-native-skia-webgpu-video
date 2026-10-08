@@ -1,0 +1,2116 @@
+{
+  "schema": 1,
+  "change": "Reuse the frame worklet within each export",
+  "limitations": [
+    "One iPhone 15 Pro and one Pixel 8a; bounded runs do not prove the absence of every leak.",
+    "Baseline and candidate use the same scenarios; no forced GC or reduced resolution.",
+    "Android heap trace was unusable; Android attribution is not claimed from it."
+  ],
+  "ios": [
+    {
+      "device": {
+        "deviceModel": "iPhone16,1",
+        "osVersion": "27.0.1",
+        "platform": "ios",
+        "buildMode": "release"
+      },
+      "workloadVersion": "2026-10-07.1",
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "samples": 889,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 889
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 217104384,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 325617624,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "export": {
+            "encodeMs": 4087.420083001256,
+            "actualOutput": {
+              "fps": 30,
+              "rotation": 0,
+              "presentationTimesExact": true,
+              "timestampsMonotonic": true,
+              "width": 1080,
+              "firstPresentationTime": 0,
+              "audioTracks": 0,
+              "frameCount": 360,
+              "height": 1080,
+              "duration": 12,
+              "codec": "h264",
+              "lastPresentationTime": 11.966666666666667
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "samples": 899,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 899
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 325910528,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 430016568,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "export": {
+            "encodeMs": 4286.03750000149,
+            "actualOutput": {
+              "fps": 30,
+              "rotation": 0,
+              "presentationTimesExact": true,
+              "timestampsMonotonic": true,
+              "width": 1080,
+              "firstPresentationTime": 0,
+              "audioTracks": 0,
+              "frameCount": 360,
+              "height": 1080,
+              "duration": 12,
+              "codec": "h264",
+              "lastPresentationTime": 11.966666666666667
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        }
+      ],
+      "label": "iphone-memory-main-306-two-montages",
+      "rawSha256": "4ad1429955a6b192f6ab8d7dc51b2bdc05a243a771b2355a49c5d6c5188ebe40",
+      "executableSha256": "2c24922aff36db813beb765f50e12827983a96e22ce37ca7157d359c23bf0b19",
+      "bundleSha256": "97eecc6efeb13dfdf5989d5380d5c8095cc6265dcc47fc24ba8b9e983fc934e7",
+      "idleSamples": [
+        {
+          "sampledAt": "2026-10-07T17:35:41.707Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 342835200,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 446253112,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 1.5249999705702066e-05
+        },
+        {
+          "sampledAt": "2026-10-07T17:36:11.707Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 343408640,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 446679096,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 30.000693249996402
+        },
+        {
+          "sampledAt": "2026-10-07T17:36:41.712Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 343490560,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 446679096,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 60.00672929166467
+        }
+      ]
+    },
+    {
+      "device": {
+        "deviceModel": "iPhone16,1",
+        "osVersion": "27.0.1",
+        "platform": "ios",
+        "buildMode": "release"
+      },
+      "workloadVersion": "2026-10-07.1",
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "samples": 890,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 890
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 139755520,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 243730296,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "export": {
+            "encodeMs": 3968.380125001073,
+            "actualOutput": {
+              "fps": 30,
+              "rotation": 0,
+              "presentationTimesExact": true,
+              "timestampsMonotonic": true,
+              "width": 1080,
+              "firstPresentationTime": 0,
+              "audioTracks": 0,
+              "frameCount": 360,
+              "height": 1080,
+              "duration": 12,
+              "codec": "h264",
+              "lastPresentationTime": 11.966666666666667
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "samples": 892,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 892
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 166739968,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 270911376,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "export": {
+            "encodeMs": 4086.5927079990506,
+            "actualOutput": {
+              "fps": 30,
+              "rotation": 0,
+              "presentationTimesExact": true,
+              "timestampsMonotonic": true,
+              "width": 1080,
+              "firstPresentationTime": 0,
+              "audioTracks": 0,
+              "frameCount": 360,
+              "height": 1080,
+              "duration": 12,
+              "codec": "h264",
+              "lastPresentationTime": 11.966666666666667
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        }
+      ],
+      "label": "iphone-memory-stable-worklet-306-retry",
+      "rawSha256": "35f2e6353da9ac83e9bbfbf9a250aab2db8c02dcd00da1f78aada7ffc6858d1d",
+      "executableSha256": "2c24922aff36db813beb765f50e12827983a96e22ce37ca7157d359c23bf0b19",
+      "bundleSha256": "474dbe827d2c0cdc17ca1da83dd32740c74e923a4c9e854d87e160c9cc0dbd21",
+      "idleSamples": [
+        {
+          "sampledAt": "2026-10-08T07:10:12.919Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 183861248,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 287147920,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 1.6416670405305922e-05
+        },
+        {
+          "sampledAt": "2026-10-08T07:10:42.928Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 178208768,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 270223248,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 30.010120583334356
+        },
+        {
+          "sampledAt": "2026-10-08T07:11:12.922Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 178208768,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 270223248,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 60.004899375002424
+        }
+      ]
+    }
+  ],
+  "android": [
+    {
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "osVersion": "17",
+        "platform": "android",
+        "buildMode": "release"
+      },
+      "workloadVersion": "2026-10-07.1",
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "samples": 1166,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1166
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 752500736,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 661951488,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 94197760,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "export": {
+            "encodeMs": 28811.133558999747,
+            "actualOutput": {
+              "audioTracks": 0,
+              "timestampsMonotonic": true,
+              "lastPresentationTime": 11.966666,
+              "firstPresentationTime": 0,
+              "width": 1080,
+              "presentationTimesExact": true,
+              "frameCount": 360,
+              "duration": 12,
+              "fps": 30,
+              "height": 1080,
+              "rotation": 0,
+              "codec": "h264"
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "samples": 1177,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1177
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 865107968,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 774800384,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 142653440,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "export": {
+            "encodeMs": 29395.468398001045,
+            "actualOutput": {
+              "audioTracks": 0,
+              "timestampsMonotonic": true,
+              "lastPresentationTime": 11.966666,
+              "firstPresentationTime": 0,
+              "width": 1080,
+              "presentationTimesExact": true,
+              "frameCount": 360,
+              "duration": 12,
+              "fps": 30,
+              "height": 1080,
+              "rotation": 0,
+              "codec": "h264"
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        }
+      ],
+      "label": "export-cache-repeat-20*",
+      "rawSha256": "b72d3bfebe9c1a80cbd0ce82d6532b5f3f86837fa96490158ec127d489221d24",
+      "apkSha256": "fd4f6f277207d809fe40203439fcfa62b34e1bfcaffe42ad51adaf48db9f6254",
+      "idleDumpsysBytes": {
+        "pss": 773672960,
+        "rss": 925433856
+      },
+      "idleCategoryPssBytes": {
+        "Native Heap": 149174272,
+        "Dalvik Heap": 3613696,
+        "EGL mtrack": 53063680,
+        "GL mtrack": 346107904,
+        "Unknown": 143579136
+      }
+    },
+    {
+      "device": {
+        "deviceModel": "Google Pixel 8a",
+        "osVersion": "17",
+        "platform": "android",
+        "buildMode": "release"
+      },
+      "workloadVersion": "2026-10-07.1",
+      "memoryBudget": {
+        "requestedMaxBytes": 536870912,
+        "applied": true,
+        "reportedMaxBytes": 536870912
+      },
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "samples": 1173,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1173
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 646443008,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 564258816,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 59081728,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "export": {
+            "encodeMs": 24412.53288899362,
+            "actualOutput": {
+              "audioTracks": 0,
+              "timestampsMonotonic": true,
+              "lastPresentationTime": 11.966666,
+              "firstPresentationTime": 0,
+              "width": 1080,
+              "presentationTimesExact": true,
+              "frameCount": 360,
+              "duration": 12,
+              "fps": 30,
+              "height": 1080,
+              "rotation": 0,
+              "codec": "h264"
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "samples": 1174,
+          "samplesDropped": 0,
+          "conditions": {
+            "nominal/normal/active": 1174
+          },
+          "settledMemory": {
+            "rssBytes": {
+              "value": 686604288,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 604125184,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 80741376,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "export": {
+            "encodeMs": 25206.81039699912,
+            "actualOutput": {
+              "audioTracks": 0,
+              "timestampsMonotonic": true,
+              "lastPresentationTime": 11.966666,
+              "firstPresentationTime": 0,
+              "width": 1080,
+              "presentationTimesExact": true,
+              "frameCount": 360,
+              "duration": 12,
+              "fps": 30,
+              "height": 1080,
+              "rotation": 0,
+              "codec": "h264"
+            },
+            "framesCompleted": 360,
+            "expectedFrames": 360
+          }
+        }
+      ],
+      "label": "stable-worklet-repeat-20*",
+      "rawSha256": "89b5019afdba97e4ee2ec870c62b059a89df713687c17d51f45ee80fdd5d1a4b",
+      "apkSha256": "8403957987466c8b2d0d8006a6ae7de1f87975cc8227cd2661572998bdeae792",
+      "idleDumpsysBytes": {
+        "pss": 605237248,
+        "rss": 748867584
+      },
+      "idleCategoryPssBytes": {
+        "Native Heap": 83371008,
+        "Dalvik Heap": 3657728,
+        "EGL mtrack": 61501440,
+        "GL mtrack": 328839168,
+        "Unknown": 43906048
+      }
+    }
+  ],
+  "longRuns": [
+    {
+      "platform": "ios",
+      "rawReportSha256": "83519311e01403b44cfdccfb2b37cc923373ddf73bcb709afac6677cb2b03e6f",
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "sampleCount": 903,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 903
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 139247616,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 243287952,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12243.889541998506
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 1883.2444159984589
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 1900.5042919963598
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1433.2255830019712
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6355.287833996117,
+              "encodeMs": 3969.0765840038657,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17281.082333005965,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8247.731291994452
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 48125.237041004,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "sampleCount": 897,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 897
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 139657216,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 265095104,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12169.328666999936
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2001.1609169989824
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2000.3776249960065
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1432.1392909958959
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6401.492083996534,
+              "encodeMs": 4017.3336670026183,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17285.877915993333,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8237.380249999464
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 47498.652374997735,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 2,
+          "status": "passed",
+          "sampleCount": 918,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 918
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 156418048,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 271681472,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12169.055833004415
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 1716.9532089978456
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 1833.0391250029206
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1433.3298749998212
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6172.198250003159,
+              "encodeMs": 3798.573333993554,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17315.60333300382,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8249.01445800066
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 50420.813375003636,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 3,
+          "status": "passed",
+          "sampleCount": 895,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 895
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 160628736,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 281446360,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12169.503790996969
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 1883.254458002746
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 1816.7906670048833
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1433.2418330013752
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6207.892667002976,
+              "encodeMs": 3823.382792003453,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17346.819834001362,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8261.449541002512
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 47416.11345800012,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 4,
+          "status": "passed",
+          "sampleCount": 889,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 889
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 160088064,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 277612504,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12169.815416999161
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 1799.5788329988718
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2200.5629170015454
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1433.1905000060797
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6000.6497500017285,
+              "encodeMs": 3628.66562499851,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17003.169832997024,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8265.44720800221
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 47128.42904099822,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 5,
+          "status": "passed",
+          "sampleCount": 898,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 898
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 167690240,
+              "source": "iOS mach task_info resident_size",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": 285149144,
+              "source": "iOS task_vm_info phys_footprint",
+              "reason": null
+            },
+            "pssBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No malloc heap profiler attached"
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": 0,
+              "source": "RNSkiaVideo native decoder counters",
+              "reason": null
+            },
+            "inFlightFrames": {
+              "value": 0,
+              "source": "RNSkiaVideo encoder submitting buffer counters",
+              "reason": null
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12184.373458996415
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2083.3276669979095
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2167.0565420016646
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1433.4290419965982
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 6462.979959003627,
+              "encodeMs": 4087.354041993618,
+              "actualOutput": {
+                "fps": 30,
+                "rotation": 0,
+                "presentationTimesExact": true,
+                "timestampsMonotonic": true,
+                "width": 1080,
+                "firstPresentationTime": 0,
+                "audioTracks": 0,
+                "frameCount": 360,
+                "height": 1080,
+                "duration": 12,
+                "codec": "h264",
+                "lastPresentationTime": 11.966666666666667
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 17207.404542006552,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8238.235000006855
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 47355.74899999797,
+              "cycles": 40
+            }
+          ]
+        }
+      ],
+      "idleSamples": [
+        {
+          "sampledAt": "2026-10-08T07:21:48.231Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 224788480,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 341182472,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 1.3625001884065568e-05
+        },
+        {
+          "sampledAt": "2026-10-08T07:22:18.239Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 225509376,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 337381384,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 30.009155333333183
+        },
+        {
+          "sampledAt": "2026-10-08T07:22:48.235Z",
+          "operatingConditions": {
+            "thermalState": "nominal",
+            "powerMode": "normal",
+            "source": "NSProcessInfo thermalState/lowPowerModeEnabled; UIApplication lifecycle",
+            "applicationState": "active"
+          },
+          "memory": {
+            "rssBytes": {
+              "value": 188350464,
+              "source": "iOS mach task_info resident_size"
+            },
+            "gpuBytes": {
+              "value": null,
+              "reason": "No total GPU allocation collector attached"
+            },
+            "physicalFootprintBytes": {
+              "value": 291227608,
+              "source": "iOS task_vm_info phys_footprint"
+            },
+            "nativeHeapBytes": {
+              "value": null,
+              "reason": "No malloc heap profiler attached"
+            }
+          },
+          "elapsedSeconds": 60.00559899999644
+        }
+      ]
+    },
+    {
+      "platform": "android",
+      "apkSha256": "8403957987466c8b2d0d8006a6ae7de1f87975cc8227cd2661572998bdeae792",
+      "rawReportSha256": "9509a989b98e146029988db3d36e7bca49c99e6a4366aef1600cc6b1eb1d0ab8",
+      "cases": [
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 0,
+          "status": "passed",
+          "sampleCount": 1177,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 1177
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 620482560,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 538612736,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 58409984,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12360.48629400134
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2259.8225919902325
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3041.0823979973793
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1480.132569000125
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 29401.71571199596,
+              "encodeMs": 24461.64291600883,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23229.75733500719,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8463.157555997372
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56153.064480006695,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 1,
+          "status": "passed",
+          "sampleCount": 1175,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 1175
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 676167680,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 594011136,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 80212992,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12232.39498399198
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2341.8278000056744
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 3095.6051039993763
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1512.532389998436
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 30156.364108994603,
+              "encodeMs": 25230.956107005477,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23305.393036991358,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8578.551518008113
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56015.66217699647,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 2,
+          "status": "passed",
+          "sampleCount": 1158,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 1158
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 715595776,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 632884224,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 97428480,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12230.684738993645
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2371.667196005583
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2999.2410909980536
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1547.1956790089607
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 31309.60108999908,
+              "encodeMs": 26406.76567800343,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23278.538056999445,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8449.48254801333
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 57189.24774900079,
+              "cycles": 40
+            }
+          ]
+        },
+        {
+          "id": "4k-x8-lazy-direct",
+          "repetition": 3,
+          "status": "passed",
+          "sampleCount": 1169,
+          "droppedSamples": 0,
+          "conditions": {
+            "nominal/normal/active": 1169
+          },
+          "finalSettledMemory": {
+            "rssBytes": {
+              "value": 705880064,
+              "source": "Android /proc/self/status VmRSS",
+              "reason": null
+            },
+            "physicalFootprintBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "pssBytes": {
+              "value": 622640128,
+              "source": "Android Debug.MemoryInfo TOTAL PSS",
+              "reason": null
+            },
+            "nativeHeapBytes": {
+              "value": 86152192,
+              "source": "Android Debug.MemoryInfo native heap PSS",
+              "reason": null
+            },
+            "gpuBytes": {
+              "value": null,
+              "source": null,
+              "reason": "Android exposes no complete process GPU allocation collector"
+            },
+            "ownedBytes": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget byte estimates",
+              "reason": null
+            },
+            "ownedResources": {
+              "value": 0,
+              "source": "RNSkiaVideo memory budget reservations",
+              "reason": null
+            },
+            "decoderCount": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            },
+            "inFlightFrames": {
+              "value": null,
+              "source": null,
+              "reason": "Collector does not expose this metric"
+            }
+          },
+          "allSettledOwnedZero": true,
+          "operations": [
+            {
+              "operation": "play",
+              "elapsedMs": 12218.128587007523
+            },
+            {
+              "operation": "seek",
+              "elapsedMs": 2425.9442560076714
+            },
+            {
+              "operation": "scrub",
+              "elapsedMs": 2999.5588800013065
+            },
+            {
+              "operation": "loop",
+              "elapsedMs": 1554.1396079957485
+            },
+            {
+              "operation": "export",
+              "elapsedMs": 29832.038589000702,
+              "encodeMs": 24847.60572500527,
+              "actualOutput": {
+                "audioTracks": 0,
+                "timestampsMonotonic": true,
+                "lastPresentationTime": 11.966666,
+                "firstPresentationTime": 0,
+                "width": 1080,
+                "presentationTimesExact": true,
+                "frameCount": 360,
+                "duration": 12,
+                "fps": 30,
+                "height": 1080,
+                "rotation": 0,
+                "codec": "h264"
+              },
+              "framesCompleted": 360,
+              "expectedFrames": 360
+            },
+            {
+              "operation": "churn",
+              "elapsedMs": 23536.188283994794,
+              "cycles": 25
+            },
+            {
+              "operation": "perf",
+              "elapsedMs": 8485.284061998129
+            },
+            {
+              "operation": "leak",
+              "elapsedMs": 56716.079780995846,
+              "cycles": 40
+            }
+          ]
+        }
+      ],
+      "idleDumpsysBytes": {
+        "pss": 631331840,
+        "rss": 775614464
+      }
+    }
+  ],
+  "validation": {
+    "jestPassed": 196,
+    "typecheck": "passed",
+    "packageBuild": "passed",
+    "publint": "passed",
+    "androidReleaseBuild": "passed",
+    "iosReleaseBuild": "passed"
+  }
+}
