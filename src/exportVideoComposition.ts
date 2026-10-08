@@ -189,268 +189,265 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
       return;
     }
     const bgra = Platform.OS === "ios";
+    // Keep the export closure identity stable across frames. Recreating this
+    // worklet per image makes Worklets reconstruct its entire captured graph
+    // on the persistent runtime, including nested drawing/native functions.
     const step = () => {
       try {
-        runOnRuntime(runtime, () => {
-          "worklet";
-          const storage = globalThis as typeof globalThis & {
-            __rnskwgpuExport?: ExportState;
-          };
-          const state = storage.__rnskwgpuExport;
-          if (!state) {
-            scheduleOnRN(settle, new Error("Export state unavailable"), false);
-            return;
-          }
-          const isCancelled = () => {
-            "worklet";
-            return cancelled.getBlocking();
-          };
-          const finish = async (
-            error: unknown,
-            aborted = false,
-            failed = false,
-          ) => {
-            "worklet";
-            const cleanup = { failure: error, failed, safeToRelease: true };
-            // A rejected adapter drain cannot prove that it stopped reading
-            // our pixels. Retain/account that session instead of recycling them.
-            const clean = (fn: () => void) => {
-              "worklet";
-              try {
-                runWithVideoAutoreleasePool(fn);
-                return true;
-              } catch (e) {
-                if (!cleanup.failed) cleanup.failure = e;
-                cleanup.failed = true;
-                cleanup.safeToRelease = false;
-                return false;
-              }
-            };
-            // Submit any recording left by a drawing exception before an
-            // adapter is allowed to destroy textures referenced by that canvas.
-            clean(() => state.surface?.flush(true));
-            if (cleanup.safeToRelease && state.pendingAfterDraw) {
-              if (clean(state.pendingAfterDraw)) state.pendingAfterDraw = null;
-            }
-            if (cleanup.safeToRelease) {
-              try {
-                await state.processor?.dispose();
-                state.processor = null;
-              } catch (e) {
-                if (!cleanup.failed) cleanup.failure = e;
-                cleanup.failed = true;
-                cleanup.safeToRelease = false;
-              }
-            }
-            if (clean(() => state.extractor?.dispose())) state.extractor = null;
-            if (clean(() => state.encoder?.dispose())) state.encoder = null;
-            if (cleanup.safeToRelease) {
-              clean(() => state.surface?.flush(true));
-              if (cleanup.safeToRelease) {
-                for (const frame of Object.values(state.frames))
-                  clean(() => frame.dispose?.());
-                clean(() => clearVideoFrameImages(true));
-              }
-              if (cleanup.safeToRelease && clean(() => state.canvas?.dispose()))
-                state.canvas = null;
-              if (
-                cleanup.safeToRelease &&
-                clean(() => state.surface?.dispose())
-              )
-                state.surface = null;
-            }
-            // The export runtime is private and serialized. Its unused cache
-            // need not survive a completed session; leave the shared Context
-            // and the UI/runtime caches alone. A failed drain stays quarantined.
-            if (cleanup.safeToRelease && state.hasRecorder) {
-              if (clean(trimExportRecorderCache)) state.hasRecorder = false;
-            }
-            if (cleanup.safeToRelease) {
-              for (let i = state.reservations.length - 1; i >= 0; i--) {
-                if (clean(() => releaseVideoMemory(state.reservations[i]!)))
-                  state.reservations.splice(i, 1);
-              }
-            }
-            if (cleanup.safeToRelease) {
-              state.frames = {};
-              state.readback = null;
-              delete storage.__rnskwgpuExport;
-            } else {
-              // One retained session at most; subsequent exports fail before
-              // allocating anything. Runtime teardown is the recovery boundary.
-              state.poisoned = true;
-              state.setupError = cleanup.failure;
-            }
-            scheduleOnRN(
-              settle,
-              cleanup.failure,
-              aborted || isCancelled(),
-              cleanup.failed,
-            );
-          };
-          const work = async () => {
-            "worklet";
-            try {
-              if ("setupError" in state) throw state.setupError;
-              if (isCancelled()) {
-                await finish(null, true);
-                return;
-              }
-              const time = state.index / options.frameRate;
-              // Purge ended/closed producer images, including lazily opened clips.
-              const owned = runWithVideoAutoreleasePool(() => {
-                const decoded = state.extractor!.decodeCompositionFrames(time);
-                const imported = ownVideoFrames(decoded);
-                for (const [key, previous] of Object.entries(state.frames)) {
-                  if (
-                    !imported[key] ||
-                    imported[key]!.producerId !== previous.producerId
-                  )
-                    releaseVideoFrameImage(previous);
-                }
-                return imported;
-              });
-              state.frames = owned;
-              await state.processor?.prepareFrame({
-                frames: owned,
-                currentTime: time,
-                videoComposition,
-                width: options.width,
-                height: options.height,
-                isCancelled,
-              });
-              if (isCancelled()) {
-                await finish(null, true);
-                return;
-              }
-              const draw = () => {
-                "worklet";
-                const canvas = state.canvas!;
-                canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
-                const context = beforeDrawFrame?.() as T;
-                const drawn = {
-                  failed: false,
-                  failure: undefined as unknown,
-                  drained: false,
-                };
-                try {
-                  drawFrame({
-                    canvas,
-                    context,
-                    videoComposition,
-                    currentTime: time,
-                    frames: owned,
-                    width: options.width,
-                    height: options.height,
-                  });
-                  state.surface!.flush(true);
-                  drawn.drained = true;
-                  const readbackCanvas = canvas as unknown as ReadbackCanvas;
-                  const pixels = readbackCanvas.readPixels(
-                    0,
-                    0,
-                    {
-                      width: options.width,
-                      height: options.height,
-                      colorType: bgra
-                        ? ColorType.BGRA_8888
-                        : ColorType.RGBA_8888,
-                      alphaType: AlphaType.Premul,
-                    },
-                    state.readback!,
-                    options.width * 4,
-                  );
-                  if (
-                    !(pixels instanceof Uint8Array) ||
-                    pixels.byteLength !== bytes ||
-                    pixels.byteOffset !== 0 ||
-                    pixels.buffer !== state.readback!.buffer
-                  ) {
-                    throw new Error("Video export pixel readback failed");
-                  }
-                  // The buffer is consumed synchronously by a bounded native
-                  // pool. Export continues to use readback, with no native-surface interop.
-                  const storage =
-                    pixels.byteOffset === 0 &&
-                    pixels.buffer.byteLength === pixels.byteLength
-                      ? pixels.buffer
-                      : pixels.buffer.slice(
-                          pixels.byteOffset,
-                          pixels.byteOffset + pixels.byteLength,
-                        );
-                  state.encoder!.encodeFrame(
-                    {
-                      kind: bgra ? "bgra" : "rgba",
-                      data: storage,
-                      width: options.width,
-                      height: options.height,
-                      bytesPerRow: options.width * 4,
-                    },
-                    time,
-                  );
-                } catch (error) {
-                  drawn.failed = true;
-                  drawn.failure = error;
-                } finally {
-                  if (afterDrawFrame) {
-                    // The context may own a texture referenced by a recording
-                    // left behind by a thrown draw. Submit it before its owner
-                    // can destroy it; keep the callback/context if draining fails.
-                    if (!drawn.drained) {
-                      try {
-                        state.surface!.flush(true);
-                        drawn.drained = true;
-                      } catch (error) {
-                        if (!drawn.failed) drawn.failure = error;
-                        drawn.failed = true;
-                      }
-                    }
-                    const releaseContext = () => {
-                      "worklet";
-                      afterDrawFrame(context);
-                    };
-                    if (drawn.drained) {
-                      try {
-                        releaseContext();
-                      } catch (error) {
-                        if (!drawn.failed) drawn.failure = error;
-                        drawn.failed = true;
-                      }
-                    } else state.pendingAfterDraw = releaseContext;
-                  }
-                }
-                if (drawn.failed) throw drawn.failure;
-              };
-              runWithVideoAutoreleasePool(draw);
-              state.index++;
-              if (onProgress)
-                scheduleOnRN(onProgress, {
-                  framesCompleted: state.index,
-                  nbFrames,
-                });
-              if (isCancelled()) {
-                await finish(null, true);
-                return;
-              }
-              if (state.index === nbFrames) {
-                runWithVideoAutoreleasePool(() =>
-                  state.encoder!.finishWriting(),
-                );
-                await finish(null);
-              } else {
-                // Let the runtime's GPU/ML promise pump and JS abort/progress
-                // callbacks run before scheduling another frame.
-                scheduleOnRN(step);
-              }
-            } catch (error) {
-              await finish(error, false, true);
-            }
-          };
-          void work();
-        })();
+        runOnRuntime(runtime, frameWorklet)();
       } catch (error) {
         settle(error, cancelled.getBlocking(), true);
       }
+    };
+    const frameWorklet = () => {
+      "worklet";
+      const storage = globalThis as typeof globalThis & {
+        __rnskwgpuExport?: ExportState;
+      };
+      const state = storage.__rnskwgpuExport;
+      if (!state) {
+        scheduleOnRN(settle, new Error("Export state unavailable"), false);
+        return;
+      }
+      const isCancelled = () => {
+        "worklet";
+        return cancelled.getBlocking();
+      };
+      const finish = async (
+        error: unknown,
+        aborted = false,
+        failed = false,
+      ) => {
+        "worklet";
+        const cleanup = { failure: error, failed, safeToRelease: true };
+        // A rejected adapter drain cannot prove that it stopped reading
+        // our pixels. Retain/account that session instead of recycling them.
+        const clean = (fn: () => void) => {
+          "worklet";
+          try {
+            runWithVideoAutoreleasePool(fn);
+            return true;
+          } catch (e) {
+            if (!cleanup.failed) cleanup.failure = e;
+            cleanup.failed = true;
+            cleanup.safeToRelease = false;
+            return false;
+          }
+        };
+        // Submit any recording left by a drawing exception before an
+        // adapter is allowed to destroy textures referenced by that canvas.
+        clean(() => state.surface?.flush(true));
+        if (cleanup.safeToRelease && state.pendingAfterDraw) {
+          if (clean(state.pendingAfterDraw)) state.pendingAfterDraw = null;
+        }
+        if (cleanup.safeToRelease) {
+          try {
+            await state.processor?.dispose();
+            state.processor = null;
+          } catch (e) {
+            if (!cleanup.failed) cleanup.failure = e;
+            cleanup.failed = true;
+            cleanup.safeToRelease = false;
+          }
+        }
+        if (clean(() => state.extractor?.dispose())) state.extractor = null;
+        if (clean(() => state.encoder?.dispose())) state.encoder = null;
+        if (cleanup.safeToRelease) {
+          clean(() => state.surface?.flush(true));
+          if (cleanup.safeToRelease) {
+            for (const frame of Object.values(state.frames))
+              clean(() => frame.dispose?.());
+            clean(() => clearVideoFrameImages(true));
+          }
+          if (cleanup.safeToRelease && clean(() => state.canvas?.dispose()))
+            state.canvas = null;
+          if (cleanup.safeToRelease && clean(() => state.surface?.dispose()))
+            state.surface = null;
+        }
+        // The export runtime is private and serialized. Its unused cache
+        // need not survive a completed session; leave the shared Context
+        // and the UI/runtime caches alone. A failed drain stays quarantined.
+        if (cleanup.safeToRelease && state.hasRecorder) {
+          if (clean(trimExportRecorderCache)) state.hasRecorder = false;
+        }
+        if (cleanup.safeToRelease) {
+          for (let i = state.reservations.length - 1; i >= 0; i--) {
+            if (clean(() => releaseVideoMemory(state.reservations[i]!)))
+              state.reservations.splice(i, 1);
+          }
+        }
+        if (cleanup.safeToRelease) {
+          state.frames = {};
+          state.readback = null;
+          delete storage.__rnskwgpuExport;
+        } else {
+          // One retained session at most; subsequent exports fail before
+          // allocating anything. Runtime teardown is the recovery boundary.
+          state.poisoned = true;
+          state.setupError = cleanup.failure;
+        }
+        scheduleOnRN(
+          settle,
+          cleanup.failure,
+          aborted || isCancelled(),
+          cleanup.failed,
+        );
+      };
+      const work = async () => {
+        "worklet";
+        try {
+          if ("setupError" in state) throw state.setupError;
+          if (isCancelled()) {
+            await finish(null, true);
+            return;
+          }
+          const time = state.index / options.frameRate;
+          // Purge ended/closed producer images, including lazily opened clips.
+          const owned = runWithVideoAutoreleasePool(() => {
+            const decoded = state.extractor!.decodeCompositionFrames(time);
+            const imported = ownVideoFrames(decoded);
+            for (const [key, previous] of Object.entries(state.frames)) {
+              if (
+                !imported[key] ||
+                imported[key]!.producerId !== previous.producerId
+              )
+                releaseVideoFrameImage(previous);
+            }
+            return imported;
+          });
+          state.frames = owned;
+          await state.processor?.prepareFrame({
+            frames: owned,
+            currentTime: time,
+            videoComposition,
+            width: options.width,
+            height: options.height,
+            isCancelled,
+          });
+          if (isCancelled()) {
+            await finish(null, true);
+            return;
+          }
+          const draw = () => {
+            "worklet";
+            const canvas = state.canvas!;
+            canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
+            const context = beforeDrawFrame?.() as T;
+            const drawn = {
+              failed: false,
+              failure: undefined as unknown,
+              drained: false,
+            };
+            try {
+              drawFrame({
+                canvas,
+                context,
+                videoComposition,
+                currentTime: time,
+                frames: owned,
+                width: options.width,
+                height: options.height,
+              });
+              state.surface!.flush(true);
+              drawn.drained = true;
+              const readbackCanvas = canvas as unknown as ReadbackCanvas;
+              const pixels = readbackCanvas.readPixels(
+                0,
+                0,
+                {
+                  width: options.width,
+                  height: options.height,
+                  colorType: bgra ? ColorType.BGRA_8888 : ColorType.RGBA_8888,
+                  alphaType: AlphaType.Premul,
+                },
+                state.readback!,
+                options.width * 4,
+              );
+              if (
+                !(pixels instanceof Uint8Array) ||
+                pixels.byteLength !== bytes ||
+                pixels.byteOffset !== 0 ||
+                pixels.buffer !== state.readback!.buffer
+              ) {
+                throw new Error("Video export pixel readback failed");
+              }
+              // The buffer is consumed synchronously by a bounded native
+              // pool. Export continues to use readback, with no native-surface interop.
+              const storage =
+                pixels.byteOffset === 0 &&
+                pixels.buffer.byteLength === pixels.byteLength
+                  ? pixels.buffer
+                  : pixels.buffer.slice(
+                      pixels.byteOffset,
+                      pixels.byteOffset + pixels.byteLength,
+                    );
+              state.encoder!.encodeFrame(
+                {
+                  kind: bgra ? "bgra" : "rgba",
+                  data: storage,
+                  width: options.width,
+                  height: options.height,
+                  bytesPerRow: options.width * 4,
+                },
+                time,
+              );
+            } catch (error) {
+              drawn.failed = true;
+              drawn.failure = error;
+            } finally {
+              if (afterDrawFrame) {
+                // The context may own a texture referenced by a recording
+                // left behind by a thrown draw. Submit it before its owner
+                // can destroy it; keep the callback/context if draining fails.
+                if (!drawn.drained) {
+                  try {
+                    state.surface!.flush(true);
+                    drawn.drained = true;
+                  } catch (error) {
+                    if (!drawn.failed) drawn.failure = error;
+                    drawn.failed = true;
+                  }
+                }
+                const releaseContext = () => {
+                  "worklet";
+                  afterDrawFrame(context);
+                };
+                if (drawn.drained) {
+                  try {
+                    releaseContext();
+                  } catch (error) {
+                    if (!drawn.failed) drawn.failure = error;
+                    drawn.failed = true;
+                  }
+                } else state.pendingAfterDraw = releaseContext;
+              }
+            }
+            if (drawn.failed) throw drawn.failure;
+          };
+          runWithVideoAutoreleasePool(draw);
+          state.index++;
+          if (onProgress)
+            scheduleOnRN(onProgress, {
+              framesCompleted: state.index,
+              nbFrames,
+            });
+          if (isCancelled()) {
+            await finish(null, true);
+            return;
+          }
+          if (state.index === nbFrames) {
+            runWithVideoAutoreleasePool(() => state.encoder!.finishWriting());
+            await finish(null);
+          } else {
+            // Let the runtime's GPU/ML promise pump and JS abort/progress
+            // callbacks run before scheduling another frame.
+            scheduleOnRN(step);
+          }
+        } catch (error) {
+          await finish(error, false, true);
+        }
+      };
+      void work();
     };
     try {
       runOnRuntime(runtime, () => {

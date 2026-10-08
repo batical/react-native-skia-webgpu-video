@@ -7,6 +7,7 @@ jest.mock("../gpuDevice", () => ({
 }));
 
 import { Platform } from "react-native";
+import { runOnRuntime } from "react-native-worklets";
 import { Skia } from "react-native-skia";
 import RNSkiaVideoModule from "../RNSkiaVideoModule";
 import {
@@ -254,6 +255,24 @@ afterEach(() => {
 });
 
 describe("exportVideoComposition", () => {
+  it("keeps the serialized export graph bounded independently of frame count", async () => {
+    const first = await runExport({ frameRate: 360 });
+    const submitted = jest.mocked(runOnRuntime).mock.calls.map((call) => call[1]);
+    // One setup closure and one reusable frame closure, rather than a fresh
+    // captured native/drawing graph for each frame on the persistent runtime.
+    expect(first.encoder.encodeFrame).toHaveBeenCalledTimes(360);
+    expect(submitted).toHaveLength(361);
+    expect(new Set(submitted.slice(1)).size).toBe(1);
+    expect(submitted[0]).not.toBe(submitted[1]);
+    expectDisposed(first);
+    jest.mocked(runOnRuntime).mockClear();
+    const second = await runExport({ frameRate: 360 });
+    const next = jest.mocked(runOnRuntime).mock.calls.map((call) => call[1]);
+    expect(new Set(next.slice(1)).size).toBe(1);
+    expect(next[1]).not.toBe(submitted[1]);
+    expectDisposed(second, 1);
+  });
+
   it("encodes every full BGRA frame, synchronizes rendering, and releases the surface", async () => {
     const result = await runExport();
     const { encoder, extractor, drawFrame } = result;
