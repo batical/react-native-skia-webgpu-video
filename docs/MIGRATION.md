@@ -54,7 +54,7 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 - Composition sources use app-accessible local filesystem paths.
 - Preview width/height are layout points; the drawing callback receives pixel dimensions. Export width/height are pixels.
 - Use `lazyDecoders` for sequential timelines. A preview decode limit such as `maxLongSide` also limits source detail if reused during export; use separate settings when necessary.
-- `copy` and `direct` remain API options. Both currently export through CPU readback. Inspect `getVideoResourceStats().backend` for the actual transport instead of inferring it from the requested mode.
+- `copy` and `direct` remain API options with the same transport. iOS exports by drawing into the encoder's IOSurface-backed pool buffers, or through CPU readback after a failed setup probe; Android uses CPU readback. Inspect `getVideoResourceStats().backend` for the transport instead of inferring it from the requested mode.
 - Review application code that calls internal extractors or directly consumes native textures. Its frames must follow the new ownership protocol; the renamed hooks do not preserve the old texture representation.
 
 ## Audio

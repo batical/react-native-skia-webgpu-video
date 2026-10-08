@@ -7,7 +7,8 @@ jest.mock("../gpuDevice", () => ({
 }));
 
 import { Platform } from "react-native";
-import { runOnRuntime } from "react-native-worklets";
+import { runOnRuntime, scheduleOnRN } from "react-native-worklets";
+import { yieldToRuntime } from "../runtimeYield";
 import { Skia } from "react-native-skia";
 import RNSkiaVideoModule from "../RNSkiaVideoModule";
 import {
@@ -47,6 +48,12 @@ jest.mock("react-native-worklets", () => ({
       },
     };
     return mockSerializedRuntime?.host(synchronizable) ?? synchronizable;
+  }),
+}));
+// Frames continue on the export runtime's own event loop.
+jest.mock("../runtimeYield", () => ({
+  yieldToRuntime: jest.fn((fn: () => void) => {
+    mockRuntimeTasks.push(fn);
   }),
 }));
 jest.mock("react-native", () => ({ Platform: { OS: "ios" } }));
@@ -258,17 +265,19 @@ describe("exportVideoComposition", () => {
   it("keeps the serialized export graph bounded independently of frame count", async () => {
     const first = await runExport({ frameRate: 360 });
     const submitted = jest.mocked(runOnRuntime).mock.calls.map((call) => call[1]);
-    // One setup closure and one reusable frame closure, rather than a fresh
-    // captured native/drawing graph for each frame on the persistent runtime.
+    // One setup closure and one frame closure; later frames yield on the
+    // export runtime instead of hopping through the RN thread.
     expect(first.encoder.encodeFrame).toHaveBeenCalledTimes(360);
-    expect(submitted).toHaveLength(361);
-    expect(new Set(submitted.slice(1)).size).toBe(1);
+    expect(submitted).toHaveLength(2);
     expect(submitted[0]).not.toBe(submitted[1]);
+    expect(yieldToRuntime).toHaveBeenCalledTimes(359);
+    // The first frame's hop and the settlement.
+    expect(scheduleOnRN).toHaveBeenCalledTimes(2);
     expectDisposed(first);
     jest.mocked(runOnRuntime).mockClear();
     const second = await runExport({ frameRate: 360 });
     const next = jest.mocked(runOnRuntime).mock.calls.map((call) => call[1]);
-    expect(new Set(next.slice(1)).size).toBe(1);
+    expect(next).toHaveLength(2);
     expect(next[1]).not.toBe(submitted[1]);
     expectDisposed(second, 1);
   });

@@ -33,6 +33,14 @@ import {
   reserveVideoMemory,
 } from "./memory";
 import { enqueueExport, exportAbortError } from "./exportQueue";
+import {
+  acquireEncoderTarget,
+  closeEncoderTarget,
+  probeEncoderTarget,
+  supportsEncoderTargets,
+  type EncoderTarget,
+} from "./exportTarget";
+import { yieldToRuntime } from "./runtimeYield";
 
 export type VideoFrameProcessingContext = {
   frames: Record<string, VideoFrame>;
@@ -91,6 +99,9 @@ type ExportState = {
   surface: SkSurface | null;
   canvas: SkCanvas | null;
   readback: Uint8Array | null;
+  /** iOS: draw into a lent encoder buffer instead of reading pixels back. */
+  gpu: boolean;
+  target: EncoderTarget | null;
   frames: Record<string, VideoFrame>;
   processor: VideoFrameProcessor | null;
   pendingAfterDraw: (() => void) | null;
@@ -189,6 +200,8 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
       return;
     }
     const bgra = Platform.OS === "ios";
+    const gpuExport =
+      bgra && RNSkiaVideoModule.getBackendInfo?.()?.gpuDirectExport === true;
     // Keep the export closure identity stable across frames. Recreating this
     // worklet per image makes Worklets reconstruct its entire captured graph
     // on the persistent runtime, including nested drawing/native functions.
@@ -237,6 +250,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         // Submit any recording left by a drawing exception before an
         // adapter is allowed to destroy textures referenced by that canvas.
         clean(() => state.surface?.flush(true));
+        clean(() => state.target?.surface?.flush(true));
         if (cleanup.safeToRelease && state.pendingAfterDraw) {
           if (clean(state.pendingAfterDraw)) state.pendingAfterDraw = null;
         }
@@ -254,6 +268,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         if (clean(() => state.encoder?.dispose())) state.encoder = null;
         if (cleanup.safeToRelease) {
           clean(() => state.surface?.flush(true));
+          clean(() => state.target?.surface?.flush(true));
           if (cleanup.safeToRelease) {
             for (const frame of Object.values(state.frames))
               clean(() => frame.dispose?.());
@@ -263,6 +278,10 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             state.canvas = null;
           if (cleanup.safeToRelease && clean(() => state.surface?.dispose()))
             state.surface = null;
+          const target = state.target;
+          if (cleanup.safeToRelease && target) {
+            if (clean(() => closeEncoderTarget(target))) state.target = null;
+          }
         }
         // The export runtime is private and serialized. Its unused cache
         // need not survive a completed session; leave the shared Context
@@ -293,13 +312,14 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           cleanup.failed,
         );
       };
-      const work = async () => {
+      // One frame per call; true when another frame follows.
+      const work = async (): Promise<boolean> => {
         "worklet";
         try {
           if ("setupError" in state) throw state.setupError;
           if (isCancelled()) {
             await finish(null, true);
-            return;
+            return false;
           }
           const time = state.index / options.frameRate;
           // Purge ended/closed producer images, including lazily opened clips.
@@ -326,11 +346,19 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           });
           if (isCancelled()) {
             await finish(null, true);
-            return;
+            return false;
           }
           const draw = () => {
             "worklet";
-            const canvas = state.canvas!;
+            if (state.gpu)
+              state.target = acquireEncoderTarget(
+                state.encoder!,
+                options.width,
+                options.height,
+              );
+            const target = state.target;
+            const surface = target ? target.surface! : state.surface!;
+            const canvas = target ? target.canvas! : state.canvas!;
             canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
             const context = beforeDrawFrame?.() as T;
             const drawn = {
@@ -348,49 +376,57 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 width: options.width,
                 height: options.height,
               });
-              state.surface!.flush(true);
+              surface.flush(true);
               drawn.drained = true;
-              const readbackCanvas = canvas as unknown as ReadbackCanvas;
-              const pixels = readbackCanvas.readPixels(
-                0,
-                0,
-                {
-                  width: options.width,
-                  height: options.height,
-                  colorType: bgra ? ColorType.BGRA_8888 : ColorType.RGBA_8888,
-                  alphaType: AlphaType.Premul,
-                },
-                state.readback!,
-                options.width * 4,
-              );
-              if (
-                !(pixels instanceof Uint8Array) ||
-                pixels.byteLength !== bytes ||
-                pixels.byteOffset !== 0 ||
-                pixels.buffer !== state.readback!.buffer
-              ) {
-                throw new Error("Video export pixel readback failed");
+              if (target) {
+                closeEncoderTarget(target);
+                state.target = null;
+                state.encoder!.encodeFrame(
+                  { kind: "native-buffer", nativeBuffer: target.pointer },
+                  time,
+                );
+              } else {
+                const readbackCanvas = canvas as unknown as ReadbackCanvas;
+                const pixels = readbackCanvas.readPixels(
+                  0,
+                  0,
+                  {
+                    width: options.width,
+                    height: options.height,
+                    colorType: bgra ? ColorType.BGRA_8888 : ColorType.RGBA_8888,
+                    alphaType: AlphaType.Premul,
+                  },
+                  state.readback!,
+                  options.width * 4,
+                );
+                if (
+                  !(pixels instanceof Uint8Array) ||
+                  pixels.byteLength !== bytes ||
+                  pixels.byteOffset !== 0 ||
+                  pixels.buffer !== state.readback!.buffer
+                ) {
+                  throw new Error("Video export pixel readback failed");
+                }
+                // Fallback: consumed synchronously by the bounded native pool.
+                const storage =
+                  pixels.byteOffset === 0 &&
+                  pixels.buffer.byteLength === pixels.byteLength
+                    ? pixels.buffer
+                    : pixels.buffer.slice(
+                        pixels.byteOffset,
+                        pixels.byteOffset + pixels.byteLength,
+                      );
+                state.encoder!.encodeFrame(
+                  {
+                    kind: bgra ? "bgra" : "rgba",
+                    data: storage,
+                    width: options.width,
+                    height: options.height,
+                    bytesPerRow: options.width * 4,
+                  },
+                  time,
+                );
               }
-              // The buffer is consumed synchronously by a bounded native
-              // pool. Export continues to use readback, with no native-surface interop.
-              const storage =
-                pixels.byteOffset === 0 &&
-                pixels.buffer.byteLength === pixels.byteLength
-                  ? pixels.buffer
-                  : pixels.buffer.slice(
-                      pixels.byteOffset,
-                      pixels.byteOffset + pixels.byteLength,
-                    );
-              state.encoder!.encodeFrame(
-                {
-                  kind: bgra ? "bgra" : "rgba",
-                  data: storage,
-                  width: options.width,
-                  height: options.height,
-                  bytesPerRow: options.width * 4,
-                },
-                time,
-              );
             } catch (error) {
               drawn.failed = true;
               drawn.failure = error;
@@ -401,7 +437,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 // can destroy it; keep the callback/context if draining fails.
                 if (!drawn.drained) {
                   try {
-                    state.surface!.flush(true);
+                    surface.flush(true);
                     drawn.drained = true;
                   } catch (error) {
                     if (!drawn.failed) drawn.failure = error;
@@ -433,21 +469,27 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             });
           if (isCancelled()) {
             await finish(null, true);
-            return;
+            return false;
           }
           if (state.index === nbFrames) {
             runWithVideoAutoreleasePool(() => state.encoder!.finishWriting());
             await finish(null);
-          } else {
-            // Let the runtime's GPU/ML promise pump and JS abort/progress
-            // callbacks run before scheduling another frame.
-            scheduleOnRN(step);
+            return false;
           }
+          return true;
         } catch (error) {
           await finish(error, false, true);
+          return false;
         }
       };
-      void work();
+      const run = async () => {
+        "worklet";
+        // Yield on this runtime between frames: GPU/ML promises still settle,
+        // and a busy RN thread no longer paces the export.
+        while (await work())
+          await new Promise<void>((resolve) => yieldToRuntime(resolve));
+      };
+      void run();
     };
     try {
       runOnRuntime(runtime, () => {
@@ -471,6 +513,8 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           surface: null,
           canvas: null,
           readback: null,
+          gpu: false,
+          target: null,
           frames: {},
           processor: null,
           pendingAfterDraw: null,
@@ -487,26 +531,29 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             }
             runWithVideoAutoreleasePool(() => {
               assertExportRecorderCacheSupport();
-              // Render target + transient full-frame CPU readback. Native decoder
-              // and encoder reservations are additional entries in the same budget.
-              state.reservations.push(
-                reserveVideoMemory(bytes, "export render target"),
-              );
-              state.reservations.push(
-                reserveVideoMemory(
-                  bytes * 2,
-                  "export reusable readback and transient raster",
-                ),
-              );
-              state.readback = new Uint8Array(bytes);
-              state.hasRecorder = true;
-              state.surface = Skia.Surface.MakeOffscreen(
-                options.width,
-                options.height,
-              );
-              if (!state.surface)
-                throw new Error("Cannot allocate export surface");
-              state.canvas = getVideoCanvas(state.surface);
+              const allocateReadback = () => {
+                // Render target + transient full-frame CPU readback. Native decoder
+                // and encoder reservations are additional entries in the same budget.
+                state.reservations.push(
+                  reserveVideoMemory(bytes, "export render target"),
+                );
+                state.reservations.push(
+                  reserveVideoMemory(
+                    bytes * 2,
+                    "export reusable readback and transient raster",
+                  ),
+                );
+                state.readback = new Uint8Array(bytes);
+                state.hasRecorder = true;
+                state.surface = Skia.Surface.MakeOffscreen(
+                  options.width,
+                  options.height,
+                );
+                if (!state.surface)
+                  throw new Error("Cannot allocate export surface");
+                state.canvas = getVideoCanvas(state.surface);
+              };
+              if (!gpuExport) allocateReadback();
               state.encoder = RNSkiaVideoModule.createVideoEncoder(
                 {
                   ...options,
@@ -517,6 +564,26 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 videoComposition,
               );
               state.encoder.prepare();
+              if (gpuExport) {
+                // Skia draws straight into the encoder's buffers; the probe
+                // keeps devices without IOSurface interop on the readback path.
+                state.hasRecorder = true;
+                const failure = supportsEncoderTargets(state.encoder)
+                  ? probeEncoderTarget(
+                      state.encoder,
+                      options.width,
+                      options.height,
+                    )
+                  : new Error("Encoder cannot lend frame buffers");
+                state.gpu = failure === null;
+                if (!state.gpu) {
+                  console.warn(
+                    "[react-native-skia-webgpu-video] GPU export unavailable, using CPU readback:",
+                    String(failure),
+                  );
+                  allocateReadback();
+                }
+              }
               state.extractor =
                 RNSkiaVideoModule.createVideoCompositionFramesExtractorSync(
                   videoComposition,

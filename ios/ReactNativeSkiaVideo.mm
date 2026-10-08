@@ -287,10 +287,12 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
             result.setProperty(rt, "frameTransport", "cvpixelbuffer-bgra");
             result.setProperty(rt, "preview", "webgpu-native-blit+gpu-owned-snapshot");
             result.setProperty(rt, "gpuUploadScratchCapacityPerRuntime", 1);
-            result.setProperty(rt, "export", "cpu-readback-bounded-pixelbuffer-pool");
+            // The export probes the GPU path at setup and warns when it falls back.
+            result.setProperty(rt, "export", "gpu-iosurface-bounded-pixelbuffer-pool");
+            result.setProperty(rt, "exportFallback", "cpu-readback-bounded-pixelbuffer-pool");
             result.setProperty(rt, "nativeFrameCapacity", 2);
             result.setProperty(rt, "encoderPoolCapacity", 3);
-            result.setProperty(rt, "gpuDirectExport", false);
+            result.setProperty(rt, "gpuDirectExport", true);
             return jsi::Value(std::move(result));
           }));
   runtime.global().setProperty(runtime, "RNSkiaVideo", RNSVModule);

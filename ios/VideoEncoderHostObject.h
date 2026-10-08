@@ -53,6 +53,9 @@ private:
   AVAssetWriter* assetWriter;
   AVAssetWriterInput* assetWriterInput;
   CVPixelBufferPoolRef pixelBufferPool = NULL;
+  // The pool buffer lent to JS for the GPU export path: drawn into through
+  // WebGPU, then appended as is. One at a time; owned until encoded or released.
+  CVPixelBufferRef vendedBuffer = NULL;
 
   AVAssetWriterInput* audioWriterInput;
   AVAssetReader* audioReader;
@@ -67,6 +70,8 @@ private:
   void encodePixels(const uint8_t* pixels, size_t rowBytes, CMTime time,
                     bool rgba = false);
   CVPixelBufferRef acquireOutputBuffer();
+  uintptr_t acquireFrameBuffer();
+  void releaseFrameBuffer();
   void appendBuffer(CVPixelBufferRef pixelBuffer, CMTime time);
   void waitUntilReady();
   void setupAudio();

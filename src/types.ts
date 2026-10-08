@@ -45,8 +45,9 @@ export type BufferingRange = { start: number; duration: number };
  * value exposes the legacy Metal/OpenGL texture lifetime contract. */
 export type VideoTextureMode = "copy" | "direct";
 
-/** Compatibility preference. Both values currently use synchronous pixel
- * readback into the bounded native encoder pool; no zero-copy promise. */
+/** Compatibility preference; both values use the same transport. iOS draws
+ * into the encoder's pool buffers on the GPU, falling back to CPU readback
+ * when IOSurface interop is unavailable. Android reads pixels back. */
 export type VideoEncoderMode = "copy" | "direct";
 
 /**
@@ -392,6 +393,13 @@ export type VideoEncoder = {
    * Encodes the video frame to the video composition.
    */
   encodeFrame(texture: unknown, time: number): void;
+  /**
+   * iOS: lends the next pool CVPixelBuffer to draw into on the GPU. Pass it
+   * back as a native-buffer frame, or release it. One at a time.
+   */
+  acquireFrameBuffer?(): bigint;
+  /** iOS: returns a lent buffer that will not be encoded. */
+  releaseFrameBuffer?(): void;
   /*
    * Finish writing the video to the output file.
    */

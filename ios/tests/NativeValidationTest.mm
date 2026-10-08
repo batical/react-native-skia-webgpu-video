@@ -18,6 +18,13 @@ public:
     encoder.encodePixels(pixels, 32 * 4, CMTimeMake(frame, 30));
   }
   static void finish(VideoEncoderHostObject& encoder) { encoder.finish(); }
+  static CVPixelBufferRef lend(VideoEncoderHostObject& encoder) {
+    return reinterpret_cast<CVPixelBufferRef>(encoder.acquireFrameBuffer());
+  }
+  static void giveBack(VideoEncoderHostObject& encoder) { encoder.releaseFrameBuffer(); }
+  static void encodeLent(VideoEncoderHostObject& encoder, CVPixelBufferRef buffer, int frame) {
+    encoder.encodeFrame(buffer, CMTimeMake(frame, 30));
+  }
   static void release(VideoEncoderHostObject& encoder) { encoder.release(); }
   static bool hasWriter(VideoEncoderHostObject& encoder) { return encoder.assetWriter != nil; }
   static size_t actualPoolBufferBytes(VideoEncoderHostObject& encoder) {
@@ -28,6 +35,10 @@ public:
     CVPixelBufferRelease(buffer);
     return bytes;
   }
+};
+class NativeFrameTestDriver {
+public:
+  static CVPixelBufferRef buffer(VideoFrame& frame) { return frame.pixelBuffer; }
 };
 }
 using namespace facebook;
@@ -187,6 +198,61 @@ int main() {
                 "concurrent disposal returns every encoder pool reservation");
           [[NSFileManager defaultManager] removeItemAtPath:racePath error:nil];
         }
+      }
+      {
+        // The GPU export path: draw into a lent pool buffer, append it as is.
+        NSString* lentPath = [path stringByAppendingString:@"-lent.mp4"];
+        [[NSFileManager defaultManager] removeItemAtPath:lentPath error:nil];
+        {
+          VideoEncoderHostObject lent(lentPath.UTF8String, 32, 32, 30, 1000000,
+                                      "h264", 128000, 44100, 2, nullptr, false);
+          NativeEncoderTestDriver::prepare(lent);
+          auto probe = NativeEncoderTestDriver::lend(lent);
+          NativeEncoderTestDriver::giveBack(lent);
+          check(probe != NULL, "encoder lends a pool buffer");
+          for (int frame = 0; frame < 10; ++frame) {
+            auto buffer = NativeEncoderTestDriver::lend(lent);
+            bool refused = false;
+            try { NativeEncoderTestDriver::lend(lent); } catch (NSError*) { refused = true; }
+            check(refused, "a second buffer is refused while one is lent");
+            CVPixelBufferLockBaseAddress(buffer, 0);
+            auto base = static_cast<uint8_t*>(CVPixelBufferGetBaseAddress(buffer));
+            size_t stride = CVPixelBufferGetBytesPerRow(buffer);
+            for (int y = 0; y < 32; ++y)
+              for (int x = 0; x < 32; ++x) {
+                uint8_t* px = base + y * stride + x * 4;
+                px[0] = 0; px[1] = 0; px[2] = 255; px[3] = 255;  // BGRA red
+              }
+            CVPixelBufferUnlockBaseAddress(buffer, 0);
+            NativeEncoderTestDriver::encodeLent(lent, buffer, frame);
+          }
+          NativeEncoderTestDriver::lend(lent);
+          NativeEncoderTestDriver::finish(lent);
+          // release() returns a buffer still lent at the end.
+        }
+        auto lentItem = std::make_shared<VideoCompositionItem>();
+        lentItem->id = "lent"; lentItem->path = lentPath.UTF8String;
+        lentItem->compositionStartTime = 0; lentItem->startTime = 0;
+        lentItem->duration = 10.0 / 30; lentItem->resolution = CGSizeMake(32, 32);
+        {
+          VideoCompositionItemDecoder decoder(lentItem, false);
+          decoder.advanceDecoder(kCMTimeZero);
+          auto frame = decoder.acquireFrameForTime(kCMTimeZero, true);
+          check(frame != nullptr, "lent-buffer export decodes");
+          if (frame) {
+            auto buffer = NativeFrameTestDriver::buffer(*frame);
+            CVPixelBufferLockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly);
+            auto px = static_cast<const uint8_t*>(CVPixelBufferGetBaseAddress(buffer)) +
+                16 * CVPixelBufferGetBytesPerRow(buffer) + 16 * 4;
+            check(px[2] > 200 && px[1] < 60 && px[0] < 60,
+                  "lent-buffer pixels reach the file without a copy step");
+            CVPixelBufferUnlockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly);
+          }
+          decoder.release();
+        }
+        check(MemoryBudget::instance().snapshot().currentBytes == baseline.currentBytes,
+              "lent-buffer export returns every reservation");
+        [[NSFileManager defaultManager] removeItemAtPath:lentPath error:nil];
       }
       {
         NSString* alignedPath = [path stringByAppendingString:@"-aligned.mp4"];
