@@ -1,5 +1,7 @@
 # Export cache and provider ownership — Skia 3.0.6
 
+Historical cache/provider-fix checkpoint (2026-10-07). The additional native/VM growth described below was subsequently investigated and substantially reduced by the [export-worklet fix](NATIVE_MEMORY_INVESTIGATION_306.md), measured on both physical platforms on October 8. This report preserves the earlier measurements; its iPhone validation and unresolved-growth statements describe that earlier checkpoint.
+
 The library now adopts the initial reference of Skia's `ImageProvider` and releases unused resources from its dedicated export recorder when an export session closes. Public playback/export signatures are unchanged. Reapply the guarded Skia patch and rebuild the native application.
 
 ## Scope of the change
