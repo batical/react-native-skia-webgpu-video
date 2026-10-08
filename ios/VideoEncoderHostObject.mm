@@ -87,6 +87,8 @@ VideoEncoderHostObject::getPropertyNames(jsi::Runtime& rt) {
   std::vector<jsi::PropNameID> result;
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("prepare")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("encodeFrame")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("acquireFrameBuffer")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("releaseFrameBuffer")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("finishWriting")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("dispose")));
   return result;
@@ -168,6 +170,24 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
               pointer.asBigInt(runtime).asUint64(runtime));
           if (!buffer) throw jsi::JSError(runtime, "Null encoder nativeBuffer");
           return runPooled([&] { encodeFrame(buffer, time); });
+        });
+  }
+  if (propName == "acquireFrameBuffer") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          uintptr_t pointer = 0;
+          runPooled([&] { pointer = acquireFrameBuffer(); });
+          return jsi::BigInt::fromUint64(runtime, pointer);
+        });
+  }
+  if (propName == "releaseFrameBuffer") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          return runPooled([&] { releaseFrameBuffer(); });
         });
   }
   if (propName == "finishWriting") {
@@ -344,6 +364,24 @@ CVPixelBufferRef VideoEncoderHostObject::acquireOutputBuffer() {
   }
 }
 
+uintptr_t VideoEncoderHostObject::acquireFrameBuffer() {
+  std::lock_guard<std::recursive_mutex> guard(stateMutex);
+  if (!prepared || disposed) throw createErrorWithMessage(@"Encoder not prepared");
+  if (vendedBuffer) {
+    throw createErrorWithMessage(@"Previous encoder frame buffer was neither encoded nor released");
+  }
+  vendedBuffer = acquireOutputBuffer();
+  return reinterpret_cast<uintptr_t>(vendedBuffer);
+}
+
+void VideoEncoderHostObject::releaseFrameBuffer() {
+  std::lock_guard<std::recursive_mutex> guard(stateMutex);
+  if (vendedBuffer) {
+    CVPixelBufferRelease(vendedBuffer);
+    vendedBuffer = NULL;
+  }
+}
+
 void VideoEncoderHostObject::encodePixels(const uint8_t* pixels,
                                           size_t rowBytes, CMTime time,
                                           bool rgba) {
@@ -389,6 +427,14 @@ void VideoEncoderHostObject::encodeFrame(CVPixelBufferRef source, CMTime time) {
       CVPixelBufferGetHeight(source) != static_cast<size_t>(height) ||
       CVPixelBufferGetPixelFormatType(source) != kCVPixelFormatType_32BGRA) {
     throw createErrorWithMessage(@"Encoder requires exact-sized BGRA native buffer");
+  }
+  if (source == vendedBuffer) {
+    // The GPU already drew into this pool buffer; take over the lent reference.
+    vendedBuffer = NULL;
+    try { appendBuffer(source, time); }
+    catch (...) { CVPixelBufferRelease(source); throw; }
+    CVPixelBufferRelease(source);
+    return;
   }
   if (directEncoder) {
     CVPixelBufferRetain(source);
@@ -648,6 +694,7 @@ void VideoEncoderHostObject::release() {
   }
   assetWriter = nil;
   assetWriterInput = nil;
+  releaseFrameBuffer();
   if (pixelBufferPool) {
     CVPixelBufferPoolRelease(pixelBufferPool);
     pixelBufferPool = NULL;
