@@ -1,0 +1,445 @@
+{
+  "schema": "rnskv-export-ab-1",
+  "date": "2026-10-14",
+  "executionTarget": "device",
+  "order": [
+    "c2 (3.4.4 + export pass)",
+    "base (3.0.6, a2a01ae)",
+    "c3 (3.4.4 + export pass)"
+  ],
+  "notes": [
+    "Release, iPhone 15 Pro, foreground, thermal state recorded per run; 3 repetitions per case; catalog 2026-10-07.1 profile full.",
+    "base is built from git archive of a2a01ae: react-native-skia 3.0.6 / react-native-webgpu 0.12.1 with the same patch mechanism.",
+    "4k-x3-simultaneous stopped on the video memory budget during playback ('iOS decoder queue') in all three runs, before any export.",
+    "exportProfile stages are wall time on the export runtime; targetMs includes waits for the bounded encoder pool.",
+    "Identical output byte counts are a hint of identical encoded pixels, not a pixel validation; no media validator ran."
+  ],
+  "runs": {
+    "c2": {
+      "sha256": "93f01c41dcf52464151f0bfb5cdcf03c616d04fc14c6a88d25f78d59d19f1661",
+      "skia": "3.4.4",
+      "webgpu": "0.14.2",
+      "device": "iPhone16,1",
+      "osVersion": "27.0.1",
+      "startedAt": "2026-10-14T19:32:07.132Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            2835.4,
+            2734.8,
+            2722.6
+          ],
+          "bytes": [
+            700699,
+            700699,
+            700699
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 7.627,
+              "decode": 5.115,
+              "import": 0.188,
+              "prepare": 0.028,
+              "target": 0.168,
+              "draw": 0.066,
+              "gpu": 1.444,
+              "encode": 0.551,
+              "yield": 0.067
+            },
+            {
+              "total": 7.441,
+              "decode": 4.926,
+              "import": 0.199,
+              "prepare": 0.027,
+              "target": 0.196,
+              "draw": 0.066,
+              "gpu": 1.425,
+              "encode": 0.534,
+              "yield": 0.068
+            },
+            {
+              "total": 7.406,
+              "decode": 4.957,
+              "import": 0.192,
+              "prepare": 0.027,
+              "target": 0.196,
+              "draw": 0.066,
+              "gpu": 1.373,
+              "encode": 0.528,
+              "yield": 0.066
+            }
+          ],
+          "medianEncodeMs": 2734.8
+        },
+        "4k-x3-simultaneous": {
+          "status": [
+            "resource-limit",
+            "resource-limit",
+            "resource-limit"
+          ],
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            749.5,
+            731.2,
+            735.1
+          ],
+          "bytes": [
+            379829,
+            379829,
+            379829
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 3.911,
+              "decode": 0.288,
+              "import": 0.184,
+              "prepare": 0.023,
+              "target": 1.147,
+              "draw": 0.055,
+              "gpu": 1.614,
+              "encode": 0.541,
+              "yield": 0.06
+            },
+            {
+              "total": 3.781,
+              "decode": 0.28,
+              "import": 0.16,
+              "prepare": 0.02,
+              "target": 1.059,
+              "draw": 0.049,
+              "gpu": 1.628,
+              "encode": 0.531,
+              "yield": 0.054
+            },
+            {
+              "total": 3.783,
+              "decode": 0.273,
+              "import": 0.167,
+              "prepare": 0.019,
+              "target": 1.061,
+              "draw": 0.048,
+              "gpu": 1.633,
+              "encode": 0.526,
+              "yield": 0.055
+            }
+          ],
+          "medianEncodeMs": 735.1
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            253.3,
+            193.4,
+            210.0
+          ],
+          "bytes": [
+            51534,
+            51534,
+            51534
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 2.174,
+              "decode": 0.327,
+              "import": 0.082,
+              "prepare": 0.018,
+              "target": 0.349,
+              "draw": 0.047,
+              "gpu": 0.896,
+              "encode": 0.401,
+              "yield": 0.055
+            },
+            {
+              "total": 2.063,
+              "decode": 0.299,
+              "import": 0.081,
+              "prepare": 0.018,
+              "target": 0.305,
+              "draw": 0.045,
+              "gpu": 0.905,
+              "encode": 0.359,
+              "yield": 0.052
+            },
+            {
+              "total": 2.085,
+              "decode": 0.306,
+              "import": 0.081,
+              "prepare": 0.019,
+              "target": 0.351,
+              "draw": 0.044,
+              "gpu": 0.869,
+              "encode": 0.366,
+              "yield": 0.049
+            }
+          ],
+          "medianEncodeMs": 210.0
+        }
+      }
+    },
+    "base": {
+      "sha256": "cbf6b687562e4dbefc9ca57e05dbaf8819bddce0e9ddd56495ca536686bbf788",
+      "skia": "3.0.6",
+      "webgpu": "0.12.1",
+      "device": "iPhone16,1",
+      "osVersion": "27.0.1",
+      "startedAt": "2026-10-14T19:34:55.301Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            2946.3,
+            2776.5,
+            2948.0
+          ],
+          "bytes": [
+            700699,
+            700699,
+            700699
+          ],
+          "medianEncodeMs": 2946.3
+        },
+        "4k-x3-simultaneous": {
+          "status": [
+            "resource-limit",
+            "resource-limit",
+            "resource-limit"
+          ],
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            956.4,
+            1002.9,
+            952.3
+          ],
+          "bytes": [
+            379829,
+            379829,
+            379829
+          ],
+          "medianEncodeMs": 956.4
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            229.8,
+            235.1,
+            267.3
+          ],
+          "bytes": [
+            51534,
+            51534,
+            52073
+          ],
+          "medianEncodeMs": 235.1
+        }
+      }
+    },
+    "c3": {
+      "sha256": "5dbc139dacb280bd224cee9f75d1e93ddf5940b5975e338b766860c37dfc4405",
+      "skia": "3.4.4",
+      "webgpu": "0.14.2",
+      "device": "iPhone16,1",
+      "osVersion": "27.0.1",
+      "startedAt": "2026-10-14T19:37:41.308Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            2750.0,
+            2852.4,
+            2871.3
+          ],
+          "bytes": [
+            700699,
+            700699,
+            700699
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 7.407,
+              "decode": 4.77,
+              "import": 0.227,
+              "prepare": 0.032,
+              "target": 0.208,
+              "draw": 0.078,
+              "gpu": 1.453,
+              "encode": 0.564,
+              "yield": 0.076
+            },
+            {
+              "total": 7.772,
+              "decode": 5.106,
+              "import": 0.217,
+              "prepare": 0.032,
+              "target": 0.211,
+              "draw": 0.078,
+              "gpu": 1.495,
+              "encode": 0.557,
+              "yield": 0.075
+            },
+            {
+              "total": 7.826,
+              "decode": 5.182,
+              "import": 0.24,
+              "prepare": 0.033,
+              "target": 0.208,
+              "draw": 0.075,
+              "gpu": 1.462,
+              "encode": 0.548,
+              "yield": 0.077
+            }
+          ],
+          "medianEncodeMs": 2852.4
+        },
+        "4k-x3-simultaneous": {
+          "status": [
+            "resource-limit",
+            "resource-limit",
+            "resource-limit"
+          ],
+          "reason": "Video memory budget exceeded: iOS decoder queue"
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            789.8,
+            732.0,
+            738.4
+          ],
+          "bytes": [
+            379829,
+            379829,
+            379829
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 3.797,
+              "decode": 0.281,
+              "import": 0.167,
+              "prepare": 0.02,
+              "target": 0.976,
+              "draw": 0.048,
+              "gpu": 1.697,
+              "encode": 0.554,
+              "yield": 0.055
+            },
+            {
+              "total": 3.772,
+              "decode": 0.29,
+              "import": 0.174,
+              "prepare": 0.022,
+              "target": 0.993,
+              "draw": 0.049,
+              "gpu": 1.634,
+              "encode": 0.553,
+              "yield": 0.056
+            },
+            {
+              "total": 3.801,
+              "decode": 0.276,
+              "import": 0.171,
+              "prepare": 0.019,
+              "target": 1.043,
+              "draw": 0.047,
+              "gpu": 1.651,
+              "encode": 0.541,
+              "yield": 0.054
+            }
+          ],
+          "medianEncodeMs": 738.4
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            174.8,
+            182.0,
+            164.5
+          ],
+          "bytes": [
+            51534,
+            52073,
+            52073
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 2.088,
+              "decode": 0.295,
+              "import": 0.07,
+              "prepare": 0.018,
+              "target": 0.387,
+              "draw": 0.046,
+              "gpu": 0.853,
+              "encode": 0.367,
+              "yield": 0.05
+            },
+            {
+              "total": 2.236,
+              "decode": 0.328,
+              "import": 0.08,
+              "prepare": 0.019,
+              "target": 0.436,
+              "draw": 0.047,
+              "gpu": 0.904,
+              "encode": 0.364,
+              "yield": 0.058
+            },
+            {
+              "total": 1.887,
+              "decode": 0.283,
+              "import": 0.075,
+              "prepare": 0.016,
+              "target": 0.303,
+              "draw": 0.043,
+              "gpu": 0.781,
+              "encode": 0.343,
+              "yield": 0.044
+            }
+          ],
+          "medianEncodeMs": 174.8
+        }
+      }
+    }
+  }
+}

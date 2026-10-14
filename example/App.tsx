@@ -77,7 +77,7 @@ export default function App() {
       buildMode: __DEV__ ? 'debug' : 'release', displayRefreshRate: details.displayRefreshRate,
       thermalState: details.thermalState, powerMode: details.powerMode },
     backend: { name: 'react-native-skia-webgpu-video', version: '0.1.0-alpha.0',
-      skiaVersion: '3.0.6', webgpuVersion: '0.12.1', paths: video.getVideoResourceStats().backend },
+      skiaVersion: '3.4.4', webgpuVersion: '0.14.2', paths: video.getVideoResourceStats().backend },
   }), [profile]);
   if (!helper) return <native.Text>Recompilez l’application de test : le module de mesure manque.</native.Text>;
   if (isAndroid && profile === 'interop') return <AndroidInteropScreen />;

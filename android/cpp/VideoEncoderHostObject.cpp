@@ -1,11 +1,50 @@
 #include "RNSVCheckedSizes.h"
 #include "VideoEncoderHostObject.h"
+#include "NativeHardwareBuffer.h"
+#include <EGL/egl.h>
 #include <fbjni/ByteBuffer.h>
 #include <cmath>
 #include <limits>
+#include <unistd.h>
 
 namespace RNSkiaVideo {
 using namespace facebook::jni;
+
+namespace {
+/** Makes the encoder's EGL context current; restores the caller's (or none). */
+class ScopedEncoderContext {
+public:
+  explicit ScopedEncoderContext(const global_ref<VideoEncoder>& encoder)
+      : display(eglGetCurrentDisplay()), context(eglGetCurrentContext()),
+        draw(eglGetCurrentSurface(EGL_DRAW)), read(eglGetCurrentSurface(EGL_READ)) {
+    encoder->makeGLContextCurrent();
+  }
+  ~ScopedEncoderContext() {
+    if (context != EGL_NO_CONTEXT) {
+      eglMakeCurrent(display, draw, read, context);
+    } else if (auto current = eglGetCurrentDisplay(); current != EGL_NO_DISPLAY) {
+      eglMakeCurrent(current, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+  }
+  ScopedEncoderContext(const ScopedEncoderContext&) = delete;
+  ScopedEncoderContext& operator=(const ScopedEncoderContext&) = delete;
+
+private:
+  EGLDisplay display;
+  EGLContext context;
+  EGLSurface draw;
+  EGLSurface read;
+};
+
+/** Sync-fds handed over by JS; each is closed exactly once. */
+struct OwnedFences {
+  std::vector<int> fds;
+  ~OwnedFences() {
+    for (int fd : fds)
+      if (fd >= 0) close(fd);
+  }
+};
+} // namespace
 
 local_ref<VideoEncoder>
 VideoEncoder::create(std::string& outPath, int width, int height, int frameRate,
@@ -53,6 +92,11 @@ void VideoEncoder::encodeFrameRgba(alias_ref<JByteBuffer> pixels, jint width,
   method(self(), pixels, width, height, bytesPerRow, time);
 }
 
+void VideoEncoder::encodeTexture(jint texture, jdouble time) const {
+  static const auto method = getClass()->getMethod<void(jint, jdouble)>("encodeTexture");
+  method(self(), texture, time);
+}
+
 void VideoEncoder::release() const {
   static const auto releaseMethod = getClass()->getMethod<void()>("release");
   releaseMethod(self());
@@ -68,7 +112,8 @@ VideoEncoderHostObject::VideoEncoderHostObject(
     std::string& outPath, int width, int height, int frameRate, int bitRate,
     std::optional<std::string> encoderName, std::optional<std::string> codec,
     alias_ref<VideoComposition> composition, int audioSampleRate,
-    int audioChannelCount, int audioBitRate) {
+    int audioChannelCount, int audioBitRate)
+    : width(width), height(height) {
   framesExtractor = make_global(VideoEncoder::create(
       outPath, width, height, frameRate, bitRate, encoderName, codec,
       composition, audioSampleRate, audioChannelCount, audioBitRate));
@@ -83,6 +128,8 @@ VideoEncoderHostObject::getPropertyNames(jsi::Runtime& rt) {
   std::vector<jsi::PropNameID> result;
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("prepare")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("encodeFrame")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("acquireFrameBuffer")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("releaseFrameBuffer")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("finishWriting")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("dispose")));
   return result;
@@ -106,9 +153,41 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
             throw jsi::JSError(runtime, "encodeFrame expects an owned RGBA descriptor and a time");
           }
           auto frame = arguments[0].asObject(runtime);
-          if (!frame.getProperty(runtime, "kind").isString() ||
-              frame.getProperty(runtime, "kind").asString(runtime).utf8(runtime) != "rgba") {
-            throw jsi::JSError(runtime, "Android reference encoder accepts RGBA pixels");
+          const auto kindValue = frame.getProperty(runtime, "kind");
+          const auto kind = kindValue.isString() ? kindValue.asString(runtime).utf8(runtime) : "";
+          if (kind == "native-buffer") {
+            // A lent buffer Skia rendered into; its sync-fds are ours to close.
+            OwnedFences fences;
+            const auto fenceValues = frame.getProperty(runtime, "fences");
+            if (fenceValues.isObject()) {
+              auto array = fenceValues.asObject(runtime).asArray(runtime);
+              for (size_t i = 0; i < array.size(runtime); ++i) {
+                auto value = array.getValueAtIndex(runtime, i);
+                if (!value.isBigInt()) throw jsi::JSError(runtime, "Encoder fences must be sync-fd BigInts");
+                // WebGPU reports an already signaled fence as -1, as a uint32.
+                fences.fds.push_back(static_cast<int>(
+                    static_cast<uint32_t>(value.asBigInt(runtime).getUint64(runtime))));
+              }
+            }
+            const auto pointerValue = frame.getProperty(runtime, "nativeBuffer");
+            if (!pointerValue.isBigInt() || !targets)
+              throw jsi::JSError(runtime, "Encoder frame buffer is not the one lent");
+            const auto* buffer = reinterpret_cast<const AHardwareBuffer*>(
+                static_cast<uintptr_t>(pointerValue.asBigInt(runtime).getUint64(runtime)));
+            const auto time = checkedMediaSeconds(arguments[1].asNumber());
+            ScopedEncoderContext scope(framesExtractor);
+            const auto texture = targets->beginEncode(buffer, fences.fds);
+            try {
+              framesExtractor->encodeTexture(static_cast<jint>(texture), time);
+            } catch (...) {
+              targets->finishEncode();
+              throw;
+            }
+            targets->finishEncode();
+            return jsi::Value::undefined();
+          }
+          if (kind != "rgba") {
+            throw jsi::JSError(runtime, "Android encoder accepts RGBA pixels or a lent hardware buffer");
           }
           const auto checkedInteger = [&](const char* name) -> int {
             const auto value = frame.getProperty(runtime, name).asNumber();
@@ -155,6 +234,32 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
           framesExtractor->encodeFrameRgba(javaPixels, width, height, stride, checkedMediaSeconds(arguments[1].asNumber()));
           return jsi::Value::undefined();
         });
+  } else if (propName == "acquireFrameBuffer") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(encoderMutex);
+          if (released.test() || !prepared || finished) {
+            throw jsi::JSError(runtime, "Encoder not prepared");
+          }
+          // The buffers are imported by the same Dawn device as decoded AHBs.
+          if (!NativeHardwareBuffer::isEnabled()) {
+            throw jsi::JSError(runtime, "Android GPU export requires AHardwareBuffer interop");
+          }
+          if (!targets) targets = std::make_unique<EncoderTargets>(width, height);
+          auto* buffer = targets->lend();
+          return jsi::BigInt::fromUint64(runtime, reinterpret_cast<uintptr_t>(buffer));
+        });
+  } else if (propName == "releaseFrameBuffer") {
+    return getFunction(
+        runtime, propName, 0,
+        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
+               const jsi::Value* arguments, size_t count) -> jsi::Value {
+          std::lock_guard<std::recursive_mutex> lock(encoderMutex);
+          if (targets) targets->giveBack();
+          return jsi::Value::undefined();
+        });
   } else if (propName == "prepare") {
     return getFunction(
         runtime, propName, 0,
@@ -195,6 +300,16 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
 void VideoEncoderHostObject::release() {
   std::lock_guard<std::recursive_mutex> lock(encoderMutex);
   if (!released.test_and_set()) {
+    if (targets && !targets->empty()) {
+      // GL names belong to the encoder context; free them before it goes.
+      // Otherwise the destructor still releases buffers and reservations.
+      try {
+        ScopedEncoderContext scope(framesExtractor);
+        targets->clear();
+      } catch (...) {
+      }
+    }
+    targets.reset();
     framesExtractor->release();
     framesExtractor = nullptr;
   }

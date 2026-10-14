@@ -290,6 +290,9 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
             // The export probes the GPU path at setup and warns when it falls back.
             result.setProperty(rt, "export", "gpu-iosurface-bounded-pixelbuffer-pool");
             result.setProperty(rt, "exportFallback", "cpu-readback-bounded-pixelbuffer-pool");
+            // Decoded frames are sampled through their IOSurface during a GPU
+            // export, copied into owned snapshots only if that import fails.
+            result.setProperty(rt, "exportSource", "iosurface-in-place");
             result.setProperty(rt, "nativeFrameCapacity", 2);
             result.setProperty(rt, "encoderPoolCapacity", 3);
             result.setProperty(rt, "gpuDirectExport", true);

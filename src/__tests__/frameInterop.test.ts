@@ -56,7 +56,7 @@ jest.mock("react-native-skia", () => ({
     Color: jest.fn(() => 0),
     Data: { fromBytes: jest.fn(() => ({ dispose: jest.fn() })) },
     Image: {
-      MakeImage: jest.fn(() => ({ dispose: jest.fn() })),
+      MakeRasterImage: jest.fn(() => ({ dispose: jest.fn() })),
       MakeImageFromGPUTexture: jest.fn(),
     },
   },
@@ -75,7 +75,7 @@ jest.mock("../RNSkiaVideoModule", () => ({
 
 const reserve = RNSkiaVideoModule.reserveMemory as jest.Mock;
 const release = RNSkiaVideoModule.releaseMemory as jest.Mock;
-const makeImage = Skia.Image.MakeImage as jest.Mock;
+const makeImage = Skia.Image.MakeRasterImage as jest.Mock;
 const rgbaFrame = (id = 1, producerId = 1): VideoFrame => ({
   id,
   producerId,
@@ -166,7 +166,7 @@ describe("Android RGBA Graphite upload", () => {
         expect(uploaded.buffer).toBe(buffer);
         expect(Array.from(uploaded)).toEqual(new Array(32).fill(1));
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(
           androidReserve.mock.calls.map((call) => call.slice(0, 2)),
         ).toEqual([
@@ -449,7 +449,7 @@ describe("Android RGBA Graphite upload", () => {
           { width: 4, height: 2, depthOrArrayLayers: 1 },
         );
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(mockCopy).not.toHaveBeenCalled();
         expect(mockWrapNative).not.toHaveBeenCalled();
         expect(mockSurface.enableCheckedSubmissions).toHaveBeenCalledTimes(1);
@@ -650,7 +650,7 @@ describe("Android RGBA Graphite upload", () => {
         expect(mockWriteTexture).not.toHaveBeenCalled();
         expect(data).not.toHaveBeenCalled();
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(androidReserve.mock.calls.map((call) => call[0])).toEqual([
           32, 32,
         ]);
@@ -1239,7 +1239,7 @@ describe("owned video frame transport", () => {
       throw failure;
     });
     expect(() => imageFromVideoFrame(replacement)).toThrow(failure);
-    const rejectedImage = (Skia.Image.MakeImage as jest.Mock).mock.results[1]
+    const rejectedImage = (Skia.Image.MakeRasterImage as jest.Mock).mock.results[1]
       ?.value;
     expect(rejectedImage.dispose).toHaveBeenCalledTimes(1);
     expect(previous.dispose).not.toHaveBeenCalled();
