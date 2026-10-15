@@ -1,6 +1,12 @@
 # Vérifier le fonctionnement sur le simulateur iOS
 
-La priorité actuelle est de faire fonctionner la lecture, l'export et la fermeture sur le simulateur. Les actions sur l'iPhone sont arrêtées à la demande de l'utilisateur. La cible choisie est **iPhone 18 Pro, iOS 27** ; utiliser son identifiant fourni par Xcode ou `xcrun simctl list devices available`.
+**14 octobre 2026 (Skia 3.4.4 / WebGPU 0.14.2)**, sur iPhone 17e, iOS 26.4, en Release :
+- **50/50 XCTest natifs** et **5/5 smoke**.
+- **Attribution A/B des exports :** la référence 3.0.6, la montée de version seule, la fermeture immédiate des imports, puis l'import en place.
+- **Résultat :** aucune différence de vitesse mesurable sur simulateur, qui décode en logiciel, mais −30 % de mémoire suivie pendant l'export avec l'import en place.
+- **Détails :** [vérification](../migration/skia-3.4.4/verification.md) et [JSON](../benchmark/ios-simulator-344-export-ab.json). Les runs iPhone ont repris depuis : voir le [guide iPhone](IOS_DEVICE_TESTS.md).
+
+Le simulateur sert à vérifier la lecture, l'export et la fermeture. La cible choisie est **iPhone 18 Pro, iOS 27** ; utiliser son identifiant fourni par Xcode ou `xcrun simctl list devices available`.
 
 Le script de la racine utilise le même workspace et schéma que l'exemple iPhone, en **Release**, avec un bundle JavaScript embarqué. Il compile et installe uniquement sur le simulateur, sans signature de développement ni serveur Metro :
 
