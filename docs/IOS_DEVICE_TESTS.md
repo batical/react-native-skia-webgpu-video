@@ -1,5 +1,13 @@
 # Exécuter les tests sur l'iPhone
 
+Mise à jour du **15 octobre 2026** (Skia 3.4.4 / WebGPU 0.14.2) : trois runs Release sur iPhone 15 Pro, dans l'ordre nouvelle version, 3.0.6, nouvelle version, avec trois répétitions par cas.
+- **Résultats :** HEVC 1080p **956 → 735/738 ms**, H.264 640×360 **235 → 210/175 ms**, 8×4K réduits **2,95 → 2,73/2,85 s**, avec des tailles de sortie identiques.
+- **Profil :** il est enregistré par cas (`exportProfile`).
+- **Cas `4k-x3-simultaneous` :** il s'arrête sur le budget mémoire pendant la lecture, dans les deux versions.
+- **Détails :** [vérification](../migration/skia-3.4.4/verification.md#appareil-ios--iphone-15-pro).
+
+Ces runs utilisent `scripts/test-ios-device-ab-run.mjs` avec une app signée par l'équipe personnelle (`--team`). L'iPhone doit approuver ce développeur une fois (Réglages → Général → VPN et gestion de l'appareil), sinon le lancement est refusé.
+
 Mise à jour du **8 octobre 2026** : la [correction de la boucle d’export](NATIVE_MEMORY_INVESTIGATION_306.md) a passé deux montages comparatifs puis **6/6 montages complets consécutifs** sur iPhone 15 Pro en Release, avec conditions nominal/normal/active. Après deux montages et 60 s au repos, l’empreinte physique passe de **425,99 à 257,70 Mio** ; après six montages, elle est de **277,74 Mio** au repos. Ces tests du scénario ne constituent pas une nouvelle exécution des 50 XCTest historiques ci-dessous.
 
 L'application de test est isolée dans [`example`](../example). Le workspace est `example/ios/ReactNativeSkiaWebGPUVideoExample.xcworkspace`, le schéma **ReactNativeSkiaWebGPUVideoExample** et la destination est votre iPhone connecté. Les bundle IDs `com.seb.skiawebgpuvideo.test` et `com.seb.skiawebgpuvideo.test.tests` permettent d'installer l'exemple séparément de l'application existante.
@@ -12,7 +20,7 @@ Le smoke du candidat a réussi **5/5 scénarios sur une répétition** ; deux sc
 
 Le [diagnostic physique de 300 exports](PERFORMANCE_SOAK_IPHONE_303.md) a passé **3/3 blocs et sondé les 300 fichiers**, avec croissance de la mémoire du processus. Le collecteur de repos a ensuite dépassé son délai à **08:11:30 UTC**, sans fichier de relevés, puis le runner a arrêté son application. Le statut global de l'expérience conserve cet échec de collecte, distinct des exports réussis. La référence a subi un SIGTRAP natif sans JSON comparable. Les tests 3.0.3 sont désormais arrêtés à la demande utilisateur ; la migration **Skia 3.0.6 / WebGPU 0.12.1** a passé sa première suite native iPhone, décrite séparément ci-dessus, avec validation fonctionnelle ciblée du transport optimisé sur simulateur, avec comparaison physique initial/optimisé désormais mesurée séparément ; les performances nominales et un palier physique durable restent à qualifier.
 
-Les applications mesurées utilisent RN 0.86.2 et React 19.2.3. Le candidat de ces rapports utilise Skia 3.0.3 / Dawn / WebGPU 0.11.0, Reanimated 4.5.3 et Worklets 0.11.3. Le manifeste courant a désormais migré vers Skia 3.0.6 / WebGPU 0.12.1. Son premier build a passé 50 XCTest ; une nouvelle compilation ne reproduit pas les binaires 3.0.3 archivés et doit qualifier les optimisations intervenues depuis. Les versions de Skia et des runtimes propres à la référence doivent rester consignées ; elles font partie de la différence étudiée. La [compilation initiale sans signature](../benchmark/ios-build-verification.json) et les [résultats simulateur](IOS_SIMULATOR_TESTS.md) restent des preuves distinctes.
+Les applications mesurées utilisent RN 0.86.2 et React 19.2.3. Le candidat de ces rapports utilise Skia 3.0.3 / Dawn / WebGPU 0.11.0, Reanimated 4.5.3 et Worklets 0.11.3. Le manifeste a ensuite migré vers Skia 3.0.6 / WebGPU 0.12.1, puis vers Skia 3.4.4 / WebGPU 0.14.2 le 14 octobre. Son premier build a passé 50 XCTest ; une nouvelle compilation ne reproduit pas les binaires 3.0.3 archivés et doit qualifier les optimisations intervenues depuis. Les versions de Skia et des runtimes propres à la référence doivent rester consignées ; elles font partie de la différence étudiée. La [compilation initiale sans signature](../benchmark/ios-build-verification.json) et les [résultats simulateur](IOS_SIMULATOR_TESTS.md) restent des preuves distinctes.
 
 ## Signature et choix de la cible
 
