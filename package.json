@@ -52,7 +52,7 @@
     "test": "jest --runInBand",
     "typecheck": "tsc --noEmit",
     "build": "bob build",
-    "check-package": "publint --strict",
+    "check-package": "publint --strict --pack npm",
     "test:native": "node scripts/test-native.mjs",
     "prebuild": "node scripts/apply-skia-canvas-patch.mjs",
     "benchmark:test": "node --test test/comparison/*.test.mjs",
