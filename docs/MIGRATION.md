@@ -54,20 +54,20 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 - Composition sources use app-accessible local filesystem paths.
 - Preview width/height are layout points; the drawing callback receives pixel dimensions. Export width/height are pixels.
 - Use `lazyDecoders` for sequential timelines. A preview decode limit such as `maxLongSide` also limits source detail if reused during export; use separate settings when necessary.
-- `copy` and `direct` remain API options with the same transport. iOS exports by drawing into the encoder's IOSurface-backed pool buffers, or through CPU readback after a failed setup probe; Android uses CPU readback. Inspect `getVideoResourceStats().backend` for the transport instead of inferring it from the requested mode.
+- `copy` and `direct` remain API options with the same transport. iOS exports by drawing into the encoder's IOSurface-backed pool buffers; Android draws into AHardwareBuffers lent by the encoder when its AHardwareBuffer interop is available. Both fall back to CPU readback after a failed setup probe. Inspect `getVideoResourceStats().backend` for the transport instead of inferring it from the requested mode.
 - Review application code that calls internal extractors or directly consumes native textures. Its frames must follow the new ownership protocol; the renamed hooks do not preserve the old texture representation.
 
 ## Audio
 
 Audio options retain their existing meaning. A video composition item is silent by default; use `audio: true` or `audio: { volume: 0.8 }` to include its audio during playback and export. Separate `kind: 'audio'` items support music or voice-over. `useVideoPlayback` has its own `volume` option.
 
-Audio is implemented on both native platforms, but the current 3.0.6 device performance runs did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
+Audio is implemented on both native platforms, but the device runs so far (3.0.6 and 3.4.4) did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
 
 ## Memory and extensions
 
 Set `configureVideoMemory({ maxBytes })` before allocating sessions. The budget covers tracked resources only; codecs and drivers can retain additional memory. A budget rejection does not silently reduce export dimensions.
 
-Android still decodes through its private EGL context and reads owned RGBA pixels on the CPU. Those pixels now upload to one reusable WebGPU texture, then become an independent Graphite snapshot after a checked GPU fence. This avoids Skia's image-count raster-upload cache; it does not remove the CPU readback or transfer. Java/JSI backing buffers remain accounted until their aliases and ART/Hermes owners are collected. The new path has host tests; its physical memory/performance qualification is pending. See the [upstream cache notes](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider).
+On Android with the AHardwareBuffer interop (API 29+, 8-bit SDR H.264/HEVC at the encoded size), the codec writes into an `ImageReader`; WebGPU converts, crops and rotates each YUV buffer into an independent Graphite snapshot after a checked GPU fence. Other sources render through the decoder's private EGL context into an RGBA AHardwareBuffer, or, without the interop, read owned RGBA pixels on the CPU and upload them. All of these avoid Skia's image-count raster-upload cache. CPU Java/JSI backing buffers remain accounted until their aliases and ART/Hermes owners are collected. See the [upstream cache notes](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider) and the [3.4.4 verification](../migration/skia-3.4.4/verification.md).
 
 The optional `createFrameProcessor` export factory creates a processor once per export. Its asynchronous `prepareFrame` runs at the requested composition timestamp and its `dispose` must finish all frame readers. Drive animated effects from that timestamp, not an independent display animation loop.
 
