@@ -111,6 +111,26 @@ Nouveau chemin, équivalent du chemin iOS :
 - l'absence de déchirure sous charge ;
 - la fermeture du pool à `dispose`.
 
+## Décodage Android par `ImageReader` (15 octobre) — mesuré sur Pixel 8a
+
+**Avant :** à chaque frame, le codec rendait dans une `SurfaceTexture`, puis une passe EGL dessinait l'image dans un AHB RGBA, suivie d'un `glFinish` (attente CPU), puis d'un blit WebGPU et d'un snapshot.
+
+**Fonctionnement.** Si les trois conditions sont réunies, `GLFrameExtractor` donne au codec la Surface d'un `ImageReader` :
+- API 29 ou plus, interop AHB négociée ;
+- piste H.264/HEVC 8 bits SDR ;
+- frames demandées à la taille encodée.
+
+Les `ImageReader` sont en `YUV_420_888`, avec `USAGE_GPU_SAMPLED_IMAGE`.
+1. **Bail natif.** Chaque `Image` devient un bail natif (`nativeWrapImage`) qui garde l'`Image` et une référence sur son AHB. Le dernier relâchement ferme l'`Image` et rend l'emplacement au codec ; une frame retenue survit donc à la suite du décodage. Sur API 33+, la fence productrice de l'`Image` est attendue avant publication.
+2. **Exposition à JS.** La frame est publiée aux dimensions d'affichage. Sa texture `native-buffer` porte `region` (rectangle de recadrage dans le buffer du codec) et `rotation`.
+3. **Blit WebGPU.** Dans `frameInterop`, une seule passe fait la conversion YUV → RGB, le recadrage (origine calculée dans l'espace tourné) et la rotation. Le résultat est identique à ce que produisait la matrice de `SurfaceTexture`, et les frames restent en rotation 0 pour le reste du code.
+
+**Reste en EGL :** mise à l'échelle (`maxLongSide`, résolution explicite), HDR, 10 bits, autres codecs et lecteur simple (`useVideoPlayback`).
+
+**Formats.** RN WebGPU n'étiquette `"nv12"` que les formats YUV publics (`Y8Cb8Cr8_420`, P010). Le décodeur du Pixel 8a rend le format gralloc propre au fabricant `0x123`, étiqueté `"bgra8"`, alors que Dawn importe tout format hors RGB et profondeur en `OpaqueYCbCrAndroid`, avec le modèle et la plage YCbCr suggérés par le pilote. Le natif reprend donc la même règle (`isYuvFormat`), et JS ne lit pas l'étiquette pour ces frames. Une correction de l'étiquetage amont serait utile.
+
+**Résultats.** Voir la [vérification](verification.md#pixel-8a-15-octobre-2026-android-17) : 10/10 cas de pixels à ±1, et un export de 25 à 36 % plus rapide sur les cas à taille native.
+
 ## Pistes suivantes, non implémentées
 
 1. **Priorités d'après le profil iPhone 15 Pro** (voir la [vérification](verification.md#appareil-ios--iphone-15-pro)) :

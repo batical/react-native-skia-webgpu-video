@@ -13,7 +13,7 @@ const exec = promisify(execFile);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = 'com.skiawebgpuvideo.tests';
 const remote = `/sdcard/Android/data/${pkg}/files/benchmark-results`;
-const usage = `node scripts/test-android-device-run.mjs --serial SERIAL --apk app.apk --label NAME [--case ID ...] [--profile full|smoke|soak] [--repetitions 3] [--timeout-minutes 30]`;
+const usage = `node scripts/test-android-device-run.mjs --serial SERIAL --apk app.apk --label NAME [--case ID ...] [--profile full|smoke|soak|interop] [--repetitions 3] [--timeout-minutes 30]`;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const options = { cases: [], profile: 'full', repetitions: 3, timeoutMinutes: 30 };
@@ -32,7 +32,7 @@ for (let i = 2; i < process.argv.length; i++) {
   else throw new Error(`Unknown argument: ${flag}\n${usage}`);
 }
 if (!/^[\w.:-]+$/.test(options.serial ?? '') || !options.apk || !/^[a-z0-9-]+$/.test(options.label ?? '') ||
-    !['full', 'smoke', 'soak'].includes(options.profile) ||
+    !['full', 'smoke', 'soak', 'interop'].includes(options.profile) ||
     !Number.isInteger(options.repetitions) || options.repetitions < 1 || options.repetitions > 10 ||
     !(options.timeoutMinutes > 0) || options.cases.some((id) => !/^[a-zA-Z0-9_.-]+$/.test(id))) {
   throw new Error(`Invalid arguments\n${usage}`);
@@ -59,13 +59,19 @@ try {
 }
 const before = new Set(await results());
 await adb('shell', 'input', 'keyevent', 'KEYCODE_WAKEUP');
-await adb('shell', 'am', 'force-stop', pkg);
 const extras = ['--es', 'RNSKV_BENCHMARK_PROFILE', options.profile,
   '--ei', 'RNSKV_BENCHMARK_REPETITIONS', String(options.repetitions),
   '--es', 'RNSKV_BENCHMARK_RUN_ID', randomUUID()];
 // The device shell re-parses this argument: quote the JSON list once.
 if (options.cases.length) extras.push('--es', 'RNSKV_BENCHMARK_CASE_IDS', `'${JSON.stringify(options.cases)}'`);
-await adb('shell', 'am', 'start', '-W', '-n', `${pkg}/.MainActivity`, ...extras);
+// The harness reads its profile once, at a cold start: an intent delivered to
+// an already open activity (e.g. reopened from the launcher) is ignored.
+for (let attempt = 1; ; attempt++) {
+  const launch = await adb('shell', 'am', 'start', '-S', '-W', '-n', `${pkg}/.MainActivity`, ...extras);
+  if (/LaunchState: COLD/.test(launch) && /Status: ok/.test(launch)) break;
+  if (attempt === 3) throw new Error(`The app did not cold start:\n${launch}`);
+  await sleep(2000);
+}
 console.log(`${options.label}: ${options.cases.length || 'all'} cases × ${options.repetitions} started on ${options.serial}`);
 
 const started = Date.now();
@@ -78,6 +84,12 @@ for (;;) {
   break;
 }
 const result = JSON.parse(await readFile(output, 'utf8'));
+if (!result.cases) {
+  // The interop profile writes its pixel diagnostics instead of cases.
+  console.log(`${options.label}: ${result.kind} ${result.status}${result.failure ? ` · ${result.failure}` : ''} · ${output}`);
+  if (result.exportPixels) console.log(`  export pixels ${result.exportPixels.status} · ${JSON.stringify(result.exportPixels.checks)}`);
+  process.exit(0);
+}
 console.log(`${options.label}: ${result.backend?.skiaVersion} · ${result.environment?.deviceModel} · ${output}`);
 for (const entry of result.cases) {
   const exported = entry.operations?.find((operation) => operation.operation === 'export');

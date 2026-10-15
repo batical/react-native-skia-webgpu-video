@@ -137,12 +137,32 @@ jsi::Value VideoFrame::toJSInternal(jsi::Runtime& runtime) {
   const auto stride = getBytesPerRow();
   if (isHardwareBuffer()) {
     auto owner = acquireHardwareFrame(getNativeHardwareBufferHandle());
-    if (width <= 0 || height <= 0 || owner->description.width != static_cast<uint32_t>(width) ||
-        owner->description.height != static_cast<uint32_t>(height) ||
-        owner->description.layers != 1 ||
-        owner->description.format != AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM)
+    // An ImageReader frame is the codec's YUV buffer: its picture is the crop
+    // rectangle, turned for display when WebGPU samples it.
+    const bool decodedImage = owner->image != nullptr;
+    const bool swapped = owner->rotation == 90 || owner->rotation == 270;
+    const bool valid = decodedImage
+        ? owner->description.format != AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM &&
+          (swapped ? owner->cropHeight : owner->cropWidth) == width &&
+          (swapped ? owner->cropWidth : owner->cropHeight) == height
+        : owner->description.format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM &&
+          owner->description.width == static_cast<uint32_t>(width) &&
+          owner->description.height == static_cast<uint32_t>(height);
+    if (width <= 0 || height <= 0 || owner->description.layers != 1 || !valid)
       throw jsi::JSError(runtime, "Invalid owned Android hardware frame");
-    const uint64_t bytes = static_cast<uint64_t>(owner->description.stride) * height * 4;
+    const uint64_t bytes = decodedImage
+        ? static_cast<uint64_t>(owner->description.stride) * owner->description.height * 3 / 2
+        : static_cast<uint64_t>(owner->description.stride) * height * 4;
+    jsi::Value region = jsi::Value::undefined();
+    if (decodedImage) {
+      auto rectangle = jsi::Object(runtime);
+      rectangle.setProperty(runtime, "x", owner->cropX);
+      rectangle.setProperty(runtime, "y", owner->cropY);
+      rectangle.setProperty(runtime, "width", owner->cropWidth);
+      rectangle.setProperty(runtime, "height", owner->cropHeight);
+      region = jsi::Value(runtime, rectangle);
+    }
+    const int sourceRotation = owner->rotation;
     auto state = std::make_shared<HardwareFrameState>(std::move(owner));
     auto frame = jsi::Object(runtime);
     frame.setProperty(runtime, "id", static_cast<double>(getId()));
@@ -154,6 +174,10 @@ jsi::Value VideoFrame::toJSInternal(jsi::Runtime& runtime) {
     holder.setExternalMemoryPressure(runtime, bytes);
     auto texture = jsi::Object(runtime);
     texture.setProperty(runtime, "kind", jsi::String::createFromAscii(runtime, "native-buffer"));
+    if (decodedImage) {
+      texture.setProperty(runtime, "region", region);
+      texture.setProperty(runtime, "rotation", sourceRotation);
+    }
     auto getter = jsi::Function::createFromHostFunction(runtime,
       jsi::PropNameID::forAscii(runtime, "nativeBuffer"), 0,
       [state](jsi::Runtime& rt, const jsi::Value&, const jsi::Value*, size_t) -> jsi::Value {

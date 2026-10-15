@@ -106,7 +106,60 @@ Lecture :
   - entrée toujours copiée.
 - **Rien n'a été exécuté sur un appareil Android.**
 
-Protocole prévu sur Pixel 8a, avec les APK signés par la clé de debug dans `example/android/app/build/qualification/` :
+### Pixel 8a, 15 octobre 2026 (Android 17)
+
+**Tests natifs instrumentés de la bibliothèque** (`connectedDebugAndroidTest`, 102 exécutions) :
+- 97 réussies et 5 échouées en run complet.
+- Isolés, `NativeRgbaBufferTest` et `CompositionExportTest` passent.
+- `MediaTest` (5 échecs) et `BigMontageTest` (2 échecs) échouent **à l'identique sur la copie de HEAD** (a2a01ae, sans les changements de cette passe). Tous ces échecs portent sur le budget du chemin CPU RGBA (`Video memory budget exceeded: android-frame-rgba`) ou sur un compteur de budget lu avant la fin du GC.
+- Ces tests n'exercent ni Skia ni l'encodeur GPU. Ces échecs sont antérieurs à la migration et restent à traiter séparément.
+
+**Profil `interop` de l'exemple** (APK nouvelle version, Release signé debug) :
+- Décodage CPU vs AHB : **10/10 cas**, écart maximal de canal 0, sous Skia 3.4.4 / WebGPU 0.14.2.
+- Contrôle d'export ajouté ([`example/export-pixel-check.ts`](../../example/export-pixel-check.ts)) : **réussi**.
+  - Une mire à quatre quadrants (rouge, vert, bleu, blanc) est exportée par le nouveau chemin (`encodeTransport: "ahardwarebuffer-egl-sample"`), puis par le readback CPU (`cpu-rgba-upload`).
+  - Les deux fichiers sont décodés, et quatre patchs 8×8 sont échantillonnés dans chacun.
+  - Chaque couleur est exacte (255/0/0, 0/255/0, 0/0/255, 255/255/255) et à sa place : **orientation et canaux corrects**.
+  - L'écart entre les deux chemins est de 0.
+
+**Mesures d'export** :
+- Commande : `scripts/test-android-device-run.mjs`, catalogue `2026-10-07.1` profil `full`, trois répétitions par cas.
+- JSON compact : [`benchmark/android-device-344-export-ab.json`](../../benchmark/android-device-344-export-ab.json).
+- Une app tierce (`com.azzapp.app_dev`) lisait une vidéo en arrière-plan pendant une partie des runs, et partageait donc le décodeur matériel. Elle était en pause à la fin.
+
+| Cas (médiane) | 3.0.6 readback | 3.4.4 sortie GPU, décodage EGL (c1 / c2 / c3) | + décodage `ImageReader` |
+| --- | --- | --- | --- |
+| `native-hevc-1080p-rot270` (180 images) | 6 351,6 ms | 5 902,1 / 5 690,7 / 5 802,9 ms | **3 717,5 ms** |
+| `encode-h264-copy` (60 images) | 1 750,0 ms | 1 740,4 / 1 739,8 / 1 715,2 ms | **1 285,3 ms** |
+| `4k-x8-lazy-maxLongSide1280` (360 images, mise à l'échelle donc EGL) | 12 602,7 ms | 12 085,7 / 12 023,7 / 12 054,1 ms | 12 166,8 ms |
+
+Lecture :
+- **La sortie GPU seule gagne 3 à 10 %.**
+- **`ImageReader` gagne 25 à 36 %** sur les cas à taille native. Les plages des trois répétitions ne se recouvrent pas.
+  - Le profil passe de 11,4–11,9 à 2,6–2,9 ms de décodage par image en HEVC 1080p, et de 8,9–9,8 à 2,9–3,2 ms en 640×360.
+- **Ce qui reste en HEVC 1080p** (ms par image) : import (blit YUV + snapshot) 6,3–6,6, encodage 4,2–4,3, attente GPU 2,4–2,5, décodage 2,6–2,9.
+- **Tailles de fichier.** Les octets produits sont identiques entre 3.0.6 et les builds EGL. Avec `ImageReader`, les fichiers grossissent de 5 % en HEVC et de 16 % en 640×360, alors que le contrôle de pixels donne un écart de 0 à 1 sur les patchs.
+  - Hypothèse non vérifiée : le chemin GL rééchantillonnait l'image d'un texel contre le débordement bilinéaire, et l'image plus nette se compresse moins.
+- **Un échec hors export** : une répétition 4K de c3 (build EGL) a échoué pendant la *lecture* (« Too many missing settled frames »), avant son export.
+
+**4K à taille native** (deux builds 3.4.4, `ImageReader` puis décodage EGL, trois répétitions) :
+
+| Cas (export 1080×1080) | Décodage EGL | `ImageReader` |
+| --- | --- | --- |
+| `4k-x8-lazy` (8 clips 4K successifs, 360 images) | 23 763 / 25 097 ms | 13 529 / 13 472 ms (−44 %) |
+| `4k-x3-simultaneous` (3 clips 4K simultanés, 150 images) | 20 569 à 21 198 ms | 8 737 à 9 033 ms (−58 %) |
+
+- **Profil par image :**
+  - décodage : de 31–33 à 8,5 ms en 8×4K, et de 70–74 à 7,3–8,1 ms en 3×4K ;
+  - import (blit + snapshot 4K) : de 21 à 16 ms, et de 50–51 à 36–37 ms.
+- **La répétition 1 de `4k-x8-lazy` échoue dans les deux builds**, au même endroit : la lecture, à l'étape `preview:seek-settle` (« Preview operation timed out »), avant l'export. C'est une fragilité antérieure du seek en 4K lazy, pas un effet d'`ImageReader`.
+
+**Contrôle `interop` avec `ImageReader`** :
+- 10/10 cas, écart maximal de canal 0 à 1 face à la référence CPU EGL. Cela couvre la rotation 90°, le portrait 1080×1920, et la 4K H.264 et HEVC.
+- Le contrôle d'export passe aussi : quadrants 254/0/0, 0/254/0, 0/0/255, 255/255/255, avec un écart nul entre chemins.
+- Sur ce Pixel, le décodeur rend le format gralloc propre au fabricant `0x123`. RN WebGPU l'étiquette `"bgra8"`, mais Dawn l'importe en `OpaqueYCbCrAndroid`. Les gardes vérifient donc le format réel côté natif, pas l'étiquette.
+
+Protocole de mesure sur Pixel 8a, avec les APK signés par la clé de debug dans `example/android/app/build/qualification/` :
 
 ```sh
 node scripts/test-android-device-run.mjs --serial SERIAL --apk example/android/app/build/qualification/candidate-344.apk \

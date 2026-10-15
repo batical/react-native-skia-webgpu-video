@@ -10,6 +10,15 @@ struct HardwareFrameStorage final {
   AHardwareBuffer* buffer = nullptr;
   AHardwareBuffer_Desc description{};
   uint64_t reservation = 0;
+  // ImageReader frames: the codec's YUV buffer, owned until the last lease
+  // closes its android.media.Image (returning the slot to the codec). The
+  // picture is the crop rectangle, turned clockwise by `rotation` for display.
+  facebook::jni::global_ref<jobject> image;
+  int cropX = 0;
+  int cropY = 0;
+  int cropWidth = 0;
+  int cropHeight = 0;
+  int rotation = 0;
   ~HardwareFrameStorage();
 };
 
