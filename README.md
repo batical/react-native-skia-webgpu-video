@@ -26,7 +26,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Alpha software.** iOS and focused Android tests have run on physical devices. Android memory and performance qualification is still incomplete. See [status](#status) before adopting this in production.
+> **Alpha software.** The current Skia 3.4.4 / WebGPU 0.14.2 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Long-session memory qualification of this build is still pending. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -192,7 +192,7 @@ Use `useVideoComposition` for timelines and `useVideoPlayback` for single videos
 
 **[Read the migration guide →](docs/MIGRATION.md)**
 
-The `copy` and `direct` options remain available for compatibility. Both export modes currently read rendered pixels back to the CPU; `direct` does not yet mean a GPU-only export.
+The `copy` and `direct` options remain available for compatibility and use the same transport: exports draw on the GPU into the encoder's buffers on both platforms, falling back to CPU readback where the interop is unavailable. Inspect `getVideoResourceStats().backend` for the transport actually used.
 
 ## Memory and GPU extensions
 
@@ -206,21 +206,65 @@ configureVideoMemory({ maxBytes: 256 * 1024 * 1024 });
 
 This budget covers **tracked video resources**, not all memory held by codecs, Skia, or GPU drivers. Use lazy decoders for sequential compositions, keep preview resolution appropriate, and measure process memory on your target device. Images returned by the frame helpers belong to the library; do not dispose them independently.
 
-On capable Android devices, decoded frames render into immutable AHardwareBuffers and pass through WebGPU into independent Graphite snapshots. Normal playback avoids the RGBA CPU readback/upload; this path passed the focused Pixel 8a tests below. Capability selection happens before decoder preparation, with a scoped-copy CPU fallback for unsupported devices. Both paths keep checked GPU completion before releasing source frames. On iOS, export draws each frame straight into an encoder pool buffer through WebGPU's IOSurface import, with no readback, and samples decoded frames in place through their own IOSurfaces, with no per-clip copy or GPU wait. Each falls back, with a warning, where that import is unavailable: to CPU readback for the output, to owned snapshots for the input. On Android, when the AHardwareBuffer interop is available, export renders into AHardwareBuffers lent by the encoder and samples them into the codec's input Surface through EGL, without CPU readback; it falls back to CPU readback otherwise. On API 29+, 8-bit SDR H.264/HEVC clips decoded at their encoded size go through an `ImageReader`: WebGPU converts, crops and rotates the codec's YUV buffer in one pass, with no EGL render pass or `glFinish` per frame. Scaled, HDR and 10-bit sources keep the EGL path.
+### How frames move
+
+| Step | iOS | Android |
+| --- | --- | --- |
+| Decode | AVFoundation, BGRA IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`) | API 29+, 8-bit SDR H.264/HEVC at the encoded size: `ImageReader` YUV buffers. Otherwise: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
+| Into Skia, preview | WebGPU blit into a reusable texture, then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop and rotation in one pass), then an owned Graphite snapshot |
+| Into Skia, export | Sampled in place through the frame's IOSurface: no copy, no per-clip GPU wait | Same as preview |
+| Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into an AHardwareBuffer lent by the encoder; EGL samples it into the codec Surface after its sync-fd |
+| Fallback | CPU readback, with a warning | CPU readback, with a warning |
+
+Every path waits for checked GPU completion before releasing source frames or handing a buffer to the encoder. Scaled, HDR and 10-bit Android sources keep the EGL decode path.
 
 For advanced exports, `createFrameProcessor` supports asynchronous preparation at each composition timestamp. The optional `react-native-skia-webgpu-video/gpu` entry point provides a resource scope whose asynchronous disposal waits for tracked work. See the [WebGPU cube example](examples/webgpu-overlay.ts).
 
 These are integration building blocks. Three.js adapters, Core ML models, and automatic Neural Engine acceleration are not included. Browser video support is not provided by this native library.
 
+## Benchmarks
+
+Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1`, median export wall time. Raw evidence: [iOS device](benchmark/ios-device-344-export-ab.json), [iOS simulator](benchmark/ios-simulator-344-export-ab.json), [Android device](benchmark/android-device-344-export-ab.json); protocol and limits in the [verification report](migration/skia-3.4.4/verification.md).
+
+**iPhone 15 Pro (iOS 27.0.1)**, Skia 3.0.6 vs this release:
+
+| Export case | 3.0.6 | 3.4.4 |
+| --- | --- | --- |
+| HEVC 1080p, rotated, 180 frames | 956 ms | 735–738 ms |
+| H.264 640×360, 60 frames | 235 ms | 175–210 ms |
+| 8 × 4K clips scaled to 1280, 360 frames | 2.95 s | 2.73–2.85 s |
+
+**Pixel 8a (Android 17)**:
+
+| Export case | 3.0.6 | 3.4.4, GPU output only | 3.4.4 + `ImageReader` |
+| --- | --- | --- | --- |
+| HEVC 1080p, rotated, 180 frames | 6.35 s | 5.69–5.90 s | **3.72 s** |
+| H.264 640×360, 60 frames | 1.75 s | 1.72–1.74 s | **1.29 s** |
+| 8 × 4K clips at native size, 360 frames | — | 23.8–25.1 s | **13.5 s** |
+| 3 simultaneous 4K clips, 150 frames | — | 20.6–21.2 s | **8.7–9.0 s** |
+| 8 × 4K clips scaled to 1280 (EGL decode) | 12.6 s | 12.0 s | 12.2 s |
+
+Pass `onProfile` to an export to see where the time goes on your own compositions. On the Pixel, a native-size HEVC 1080p frame spends about 2.7 ms decoding, 6.4 ms importing (YUV blit + snapshot), 2.4 ms waiting for the GPU and 4.2 ms encoding; on the iPhone the whole frame takes under 4 ms.
+
+Reproduce on your devices with the example app: `node scripts/test-ios-device-ab-run.mjs` (iPhone) and `node scripts/test-android-device-run.mjs` (Android); see the [benchmark guide](docs/BENCHMARKS.md).
+
 ## Status
 
 | Area | Current evidence |
 | --- | --- |
-| iOS | **3.4.4 / 0.14.2:** 50/50 native XCTests and 5/5 smoke cases on the simulator (Release). On iPhone 15 Pro, against 3.0.6 with 3 repetitions per case: the 1080p HEVC export case took 735–738 ms instead of 956 ms (median), the 640×360 case 175–210 ms instead of 235 ms, and the 8×4K case 2.73–2.85 s instead of 2.95 s, with identical output sizes ([verification](migration/skia-3.4.4/verification.md)). Physical-device results below are from 3.0.6: initial build 50 native XCTest passes; optimized build 5 device smoke cases; before/after comparison 96 executions across both builds. |
-| JavaScript / types | 204 tests passed in 9 suites; typecheck passed. The benchmark harness passed 112 tests. |
-| Android | **3.4.4 / 0.14.2 on Pixel 8a:** CPU/GPU decode pixel comparison 10/10 (max channel error 1) and export pattern check passed. Export cases at native size are 25–36% faster than with the previous EGL decode path at 1080p and below, and 44–58% faster with native-size 4K sources; scaled 4K is unchanged ([verification](migration/skia-3.4.4/verification.md)). Results below are from 3.0.6: AHardwareBuffer Release on Pixel 8a: 24/24 focused attempts passed, including H264/HEVC 4K and export, with tracked cleanup zero at a 512 MiB budget. Six AHB and five CPU ownership tests passed on device; 43 host JVM tests passed. [Device diagnostics](docs/ANDROID_DEVICE_306.md). |
-| Audio / image fidelity | Android CPU/AHB comparison passed 10/10 cases with identical sampled SDR pixels. Whole-image fidelity, HDR, audible output and synchronization remain unqualified. |
-| Lifecycle / long sessions | Latest Release runs: 6/6 consecutive iPhone montages and 4/4 Android montages passed (240 and 160 remounts). Late memory readings flatten or decrease; unlimited endurance and absence of every leak are not established. |
+| iOS | Simulator (Release): 50/50 native XCTests, 5/5 smoke scenarios. iPhone 15 Pro: all export cases above passed in 3 runs, with output sizes identical to 3.0.6 ([verification](migration/skia-3.4.4/verification.md)). |
+| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K) and export pattern check passed. 97/102 instrumented tests pass; the 5 failures (CPU RGBA budget) predate this release. |
+| JavaScript / types | 212 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
+| Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
+| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
+| Long sessions | Not yet re-run on 3.4.4; the 3.0.6 results below are the latest. |
+
+### Earlier results (Skia 3.0.6)
+
+These were measured on the previous Skia 3.0.6 / WebGPU 0.12.1 builds and have not been repeated on 3.4.4.
+
+- **Lifecycle:** 6/6 consecutive iPhone montages and 4/4 Android montages passed (240 and 160 remounts), with late memory readings flattening or decreasing.
+- **Android AHardwareBuffer playback:** 24/24 focused Release attempts on Pixel 8a passed, including H.264/HEVC 4K and export, with tracked cleanup at zero at a 512 MiB budget ([device diagnostics](docs/ANDROID_DEVICE_306.md)).
 
 On one iPhone 15 Pro, an earlier **3.0.6 before/after optimization** comparison observed roughly **11% less peak physical footprint during 4K playback**, with similar RSS. Small exports took **3.5–6% longer**. The phone was warm and used for tethering; these are descriptive results, not a general speed claim. [Protocol, measurements, and limitations](docs/PERFORMANCE_IPHONE_306_OPTIMIZATION.md).
 
@@ -242,7 +286,7 @@ npm run build
 npm run check-package
 ```
 
-Native validation: [iPhone](docs/IOS_DEVICE_TESTS.md), [iOS simulator](docs/IOS_SIMULATOR_TESTS.md), [Android](android/BUILD_VALIDATION.md). The [benchmark guide](docs/BENCHMARKS.md) explains workloads and measured versus unavailable metrics.
+Native validation: [iPhone](docs/IOS_DEVICE_TESTS.md), [iOS simulator](docs/IOS_SIMULATOR_TESTS.md), [Android](android/BUILD_VALIDATION.md). The [benchmark guide](docs/BENCHMARKS.md) explains workloads and measured versus unavailable metrics. Upgrading Skia: follow the [upstream notes](docs/UPSTREAM_NOTES.md) and the [3.4.4 migration audit](migration/skia-3.4.4/upstream-audit.md).
 
 Contributions are welcome through pull requests. Read the [contribution guide](.github/CONTRIBUTING.md) for the checks and native validation expected for a change.
 

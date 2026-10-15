@@ -1,6 +1,13 @@
 # Comparer Skia Video et Skia 3 / WebGPU
 
-Dernière campagne, **8 octobre 2026** : [mémoire de l’export Skia 3.0.6](NATIVE_MEMORY_INVESTIGATION_306.md), avec [preuves JSON](../benchmark/stable-export-worklet-306.json). Comparaison avant/après du correctif dans cette bibliothèque : deux montages puis 60 s au repos sur chaque appareil, suivis de six montages iPhone et quatre Android. Empreinte physique iPhone : **425,99 → 257,70 Mio** ; PSS Pixel : **737,83 → 577,20 Mio**. Les conditions sont nominal/normal/active. Ces chiffres ne comparent ni iOS à Android, ni cette bibliothèque à Skia Video 2 ; les campagnes historiques ci-dessous restent séparées.
+Dernière campagne, **14–15 octobre 2026**, sur **Skia 3.4.4 / WebGPU 0.14.2**. Elle mesure la vitesse d'export, pas la mémoire longue durée. Trois répétitions par cas, médianes, en Release.
+- **iPhone 15 Pro, face à 3.0.6 :** HEVC 1080p **956 → 735–738 ms**, 640×360 **235 → 175–210 ms**, 8×4K réduits à 1280 **2,95 → 2,73–2,85 s**.
+- **Pixel 8a, avec le décodage `ImageReader` :** HEVC 1080p **6,35 → 3,72 s**, 640×360 **1,75 → 1,29 s**, 8×4K natifs **23,8–25,1 → 13,5 s** (face au décodage EGL), 3×4K simultanés **20,6–21,2 → 8,7–9,0 s**.
+- **Contrôles de pixels sur Pixel :** décodage CPU/GPU 10/10, export de mire réussi.
+
+Preuves : [`ios-device-344-export-ab.json`](../benchmark/ios-device-344-export-ab.json), [`ios-simulator-344-export-ab.json`](../benchmark/ios-simulator-344-export-ab.json), [`android-device-344-export-ab.json`](../benchmark/android-device-344-export-ab.json) ; protocole, attribution et limites dans la [vérification](../migration/skia-3.4.4/verification.md). Le harness enregistre désormais `exportProfile`, le temps par étape d'export. Sur Android, `scripts/test-android-device-run.mjs` installe un APK signé, le démarre à froid avec les cas choisis et rapatrie le JSON.
+
+Campagne précédente, **8 octobre 2026** : [mémoire de l’export Skia 3.0.6](NATIVE_MEMORY_INVESTIGATION_306.md), avec [preuves JSON](../benchmark/stable-export-worklet-306.json). Comparaison avant/après du correctif dans cette bibliothèque : deux montages puis 60 s au repos sur chaque appareil, suivis de six montages iPhone et quatre Android. Empreinte physique iPhone : **425,99 → 257,70 Mio** ; PSS Pixel : **737,83 → 577,20 Mio**. Les conditions sont nominal/normal/active. Ces chiffres ne comparent ni iOS à Android, ni cette bibliothèque à Skia Video 2 ; les campagnes historiques ci-dessous restent séparées.
 
 Le dossier `benchmark/` contient un programme commun aux deux applications. Il reproduit les 31 compositions de l'ancien écran de stress, ajoute 28 cas de régression, trois lectures continues en copy et leurs trois variantes direct : **65 workloads déterministes**, version **`2026-10-07.1`**. Les sources vidéo, les seeks, les pauses, les tailles demandées et les séquences de montage sont identiques pour les deux versions.
 
