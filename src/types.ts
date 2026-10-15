@@ -394,11 +394,13 @@ export type VideoEncoder = {
    */
   encodeFrame(texture: unknown, time: number): void;
   /**
-   * iOS: lends the next pool CVPixelBuffer to draw into on the GPU. Pass it
-   * back as a native-buffer frame, or release it. One at a time.
+   * Lends the next pool buffer to draw into on the GPU: a CVPixelBuffer on
+   * iOS, an RGBA AHardwareBuffer on Android. Pass it back as a native-buffer
+   * frame (on Android with the sync-fds ending its GPU access, in `fences`),
+   * or release it. One at a time.
    */
   acquireFrameBuffer?(): bigint;
-  /** iOS: returns a lent buffer that will not be encoded. */
+  /** Returns a lent buffer that will not be encoded. */
   releaseFrameBuffer?(): void;
   /*
    * Finish writing the video to the output file.

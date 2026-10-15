@@ -38,7 +38,12 @@ void install(jsi::Runtime& jsiRuntime) {
         const bool hardware = NativeHardwareBuffer::isEnabled();
         info.setProperty(runtime, "decodeTransport", jsi::String::createFromAscii(runtime,
             hardware ? "ahardwarebuffer-rgba-egl" : "cpu-rgba-readback"));
-        info.setProperty(runtime, "encodeTransport", jsi::String::createFromAscii(runtime, "cpu-rgba-upload"));
+        // Export renders into encoder-lent AHardwareBuffers, sampled by the
+        // encoder's EGL context; CPU readback stays the fallback.
+        info.setProperty(runtime, "encodeTransport", jsi::String::createFromAscii(runtime,
+            hardware ? "ahardwarebuffer-egl-sample" : "cpu-rgba-upload"));
+        info.setProperty(runtime, "exportFallback", jsi::String::createFromAscii(runtime, "cpu-rgba-upload"));
+        info.setProperty(runtime, "gpuDirectExport", hardware);
         info.setProperty(runtime, "decodeCpuCopiesBeforeSkia", hardware ? 0 : 1);
         info.setProperty(runtime, "cpuReadbackDecode", !hardware);
         info.setProperty(runtime, "ownedFrameTransport", jsi::String::createFromAscii(runtime,

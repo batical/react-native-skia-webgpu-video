@@ -56,7 +56,7 @@ jest.mock("react-native-skia", () => ({
     Color: jest.fn(() => 0),
     Data: { fromBytes: jest.fn(() => ({ dispose: jest.fn() })) },
     Image: {
-      MakeImage: jest.fn(() => ({ dispose: jest.fn() })),
+      MakeRasterImage: jest.fn(() => ({ dispose: jest.fn() })),
       MakeImageFromGPUTexture: jest.fn(),
     },
   },
@@ -75,7 +75,7 @@ jest.mock("../RNSkiaVideoModule", () => ({
 
 const reserve = RNSkiaVideoModule.reserveMemory as jest.Mock;
 const release = RNSkiaVideoModule.releaseMemory as jest.Mock;
-const makeImage = Skia.Image.MakeImage as jest.Mock;
+const makeImage = Skia.Image.MakeRasterImage as jest.Mock;
 const rgbaFrame = (id = 1, producerId = 1): VideoFrame => ({
   id,
   producerId,
@@ -149,6 +149,111 @@ const withAndroidInterop = (
   });
 };
 
+describe("Android ImageReader YUV frames", () => {
+  // An 8×6 codec buffer whose 6×4 picture has right/bottom padding.
+  const yuvFrame = (
+    rotation: number,
+    region = { x: 0, y: 0, width: 6, height: 4 },
+  ): VideoFrame => {
+    const turned = rotation === 90 || rotation === 270;
+    return {
+      id: 1,
+      producerId: 1,
+      width: turned ? region.height : region.width,
+      height: turned ? region.width : region.height,
+      rotation: 0,
+      texture: { kind: "native-buffer", nativeBuffer: 123n, region, rotation },
+      dispose: jest.fn(),
+    };
+  };
+  const yuvSource = () => ({
+    width: 8,
+    height: 6,
+    pixelFormat: "nv12",
+    release: jest.fn(),
+  });
+
+  it("converts, crops and turns the codec buffer into display-sized scratch", () => {
+    withAndroidInterop(({ interop }) => {
+      const source = yuvSource();
+      mockWrapNative.mockReturnValueOnce(source);
+      const frame = yuvFrame(90);
+      expect(interop.imageFromVideoFrame(frame)).not.toBeNull();
+      expect(mockCreateTexture).toHaveBeenCalledWith(
+        expect.objectContaining({
+          size: { width: 4, height: 6 },
+          format: "rgba8unorm",
+        }),
+      );
+      // Turned clockwise, the bottom padding comes first along x.
+      expect(mockCopy).toHaveBeenCalledWith(
+        {
+          source,
+          origin: { x: 2, y: 0 },
+          rotation: 90,
+          mirrored: false,
+          flipY: false,
+        },
+        { texture: mockUploadTexture, premultipliedAlpha: false },
+        { width: 4, height: 6 },
+      );
+      // The snapshot owns the pixels: both native leases close after the fence.
+      expect(source.release).toHaveBeenCalledTimes(1);
+      expect(frame.dispose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("maps the crop rectangle for every rotation", () => {
+    // An 8×6 buffer: one column of padding on each side, none above and two
+    // rows below the 6×4 picture. Each turn moves those margins elsewhere.
+    const region = { x: 1, y: 0, width: 6, height: 4 };
+    const expected: Record<number, { x: number; y: number }> = {
+      0: { x: 1, y: 0 },
+      90: { x: 2, y: 1 },
+      180: { x: 1, y: 2 },
+      270: { x: 0, y: 1 },
+    };
+    for (const rotation of [0, 90, 180, 270]) {
+      withAndroidInterop(({ interop }) => {
+        mockWrapNative.mockReturnValueOnce(yuvSource());
+        interop.imageFromVideoFrame(yuvFrame(rotation, region));
+        expect(mockCopy.mock.calls.at(-1)![0].origin).toEqual(
+          expected[rotation],
+        );
+      });
+    }
+  });
+
+  it("rejects a region that disagrees with the frame or overflows the buffer", () => {
+    withAndroidInterop(({ interop }) => {
+      mockWrapNative.mockReturnValueOnce(yuvSource());
+      const frame = { ...yuvFrame(0), width: 5 };
+      expect(() => interop.imageFromVideoFrame(frame)).toThrow(
+        "Native video buffer region or YUV layout mismatch",
+      );
+      mockWrapNative.mockReturnValueOnce(yuvSource());
+      expect(() =>
+        interop.imageFromVideoFrame(
+          yuvFrame(0, { x: 3, y: 0, width: 6, height: 4 }),
+        ),
+      ).toThrow("Native video buffer region or YUV layout mismatch");
+      expect(mockCopy).not.toHaveBeenCalled();
+    });
+  });
+
+  it("does not trust RN WebGPU's label for driver-defined YUV formats", () => {
+    withAndroidInterop(({ interop }) => {
+      // A Tensor decoder buffer (format 0x123) is labelled "bgra8".
+      mockWrapNative.mockReturnValueOnce({
+        ...yuvSource(),
+        pixelFormat: "bgra8",
+      });
+      expect(interop.imageFromVideoFrame(yuvFrame(0))).not.toBeNull();
+      expect(mockCopy).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
 describe("Android RGBA Graphite upload", () => {
   it("fills a budgeted private CPU scratch without materializing lazy native data", () => {
     withAndroidInterop(
@@ -166,7 +271,7 @@ describe("Android RGBA Graphite upload", () => {
         expect(uploaded.buffer).toBe(buffer);
         expect(Array.from(uploaded)).toEqual(new Array(32).fill(1));
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(
           androidReserve.mock.calls.map((call) => call.slice(0, 2)),
         ).toEqual([
@@ -449,7 +554,7 @@ describe("Android RGBA Graphite upload", () => {
           { width: 4, height: 2, depthOrArrayLayers: 1 },
         );
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(mockCopy).not.toHaveBeenCalled();
         expect(mockWrapNative).not.toHaveBeenCalled();
         expect(mockSurface.enableCheckedSubmissions).toHaveBeenCalledTimes(1);
@@ -650,7 +755,7 @@ describe("Android RGBA Graphite upload", () => {
         expect(mockWriteTexture).not.toHaveBeenCalled();
         expect(data).not.toHaveBeenCalled();
         expect(skia.Data.fromBytes).not.toHaveBeenCalled();
-        expect(skia.Image.MakeImage).not.toHaveBeenCalled();
+        expect(skia.Image.MakeRasterImage).not.toHaveBeenCalled();
         expect(androidReserve.mock.calls.map((call) => call[0])).toEqual([
           32, 32,
         ]);
@@ -867,11 +972,14 @@ describe("owned video frame transport", () => {
   it("closes a fresh native lease on a paused-image cache hit without another GPU import", () => {
     withAndroidInterop(({ interop }) => {
       const frame: VideoFrame = {
-        ...rgbaFrame(), texture: { kind: "native-buffer", nativeBuffer: 123n },
+        ...rgbaFrame(),
+        texture: { kind: "native-buffer", nativeBuffer: 123n },
       };
       const image = interop.imageFromVideoFrame(frame)!;
       const alias: VideoFrame = { ...frame, dispose: jest.fn() };
-      const readTexture = jest.fn(() => { throw new Error("Cached pixels need no source"); });
+      const readTexture = jest.fn(() => {
+        throw new Error("Cached pixels need no source");
+      });
       Object.defineProperty(alias, "texture", { get: readTexture });
       expect(interop.imageFromVideoFrame(alias)).toBe(image);
       expect(interop.imageFromVideoFrame(alias)).toBe(image);
@@ -889,9 +997,12 @@ describe("owned video frame transport", () => {
   it("keeps cached pixels and retries a fresh lease whose close failed", () => {
     const frame = rgbaFrame();
     const image = imageFromVideoFrame(frame)!;
-    const alias = { ...frame, dispose: jest.fn().mockImplementationOnce(() => {
-      throw new Error("lease close failed");
-    }) };
+    const alias = {
+      ...frame,
+      dispose: jest.fn().mockImplementationOnce(() => {
+        throw new Error("lease close failed");
+      }),
+    };
     expect(() => imageFromVideoFrame(alias)).toThrow("lease close failed");
     expect(imageFromVideoFrame(alias)).toBe(image);
     expect(imageFromVideoFrame(alias)).toBe(image);
@@ -1239,8 +1350,8 @@ describe("owned video frame transport", () => {
       throw failure;
     });
     expect(() => imageFromVideoFrame(replacement)).toThrow(failure);
-    const rejectedImage = (Skia.Image.MakeImage as jest.Mock).mock.results[1]
-      ?.value;
+    const rejectedImage = (Skia.Image.MakeRasterImage as jest.Mock).mock
+      .results[1]?.value;
     expect(rejectedImage.dispose).toHaveBeenCalledTimes(1);
     expect(previous.dispose).not.toHaveBeenCalled();
     expect(imageFromVideoFrame(first)).toBe(previous);

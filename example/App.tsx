@@ -7,6 +7,7 @@ import { createBenchmarkScreen } from '../benchmark/screen.mjs';
 import manifest from './fixtures/manifest.json';
 import device from './device.local.json';
 import { runAndroidInteropSmoke } from './android-interop-smoke';
+import { runExportPixelCheck } from './export-pixel-check';
 
 const isAndroid = native.Platform.OS === 'android';
 const helper = native.NativeModules.VideoBenchmarkHarness;
@@ -45,9 +46,13 @@ function AndroidInteropScreen() {
         await new Promise<void>((resolve) => setTimeout(resolve, 100));
       }
       const report = await runAndroidInteropSmoke(details.fixtureDirectory, manifest.files, requireForeground);
-      await files.writeResult({ ...report, benchmarkRunId: details.benchmarkRunId,
+      // GPU export vs CPU readback export of an asymmetric pattern, decoded back.
+      await requireForeground();
+      const exportPixels = await runExportPixelCheck(details.fixtureDirectory,
+        await helper.prepareOutputDirectory(), (path) => helper.remove(path));
+      await files.writeResult({ ...report, exportPixels, benchmarkRunId: details.benchmarkRunId,
         processIdentifier: details.processIdentifier, buildMode: __DEV__ ? 'debug' : 'release' });
-      if (mounted) setStatus(`${report.completedCases}/${report.plannedCases} cas exécutés — ${report.status}${report.failure ? ` : ${report.failure}` : ''}`);
+      if (mounted) setStatus(`${report.completedCases}/${report.plannedCases} cas exécutés — ${report.status}${report.failure ? ` : ${report.failure}` : ''} · export ${exportPixels.status}${exportPixels.failure ? ` : ${exportPixels.failure}` : ''}`);
     };
     run().catch(async (error: unknown) => {
       const failure = error instanceof Error ? error.message : String(error);
@@ -77,7 +82,7 @@ export default function App() {
       buildMode: __DEV__ ? 'debug' : 'release', displayRefreshRate: details.displayRefreshRate,
       thermalState: details.thermalState, powerMode: details.powerMode },
     backend: { name: 'react-native-skia-webgpu-video', version: '0.1.0-alpha.0',
-      skiaVersion: '3.0.6', webgpuVersion: '0.12.1', paths: video.getVideoResourceStats().backend },
+      skiaVersion: '3.4.4', webgpuVersion: '0.14.2', paths: video.getVideoResourceStats().backend },
   }), [profile]);
   if (!helper) return <native.Text>Recompilez l’application de test : le module de mesure manque.</native.Text>;
   if (isAndroid && profile === 'interop') return <AndroidInteropScreen />;

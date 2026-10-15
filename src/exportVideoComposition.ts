@@ -41,6 +41,12 @@ import {
   type EncoderTarget,
 } from "./exportTarget";
 import { yieldToRuntime } from "./runtimeYield";
+import {
+  createExportFrameImports,
+  ownExportFrames,
+  releaseExportFrames,
+  type ExportFrameImports,
+} from "./exportFrames";
 
 export type VideoFrameProcessingContext = {
   frames: Record<string, VideoFrame>;
@@ -58,6 +64,31 @@ export type VideoFrameProcessor = {
   /** Must finish every GPU/ML read before settling. A rejected cleanup is
    * conservatively retained and prevents another export on that runtime. */
   dispose: () => void | Promise<void>;
+};
+
+/** Cumulative wall-clock milliseconds per export stage, measured on the
+ * export runtime. Stages are sequential, so they add up to `totalMs`. */
+export type ExportProfile = {
+  frames: number;
+  totalMs: number;
+  /** Native decoding up to each frame time. */
+  decodeMs: number;
+  /** Wrapping or copying decoded frames for Skia, and closing replaced ones. */
+  importMs: number;
+  /** createFrameProcessor's prepareFrame. */
+  prepareMs: number;
+  /** GPU export: lending and wrapping an encoder buffer, including waits
+   * for the bounded pool to return one. */
+  targetMs: number;
+  /** drawFrame, before/afterDrawFrame and progress scheduling. */
+  drawMs: number;
+  /** The checked flush(true): waiting for the GPU to complete the frame. */
+  gpuMs: number;
+  /** Readback when used, submission to the encoder including its
+   * backpressure, and the final file write. */
+  encodeMs: number;
+  /** Between frames, on the export runtime's event loop. */
+  yieldMs: number;
 };
 
 export type VideoExportArguments<T = undefined> = ExportOptions & {
@@ -78,9 +109,12 @@ export type VideoExportArguments<T = undefined> = ExportOptions & {
     videoComposition: VideoComposition;
     isCancelled: () => boolean;
   }) => VideoFrameProcessor | Promise<VideoFrameProcessor>;
+  /** Called once, after the last frame is written and before the export
+   * resolves. Measuring adds a few clock reads per frame; omit to skip it. */
+  onProfile?: (profile: ExportProfile) => void;
 };
 
-// Native Skia 3.0.6 accepts destination/stride in readPixels; its
+// Native Skia 3.4.4 accepts destination/stride in readPixels; its
 // published Canvas type currently omits these arguments. Use only a private,
 // full-length, zero-offset Uint8Array (the native implementation ignores offsets).
 type ReadbackCanvas = {
@@ -99,9 +133,11 @@ type ExportState = {
   surface: SkSurface | null;
   canvas: SkCanvas | null;
   readback: Uint8Array | null;
-  /** iOS: draw into a lent encoder buffer instead of reading pixels back. */
+  /** Draw into a lent encoder buffer instead of reading pixels back. */
   gpu: boolean;
   target: EncoderTarget | null;
+  /** iOS GPU export: decoded frames sampled in place, by producer. */
+  imports: ExportFrameImports | null;
   frames: Record<string, VideoFrame>;
   processor: VideoFrameProcessor | null;
   pendingAfterDraw: (() => void) | null;
@@ -147,6 +183,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
       onProgress,
       abortSignal,
       createFrameProcessor,
+      onProfile,
       ...options
     } = args;
     if (abortSignal?.aborted) {
@@ -200,8 +237,9 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
       return;
     }
     const bgra = Platform.OS === "ios";
+    // iOS always; Android when its AHardwareBuffer interop is negotiated.
     const gpuExport =
-      bgra && RNSkiaVideoModule.getBackendInfo?.()?.gpuDirectExport === true;
+      RNSkiaVideoModule.getBackendInfo?.()?.gpuDirectExport === true;
     // Keep the export closure identity stable across frames. Recreating this
     // worklet per image makes Worklets reconstruct its entire captured graph
     // on the persistent runtime, including nested drawing/native functions.
@@ -225,6 +263,32 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
       const isCancelled = () => {
         "worklet";
         return cancelled.getBlocking();
+      };
+      // Per session: this worklet runs once and loops over every frame.
+      const profile = onProfile
+        ? {
+            frames: 0,
+            totalMs: 0,
+            decodeMs: 0,
+            importMs: 0,
+            prepareMs: 0,
+            targetMs: 0,
+            drawMs: 0,
+            gpuMs: 0,
+            encodeMs: 0,
+            yieldMs: 0,
+          }
+        : null;
+      const clock = { last: -1 };
+      /** Charges the time since the previous lap to one stage. */
+      const lap = (
+        stage: Exclude<keyof ExportProfile, "frames" | "totalMs">,
+      ) => {
+        "worklet";
+        if (!profile) return;
+        const now = performance.now();
+        if (clock.last >= 0) profile[stage] += now - clock.last;
+        clock.last = now;
       };
       const finish = async (
         error: unknown,
@@ -272,6 +336,9 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           if (cleanup.safeToRelease) {
             for (const frame of Object.values(state.frames))
               clean(() => frame.dispose?.());
+            const imports = state.imports;
+            if (imports && clean(() => releaseExportFrames(imports)))
+              state.imports = null;
             clean(() => clearVideoFrameImages(true));
           }
           if (cleanup.safeToRelease && clean(() => state.canvas?.dispose()))
@@ -317,6 +384,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         "worklet";
         try {
           if ("setupError" in state) throw state.setupError;
+          lap("yieldMs");
           if (isCancelled()) {
             await finish(null, true);
             return false;
@@ -325,8 +393,14 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           // Purge ended/closed producer images, including lazily opened clips.
           const owned = runWithVideoAutoreleasePool(() => {
             const decoded = state.extractor!.decodeCompositionFrames(time);
-            const imported = ownVideoFrames(decoded);
+            lap("decodeMs");
+            const imports = state.imports;
+            // In place, a producer's frame is released by its next import.
+            const imported = imports
+              ? ownExportFrames(imports, decoded, ownVideoFrames)
+              : ownVideoFrames(decoded);
             for (const [key, previous] of Object.entries(state.frames)) {
+              if (imports?.producers.has(previous.producerId ?? -1)) continue;
               if (
                 !imported[key] ||
                 imported[key]!.producerId !== previous.producerId
@@ -335,6 +409,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             }
             return imported;
           });
+          lap("importMs");
           state.frames = owned;
           await state.processor?.prepareFrame({
             frames: owned,
@@ -344,6 +419,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             height: options.height,
             isCancelled,
           });
+          lap("prepareMs");
           if (isCancelled()) {
             await finish(null, true);
             return false;
@@ -356,6 +432,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 options.width,
                 options.height,
               );
+            lap("targetMs");
             const target = state.target;
             const surface = target ? target.surface! : state.surface!;
             const canvas = target ? target.canvas! : state.canvas!;
@@ -376,13 +453,19 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 width: options.width,
                 height: options.height,
               });
+              lap("drawMs");
               surface.flush(true);
               drawn.drained = true;
+              lap("gpuMs");
               if (target) {
-                closeEncoderTarget(target);
+                closeEncoderTarget(target, true);
                 state.target = null;
                 state.encoder!.encodeFrame(
-                  { kind: "native-buffer", nativeBuffer: target.pointer },
+                  {
+                    kind: "native-buffer",
+                    nativeBuffer: target.pointer,
+                    fences: target.fences,
+                  },
                   time,
                 );
               } else {
@@ -427,6 +510,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                   time,
                 );
               }
+              lap("encodeMs");
             } catch (error) {
               drawn.failed = true;
               drawn.failure = error;
@@ -467,12 +551,28 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
               framesCompleted: state.index,
               nbFrames,
             });
+          lap("drawMs");
           if (isCancelled()) {
             await finish(null, true);
             return false;
           }
           if (state.index === nbFrames) {
             runWithVideoAutoreleasePool(() => state.encoder!.finishWriting());
+            lap("encodeMs");
+            if (profile && onProfile) {
+              profile.frames = state.index;
+              profile.totalMs =
+                profile.decodeMs +
+                profile.importMs +
+                profile.prepareMs +
+                profile.targetMs +
+                profile.drawMs +
+                profile.gpuMs +
+                profile.encodeMs +
+                profile.yieldMs;
+              // Scheduled before the settlement, so it runs first.
+              scheduleOnRN(onProfile, { ...profile });
+            }
             await finish(null);
             return false;
           }
@@ -515,6 +615,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           readback: null,
           gpu: false,
           target: null,
+          imports: null,
           frames: {},
           processor: null,
           pendingAfterDraw: null,
@@ -576,6 +677,9 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                     )
                   : new Error("Encoder cannot lend frame buffers");
                 state.gpu = failure === null;
+                // iOS: the same IOSurface import then samples decoded frames.
+                if (state.gpu && bgra)
+                  state.imports = createExportFrameImports();
                 if (!state.gpu) {
                   console.warn(
                     "[react-native-skia-webgpu-video] GPU export unavailable, using CPU readback:",

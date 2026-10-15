@@ -17,7 +17,14 @@ import {
 } from "./memory";
 
 type FrameTexture =
-  | { kind: "native-buffer"; nativeBuffer: bigint }
+  | {
+      kind: "native-buffer";
+      nativeBuffer: bigint;
+      /** Android ImageReader frames: the codec's YUV buffer, whose picture is
+       * this crop rectangle turned clockwise by `rotation` for display. */
+      region?: { x: number; y: number; width: number; height: number };
+      rotation?: number;
+    }
   | {
       kind: "rgba";
       data: ArrayBuffer;
@@ -57,6 +64,27 @@ type Cache = {
 // Capture a scalar on the RN runtime instead of importing Platform inside a
 // worklet. iOS keeps its existing native-buffer and RGBA compatibility paths.
 const uploadAndroidRgba = Platform.OS === "android";
+
+/** The crop rectangle's corner once the buffer is turned clockwise for display:
+ * WebGPU's blit takes its source origin in that turned space. */
+const turnedOrigin = (
+  region: { x: number; y: number; width: number; height: number },
+  width: number,
+  height: number,
+  rotation: number,
+): { x: number; y: number } => {
+  "worklet";
+  if (rotation === 90)
+    return { x: height - region.y - region.height, y: region.x };
+  if (rotation === 180)
+    return {
+      x: width - region.x - region.width,
+      y: height - region.y - region.height,
+    };
+  if (rotation === 270)
+    return { x: region.y, y: width - region.x - region.width };
+  return { x: region.x, y: region.y };
+};
 
 const getCache = (): Cache => {
   "worklet";
@@ -286,7 +314,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           );
           const data = Skia.Data.fromBytes(pixels);
           try {
-            image = Skia.Image.MakeImage(
+            image = Skia.Image.MakeRasterImage(
               {
                 width: frame.width,
                 height: frame.height,
@@ -421,10 +449,39 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         );
       } else if (texture.kind === "native-buffer") {
         nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
-        // RN WebGPU 0.12.1 labels a single-plane Android RGBA AHB "bgra8".
-        // Dawn reads the actual AHB format; the string distinguishes RGB from
-        // NV12 and must not be interpreted as Android's physical byte order.
-        if (
+        const region = texture.region;
+        const rotation = texture.rotation ?? 0;
+        let origin = { x: 0, y: 0 };
+        if (region) {
+          // An Android codec buffer: padded, YUV, in encoded orientation. The
+          // blit converts, crops and turns it into the display-sized scratch,
+          // as the GL path's SurfaceTexture transform did. RN WebGPU labels
+          // driver-defined YUV formats "bgra8", yet Dawn imports them as YUV:
+          // the native side checked the format, so the label is not read.
+          const turned = rotation === 90 || rotation === 270;
+          if (
+            (rotation !== 0 && !turned && rotation !== 180) ||
+            region.x < 0 ||
+            region.y < 0 ||
+            region.x + region.width > nativeSource.width ||
+            region.y + region.height > nativeSource.height ||
+            (turned ? region.height : region.width) !== frame.width ||
+            (turned ? region.width : region.height) !== frame.height
+          ) {
+            throw new Error(
+              "Native video buffer region or YUV layout mismatch",
+            );
+          }
+          origin = turnedOrigin(
+            region,
+            nativeSource.width,
+            nativeSource.height,
+            rotation,
+          );
+        } else if (
+          // RN WebGPU labels a single-plane Android RGBA AHB "bgra8". Dawn
+          // reads the actual AHB format; the string distinguishes RGB from
+          // NV12 and must not be read as Android's physical byte order.
           nativeSource.width !== frame.width ||
           nativeSource.height !== frame.height ||
           nativeSource.pixelFormat !== "bgra8"
@@ -437,8 +494,21 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         // checked queue drain even when it does not return normally.
         copyPending = true;
         device.queue.copyExternalImageToTexture(
-          // Keep decoded orientation: drawVideoFrame applies rotation once.
-          { source: nativeSource, rotation: 0, mirrored: false, flipY: false },
+          region
+            ? {
+                source: nativeSource,
+                origin,
+                rotation: rotation as 0 | 90 | 180 | 270,
+                mirrored: false,
+                flipY: false,
+              }
+            : // Keep decoded orientation: drawVideoFrame applies rotation once.
+              {
+                source: nativeSource,
+                rotation: 0,
+                mirrored: false,
+                flipY: false,
+              },
           { texture: cache.uploadTexture!, premultipliedAlpha: false },
           { width: frame.width, height: frame.height },
         );

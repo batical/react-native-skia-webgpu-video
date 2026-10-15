@@ -314,6 +314,23 @@ public class VideoEncoder {
     });
   }
 
+  /**
+   * Encodes a GL_TEXTURE_2D of this encoder's context: a hardware buffer the
+   * export rendered into through WebGPU, imported as an EGLImage natively.
+   * The caller waited for the renderer's fence and keeps the buffer until the
+   * reads this draw queues are complete.
+   */
+  public void encodeTexture(int texture, double time) {
+    if (texture <= 0 || !Double.isFinite(time) || time < 0) {
+      throw new IllegalArgumentException("Invalid encoder texture or timestamp");
+    }
+    if (encoder == null || eglResourcesHolder == null) {
+      throw new IllegalStateException("Encoder has not been prepared");
+    }
+    awaitEncoderCapacity();
+    eglResourcesHolder.runWithContextCurrent(() -> encodeTextureCurrent(texture, time));
+  }
+
   private void awaitEncoderCapacity() {
     drainEncoder(false);
     long deadline = SystemClock.uptimeMillis() + 15_000;

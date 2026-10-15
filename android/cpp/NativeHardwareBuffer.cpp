@@ -1,6 +1,7 @@
 #include "NativeHardwareBuffer.h"
 #include "RNSVMemoryBudget.h"
 #include <fbjni/ByteBuffer.h>
+#include <android/hardware_buffer_jni.h>
 #include <android/log.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -218,6 +219,63 @@ void abort(alias_ref<jclass>, jlong id) {
     throw;
   }
 }
+/** Whether Dawn imports this format as OpaqueYCbCrAndroid: the public YUV
+ * formats and the driver-defined ones decoders use (Tensor: 0x123), unlike
+ * the color/depth formats with a WebGPU equivalent. Mirrors RN WebGPU's
+ * GPUExternalTexture::isOpaqueYCbCrFormat. */
+bool isYuvFormat(uint32_t format) {
+  switch (format) {
+  case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
+  case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
+  case AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM:
+  case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
+  case AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT:
+  case AHARDWAREBUFFER_FORMAT_R10G10B10A2_UNORM:
+  case AHARDWAREBUFFER_FORMAT_BLOB:
+  case AHARDWAREBUFFER_FORMAT_D16_UNORM:
+  case AHARDWAREBUFFER_FORMAT_D24_UNORM:
+  case AHARDWAREBUFFER_FORMAT_D24_UNORM_S8_UINT:
+  case AHARDWAREBUFFER_FORMAT_D32_FLOAT:
+  case AHARDWAREBUFFER_FORMAT_D32_FLOAT_S8_UINT:
+  case AHARDWAREBUFFER_FORMAT_S8_UINT:
+  case 0x38: case 0x39: case 0x3a: case 0x3b:  // R8, R16, R16G16, R10G10B10A10
+    return false;
+  }
+  return true;
+}
+
+/** Takes over an ImageReader Image and its YUV hardware buffer. On failure the
+ * caller still owns the Image; on success, the last lease closes it. */
+jlong wrapImage(alias_ref<jclass>, alias_ref<jobject> hardwareBuffer, alias_ref<jobject> image,
+                jint cropX, jint cropY, jint cropWidth, jint cropHeight, jint rotation) {
+  auto* buffer = AHardwareBuffer_fromHardwareBuffer(Environment::current(), hardwareBuffer.get());
+  if (!buffer) throw std::runtime_error("Decoded image has no hardware buffer");
+  auto owner = std::make_shared<HardwareFrameStorage>();
+  AHardwareBuffer_acquire(buffer);
+  owner->buffer = buffer;
+  AHardwareBuffer_describe(buffer, &owner->description);
+  const auto& description = owner->description;
+  if (!isYuvFormat(description.format) || description.layers != 1 ||
+      (description.usage & AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE) == 0)
+    throw std::runtime_error("Decoded image is not a GPU-sampled YUV 4:2:0 buffer (format " +
+        std::to_string(description.format) + ", usage " + std::to_string(description.usage) +
+        ", layers " + std::to_string(description.layers) + ")");
+  if (cropX < 0 || cropY < 0 || cropWidth <= 0 || cropHeight <= 0 ||
+      static_cast<uint64_t>(cropX) + cropWidth > description.width ||
+      static_cast<uint64_t>(cropY) + cropHeight > description.height ||
+      (rotation != 0 && rotation != 90 && rotation != 180 && rotation != 270))
+    throw std::runtime_error("Invalid decoded image crop or rotation");
+  // Luma plus half-size chroma at the buffer's stride; driver formats may
+  // compress, so this is an estimate.
+  owner->reservation = MemoryBudget::instance().reserve(
+      static_cast<uint64_t>(description.stride) * description.height * 3 / 2,
+      "android-frame-imagereader");
+  owner->cropX = cropX; owner->cropY = cropY;
+  owner->cropWidth = cropWidth; owner->cropHeight = cropHeight;
+  owner->rotation = rotation;
+  owner->image = make_global(image);
+  return static_cast<jlong>(addFrame(owner));
+}
 jlong retain(alias_ref<jclass>, jlong id) {
   return static_cast<jlong>(addFrame(acquireHardwareFrame(id)));
 }
@@ -225,6 +283,8 @@ void release(alias_ref<jclass>, jlong id) { releaseFrame(id); }
 jboolean enabled(alias_ref<jclass>) { return interopEnabled.load(); }
 void read(alias_ref<jclass>, jlong id, alias_ref<JByteBuffer> destination) {
   auto owner = acquireHardwareFrame(id);
+  if (owner->description.format != AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM)
+    throw std::runtime_error("CPU readback of a YUV hardware frame is unsupported");
   auto* env = Environment::current();
   auto* bytes = static_cast<uint8_t*>(env->GetDirectBufferAddress(destination.get()));
   const auto capacity = env->GetDirectBufferCapacity(destination.get());
@@ -299,6 +359,18 @@ void probe() {
 } // namespace
 
 HardwareFrameStorage::~HardwareFrameStorage() {
+  if (image) {
+    // The last lease may go on any thread (JS, GC reaper): attach it.
+    ThreadScope attached;
+    try {
+      static const auto close =
+          findClassStatic("android/media/Image")->getMethod<void()>("close");
+      close(image);
+    } catch (...) {
+      // A closed reader already closed its images.
+    }
+    image.reset();
+  }
   if (buffer) AHardwareBuffer_release(buffer);
   if (reservation) MemoryBudget::instance().release(reservation);
 }
@@ -319,6 +391,7 @@ void NativeHardwareBuffer::registerNatives() {
     makeNativeMethod("nativeRenderTargetTexture", texture), makeNativeMethod("nativeFinishRenderTarget", finish),
     makeNativeMethod("nativeAbortRenderTarget", abort), makeNativeMethod("nativeRetain", retain),
     makeNativeMethod("nativeRelease", release), makeNativeMethod("nativeReadPixels", read),
+    makeNativeMethod("nativeWrapImage", wrapImage),
     makeNativeMethod("nativeIsEnabled", enabled)});
 }
 } // namespace RNSkiaVideo

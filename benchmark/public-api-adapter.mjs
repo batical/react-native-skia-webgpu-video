@@ -57,14 +57,17 @@ export function createPublicApiAdapter({ video, preview, drawFrame, files, memor
       // Identical requested codec, dimensions and bitrate. No capability helper silently changes output.
       const codec = output.codec === 'unknown-fallback' ? 'intentionally-unknown' : output.codec;
       const exportStarted = clock.now();
-      const mediaValidation = await video.exportVideoComposition({ videoComposition: composition, drawFrame: drawFrame(scenario.extension), outPath: outputPath, ...output, codec, abortSignal: signal, onProgress });
+      // Per-stage wall time on the export runtime; null on builds without it.
+      let exportProfile = null;
+      const onProfile = (profile) => { exportProfile = profile; };
+      const mediaValidation = await video.exportVideoComposition({ videoComposition: composition, drawFrame: drawFrame(scenario.extension), outPath: outputPath, ...output, codec, abortSignal: signal, onProgress, onProfile });
       const encodeMs = clock.now() - exportStarted;
       const probeStarted = clock.now();
       const stat = await files.stat(outputPath);
       if (!(Number(stat.size) > 0)) throw new Error('Export created no media');
       const actualOutput = await files.probe?.(outputPath) ?? null;
       return { bytes: Number(stat.size), encodeMs, probeMs: clock.now() - probeStarted,
-        actualOutput, mediaValidation: mediaValidation ?? null };
+        actualOutput, mediaValidation: mediaValidation ?? null, exportProfile };
     },
   };
 }

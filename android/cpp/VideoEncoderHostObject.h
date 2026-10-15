@@ -1,7 +1,9 @@
 #pragma once
 
+#include "EncoderTargets.h"
 #include "RNSVHostObject.h"
 #include "VideoComposition.h"
+#include <memory>
 #include <mutex>
 #include <fbjni/ByteBuffer.h>
 #include <fbjni/fbjni.h>
@@ -37,6 +39,9 @@ public:
   void encodeFrameRgba(alias_ref<JByteBuffer> pixels, jint width, jint height,
                        jint bytesPerRow, jdouble time) const;
 
+  /** A GL_TEXTURE_2D of the encoder's context, e.g. an imported buffer. */
+  void encodeTexture(jint texture, jdouble time) const;
+
   void finishWriting() const;
 
   void release() const;
@@ -57,6 +62,10 @@ public:
 
 private:
   global_ref<VideoEncoder> framesExtractor;
+  // GPU export: buffers Skia renders into, sampled by the encoder's context.
+  std::unique_ptr<EncoderTargets> targets;
+  int width;
+  int height;
   std::recursive_mutex encoderMutex;
   bool prepared = false;
   bool finished = false;

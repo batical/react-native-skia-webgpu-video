@@ -169,6 +169,9 @@ void VideoCompositionItemDecoder::setupReader(CMTime initialTime) {
   AVAssetReaderOutput* assetReaderOutput =
       [[AVAssetReaderTrackOutput alloc] initWithTrack:videoTrack
                                        outputSettings:pixBuffAttributes];
+  // Frames are only ever read (GPU import, read-only locks): skip the copy
+  // AVFoundation otherwise makes of every decoded buffer before vending it.
+  assetReaderOutput.alwaysCopiesSampleData = NO;
   if (!assetReaderOutput || ![assetReader canAddOutput:assetReaderOutput]) {
     throw [NSError errorWithDomain:@"com.azzapp.rnskv" code:0
         userInfo:@{NSLocalizedDescriptionKey : @"Video reader cannot add its decoded output"}];

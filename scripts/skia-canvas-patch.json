@@ -1,25 +1,13 @@
 {
-  "version": "3.0.6",
+  "version": "3.4.4",
   "files": {
     "cpp/api/JsiSkCanvas.h": {
-      "before": "a9b8d2552df8ba3c073c32d8e811945986ef8342fdcbfea168249cf0234e2dd1",
-      "after": "2758ab28fbc73fd59923720ba8594796d3e80a987adfd12bd59c16590797af13",
+      "before": "91e6f97f34bef620740fabf7a6bb516c462a18daa72afb46ef5a84d1cd4f3158",
+      "after": "3198bed18bbdad6e61b0ef0d42fbc01c4f1792955af33eb14080a5329de2ff4d",
       "edits": [
         {
-          "before": "    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);",
-          "after": "    installMethod(runtime, prototype, \"dispose\", &JsiSkCanvas::dispose);\n    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);"
-        },
-        {
-          "before": "  SkCanvas *getCanvas() { return _canvas; }",
-          "after": "  SkCanvas *getCanvas() {\n    if (!_canvas) throw std::runtime_error(\"Canvas has been disposed\");\n    return _canvas;\n  }\n  // Release the owning surface deterministically on the creator runtime.\n  // The caller must submit/wait for its recording before disposal.\n  void dispose() {\n    _canvas = nullptr;\n    _surface.reset();\n  }"
-        },
-        {
-          "before": "  SkCanvas *_canvas;",
-          "after": "  SkCanvas *_canvas = nullptr;"
-        },
-        {
-          "before": "#include <memory>",
-          "after": "#include <memory>\n#include <stdexcept>"
+          "before": "#include <memory>\n#include <string>\n",
+          "after": "#include <memory>\n#include <stdexcept>\n#include <string>\n"
         },
         {
           "before": "  void drawPaint(std::shared_ptr<SkPaint> paint) { _canvas->drawPaint(*paint); }\n",
@@ -146,8 +134,8 @@
           "after": "  int save() { return getCanvas()->save(); }\n"
         },
         {
-          "before": "    return jsi::Value(_canvas->saveLayer(\n",
-          "after": "    return jsi::Value(getCanvas()->saveLayer(\n"
+          "before": "    return jsi::Value(_canvas->saveLayer(SkCanvas::SaveLayerRec(\n",
+          "after": "    return jsi::Value(getCanvas()->saveLayer(SkCanvas::SaveLayerRec(\n"
         },
         {
           "before": "  void restore() { _canvas->restore(); }\n",
@@ -194,78 +182,90 @@
           "after": "    getCanvas()->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,\n"
         },
         {
+          "before": "  JSI_HOST_FUNCTION(readPixels) {\n    auto srcX = static_cast<int>(arguments[0].asNumber());\n",
+          "after": "  JSI_HOST_FUNCTION(readPixels) {\n    getCanvas(); // Validate before allocating a readback buffer.\n    auto srcX = static_cast<int>(arguments[0].asNumber());\n"
+        },
+        {
           "before": "    if (!_canvas->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {\n",
           "after": "    if (!getCanvas()->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {\n"
         },
         {
-          "before": "  JSI_HOST_FUNCTION(readPixels) {",
-          "after": "  JSI_HOST_FUNCTION(readPixels) {\n    getCanvas(); // Validate before allocating a readback buffer."
+          "before": "  static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {\n    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);\n",
+          "after": "  static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {\n    installMethod(runtime, prototype, \"dispose\", &JsiSkCanvas::dispose);\n    installMethod(runtime, prototype, \"drawPaint\", &JsiSkCanvas::drawPaint);\n"
+        },
+        {
+          "before": "  SkCanvas *getCanvas() { return _canvas; }\n",
+          "after": "  SkCanvas *getCanvas() {\n    if (!_canvas) throw std::runtime_error(\"Canvas has been disposed\");\n    return _canvas;\n  }\n  // Release the owning surface deterministically. The caller must\n  // submit/wait for its recording before disposal. Off the creating\n  // thread, the surface is handed to that thread's dispatcher.\n  void dispose() {\n    _canvas = nullptr;\n    if (_dispatcher) {\n      _dispatcher->release(std::move(_surface));\n    } else {\n      _surface.reset();\n    }\n  }\n"
+        },
+        {
+          "before": "  SkCanvas *_canvas;\n",
+          "after": "  SkCanvas *_canvas = nullptr;\n"
         }
       ]
     },
     "src/skia/types/Canvas.ts": {
-      "before": "a9c2abc2f79de8ce16497dd693e7ff96b9be93fa33dff6f1b513259af780d8d1",
-      "after": "226b25b561ad39a6812c8d5f8990e5ac9c078d3283f2bad90e725f077d84efd7",
+      "before": "224e207ad4e9e5bee1efd2e1fb07b61a2261b14f498314cb5657f3201bd99791",
+      "after": "e0ca74f4c4ab9d3647a48751f3243d38f64d55fcb95af725be1b88eace052027",
       "edits": [
         {
-          "before": "export interface SkCanvas {",
-          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;"
+          "before": "export interface SkCanvas {\n  /**\n",
+          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;\n  /**\n"
         }
       ]
     },
     "lib/typescript/src/skia/types/Canvas.d.ts": {
-      "before": "ca8ce8e58c1fc94508fd9d298c038316409734cef2b39ac6b7281b2c3958150a",
-      "after": "b1878eafa831d6c3d7a47f4329a94dd64cef4bae5281cc144d3258a5c4a1021c",
+      "before": "7cc41d6183212cfd4f3d7d0065a7b360aabf98fae20565428e876f5da8c1bb15",
+      "after": "972901e64599c40d54db73a49881323bca457e5b87c07c30a0016a5a89339d99",
       "edits": [
         {
-          "before": "export interface SkCanvas {",
-          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;"
+          "before": "export interface SkCanvas {\n    /**\n",
+          "after": "export interface SkCanvas {\n  /** Release the owning surface after flushing; idempotent. */\n  dispose(): void;\n    /**\n"
         }
       ]
     },
     "cpp/api/JsiSkSurface.h": {
-      "before": "35d21a97e8ad91761da1553613ce9d52e153c4bede935dab2dfba4bcbbb425d1",
-      "after": "d619664807dc6f9fbbaf8814db05f3b6e8d41ae755b2c09a281c6a2be5bc2b0c",
+      "before": "de3226499673a8d731167a0feb299257628999ce5d4810217e962062f625302a",
+      "after": "d78ce02da437cd1b8df03ecf8ac659b9d25c30018ff74733fb2e5185fc078bf2",
       "edits": [
         {
-          "before": "    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n",
-          "after": "    // Preserve the previously published image if snapshot allocation failed.\n    if (!image) {\n      throw jsi::JSError(runtime, \"Cannot allocate Skia surface snapshot\");\n    }\n    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n"
+          "before": "\n  ~JsiSkSurface() override {\n",
+          "after": "\n  // Opt-in for consumers that release native buffers after GPU completion.\n  // Other Skia surfaces preserve their existing flush/snapshot behavior.\n  void enableCheckedSubmissions() {\n    if (!getObject()->recorder()) {\n      throw std::runtime_error(\"Checked GPU submissions require a Graphite surface\");\n    }\n    _checkedSubmissions = true;\n  }\n\n  void submitRecording(skgpu::graphite::Recording *recording,\n                       skgpu::graphite::SyncToCpu syncToCpu =\n                           skgpu::graphite::SyncToCpu::kNo) {\n    if (_checkedSubmissions) {\n      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);\n    } else {\n      DawnContext::getInstance().submitRecording(recording, syncToCpu);\n    }\n  }\n\n  ~JsiSkSurface() override {\n"
         },
         {
-          "before": "  std::shared_ptr<Dispatcher> _dispatcher;",
-          "after": "  std::shared_ptr<Dispatcher> _dispatcher;\n  bool _checkedSubmissions = false;"
+          "before": "      DawnContext::getInstance().submitRecording(\n",
+          "after": "      submitRecording(\n"
         },
         {
-          "before": "  void flush(JsiOptional<bool> syncParam) {",
-          "after": "  // Opt-in for consumers that release native buffers after GPU completion.\n  // Other Skia surfaces preserve their existing flush/snapshot behavior.\n  void enableCheckedSubmissions() {\n    if (!getObject()->recorder()) {\n      throw std::runtime_error(\"Checked GPU submissions require a Graphite surface\");\n    }\n    _checkedSubmissions = true;\n  }\n\n  void submitRecording(skgpu::graphite::Recording *recording,\n                       skgpu::graphite::SyncToCpu syncToCpu =\n                           skgpu::graphite::SyncToCpu::kNo) {\n    if (_checkedSubmissions) {\n      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);\n    } else {\n      DawnContext::getInstance().submitRecording(recording, syncToCpu);\n    }\n  }\n\n  void flush(JsiOptional<bool> syncParam) {"
+          "before": "    }\n    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n",
+          "after": "    }\n    // Preserve the previously published image if snapshot allocation failed.\n    if (!image) {\n      throw jsi::JSError(runtime, \"Cannot allocate Skia surface snapshot\");\n    }\n    // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its\n"
         },
         {
-          "before": "      DawnContext::getInstance().submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes",
-          "after": "      submitRecording(\n          recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes"
+          "before": "      DawnContext::getInstance().submitRecording(recording.get());\n",
+          "after": "      submitRecording(recording.get());\n"
         },
         {
-          "before": "      DawnContext::getInstance().submitRecording(recording.get());",
-          "after": "      submitRecording(recording.get());"
+          "before": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);\n  }\n",
+          "after": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);\n    installMethod(runtime, prototype, \"enableCheckedSubmissions\",\n                  &JsiSkSurface::enableCheckedSubmissions);\n  }\n"
         },
         {
-          "before": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);",
-          "after": "    installMethod(runtime, prototype, \"flush\", &JsiSkSurface::flush);\n    installMethod(runtime, prototype, \"enableCheckedSubmissions\",\n                  &JsiSkSurface::enableCheckedSubmissions);"
+          "before": "  std::shared_ptr<Dispatcher> _dispatcher;\n};\n",
+          "after": "  std::shared_ptr<Dispatcher> _dispatcher;\n  bool _checkedSubmissions = false;\n};\n"
         }
       ]
     },
     "cpp/rnskia/RNDawnContext.h": {
+      "before": "ce5227a851eb4a2c1ba9275589f04e411db892a105997eddbb64961b06ce3c65",
+      "after": "b6a39f12853fda814b77cb2f9160eb17d45a1ab890ca4ed0a4a99ba684950187",
       "edits": [
         {
-          "before": "#include <mutex>",
-          "after": "#include <mutex>\n#include <stdexcept>"
+          "before": "#include <mutex>\n#include <thread>\n",
+          "after": "#include <mutex>\n#include <stdexcept>\n#include <thread>\n"
         },
         {
-          "before": "  // Create offscreen surface",
-          "after": "  // Checked only for surfaces that explicitly opt into this contract. A valid\n  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.\n  void submitRecordingChecked(\n      skgpu::graphite::Recording *recording,\n      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {\n    std::lock_guard<std::mutex> lock(_mutex);\n    if (!recording) {\n      throw std::runtime_error(\"Cannot create checked Graphite recording\");\n    }\n    skgpu::graphite::InsertRecordingInfo info;\n    info.fRecording = recording;\n    auto status = fGraphiteContext->insertRecording(info);\n    if (!static_cast<bool>(status)) {\n      throw std::runtime_error(\"Graphite rejected a checked recording: \" +\n                               status.message());\n    }\n    if (!fGraphiteContext->submit(syncToCpu)) {\n      throw std::runtime_error(\"Graphite checked submission failed\");\n    }\n  }\n\n  // Create offscreen surface"
+          "before": "    fGraphiteContext->submit(syncToCpu);\n  }\n",
+          "after": "    fGraphiteContext->submit(syncToCpu);\n  }\n\n  // Checked only for surfaces that explicitly opt into this contract. A valid\n  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.\n  void submitRecordingChecked(\n      skgpu::graphite::Recording *recording,\n      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {\n    std::lock_guard<std::mutex> lock(_mutex);\n    if (!recording) {\n      throw std::runtime_error(\"Cannot create checked Graphite recording\");\n    }\n    skgpu::graphite::InsertRecordingInfo info;\n    info.fRecording = recording;\n    auto status = fGraphiteContext->insertRecording(info);\n    if (!static_cast<bool>(status)) {\n      throw std::runtime_error(\"Graphite rejected a checked recording: \" +\n                               status.message());\n    }\n    if (!fGraphiteContext->submit(syncToCpu)) {\n      throw std::runtime_error(\"Graphite checked submission failed\");\n    }\n  }\n"
         }
-      ],
-      "before": "0db452abdcad7baa2c1d76fa0a81ebec47a447bfe9a706c13ac8d2ed08e4f4f0",
-      "after": "2aad1cd1dbb6cafa9414de8e50221b87677765caf37fb0923b11395da2a73476"
+      ]
     },
     "cpp/rnskia/RNImageProvider.h": {
       "before": "8b9a552bfcf088058eb06366ba78984b7e54d6ae0442633ecbc0cdd726205fc2",

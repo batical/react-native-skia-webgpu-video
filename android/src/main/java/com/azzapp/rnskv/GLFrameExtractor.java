@@ -1,9 +1,20 @@
 package com.azzapp.rnskv;
 
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.hardware.HardwareBuffer;
+import android.hardware.SyncFence;
+import android.media.Image;
+import android.media.ImageReader;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.Surface;
+import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,6 +61,14 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
 
   private int bufferHeight = -1;
 
+  // ImageReader mode (API 29+): the codec writes GPU-sampled YUV buffers that
+  // WebGPU imports directly, with no EGL render pass or glFinish per frame.
+  // Enough images for the codec plus the frames still leased downstream.
+  private static final int READER_IMAGES = 4;
+  private static Handler readerCallbacks;
+  private ImageReader imageReader;
+  private int imageRotation;
+
   public GLFrameExtractor() {
     this(false);
   }
@@ -94,6 +113,97 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
     surface = new Surface(surfaceTexture);
   }
 
+  private static synchronized Handler readerCallbacks() {
+    if (readerCallbacks == null) {
+      HandlerThread thread = new HandlerThread("ReactNativeSkiaVideo-ImageReader");
+      thread.setDaemon(true);
+      thread.start();
+      readerCallbacks = new Handler(thread.getLooper());
+    }
+    return readerCallbacks;
+  }
+
+  /**
+   * The Surface the codec renders into. With {@code nativeImages}, on API 29+
+   * with hardware buffers, it is an ImageReader's: frames then keep the codec's
+   * YUV buffer, cropped and turned by {@code rotation} when WebGPU samples it,
+   * so they must be wanted at the encoded size.
+   */
+  @android.annotation.TargetApi(Build.VERSION_CODES.Q)
+  public Surface surfaceFor(int videoWidth, int videoHeight, int rotation, boolean nativeImages) {
+    if (!nativeImages || !hardwareBuffer || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+      return surface;
+    }
+    synchronized (this) {
+      if (released) return surface;
+      if (imageReader == null) {
+        ImageReader reader = ImageReader.newInstance(videoWidth, videoHeight,
+          ImageFormat.YUV_420_888, READER_IMAGES, HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE);
+        reader.setOnImageAvailableListener(source -> onFrameAvailable(surfaceTexture),
+          readerCallbacks());
+        imageRotation = rotation;
+        imageReader = reader;
+      }
+      return imageReader.getSurface();
+    }
+  }
+
+  @android.annotation.TargetApi(Build.VERSION_CODES.Q)
+  private boolean decodeImage(ImageReader reader, int width, int height) {
+    Image image;
+    try {
+      image = reader.acquireLatestImage();
+    } catch (IllegalStateException everyImageLeased) {
+      // Downstream still holds them all; retry once a lease is released.
+      frameAvailable.set(true);
+      return false;
+    }
+    if (image == null) return false;
+    boolean owned = true;
+    try {
+      if (Build.VERSION.SDK_INT >= 33) awaitProducer(image);
+      Rect crop = image.getCropRect();
+      boolean swapped = imageRotation == 90 || imageRotation == 270;
+      int pictureWidth = swapped ? crop.height() : crop.width();
+      int pictureHeight = swapped ? crop.width() : crop.height();
+      if (pictureWidth != width || pictureHeight != height) {
+        throw new IllegalStateException("Decoded image " + pictureWidth + "x" + pictureHeight
+          + " does not match the requested " + width + "x" + height);
+      }
+      HardwareBuffer buffer = image.getHardwareBuffer();
+      if (buffer == null) throw new IllegalStateException("Decoded image has no hardware buffer");
+      long lease;
+      try {
+        lease = NativeHardwareBuffer.wrapImage(buffer, image, crop.left, crop.top,
+          crop.width(), crop.height(), imageRotation);
+      } finally {
+        buffer.close();
+      }
+      owned = false;
+      NativeHardwareBuffer.release(pendingHardwareFrame);
+      pendingHardwareFrame = lease;
+      latestTimeStampNs = image.getTimestamp();
+      frameWidth = width;
+      frameHeight = height;
+      return true;
+    } finally {
+      if (owned) image.close();
+    }
+  }
+
+  /** WebGPU's frame wrapper takes no producer fence: wait for it here. */
+  @android.annotation.TargetApi(Build.VERSION_CODES.TIRAMISU)
+  private static void awaitProducer(Image image) {
+    if (Build.VERSION.SDK_INT < 33) return;
+    try (SyncFence fence = image.getFence()) {
+      if (fence.isValid() && !fence.await(Duration.ofSeconds(5))) {
+        throw new IllegalStateException("Decoded image was not ready within 5 seconds");
+      }
+    } catch (IOException error) {
+      throw new IllegalStateException("Cannot read the decoded image's fence", error);
+    }
+  }
+
   /**
    * Set the listener that will be called when a new frame is available.
    * @param onFrameAvailableListener the listener to set
@@ -123,6 +233,14 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
     }
     if(!frameAvailable.compareAndSet(true, false)) {
       return false;
+    }
+
+    ImageReader reader;
+    synchronized (this) {
+      reader = imageReader;
+    }
+    if (reader != null) {
+      return decodeImage(reader, width, height);
     }
 
     EGLUtils.purgeOpenGLError();
@@ -348,12 +466,24 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
    * silently ignored and the textures live on in the share group.
    */
   public void release() {
-    if (released) {
-      return;
+    synchronized (this) {
+      if (released) {
+        return;
+      }
+      released = true;
     }
-    released = true;
     NativeHardwareBuffer.release(pendingHardwareFrame);
     pendingHardwareFrame = 0;
+    ImageReader reader;
+    synchronized (this) {
+      reader = imageReader;
+      imageReader = null;
+    }
+    if (reader != null) {
+      // Leased frames keep their own buffer reference; the codec is gone.
+      reader.setOnImageAvailableListener(null, null);
+      reader.close();
+    }
     onFrameAvailableListener = null;
     frameAvailable.set(false);
     if (surfaceTexture != null) {

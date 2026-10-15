@@ -43,6 +43,11 @@ final class NativeHardwareBuffer {
   static long finishRenderTarget(long handle) { return nativeFinishRenderTarget(handle); }
   static void abortRenderTarget(long handle) { nativeAbortRenderTarget(handle); }
   static void release(long handle) { if (handle != 0) nativeRelease(handle); }
+  /** Takes over {@code image} on success; on failure the caller still owns it. */
+  static long wrapImage(android.hardware.HardwareBuffer buffer, android.media.Image image,
+      int cropX, int cropY, int cropWidth, int cropHeight, int rotation) {
+    return nativeWrapImage(buffer, image, cropX, cropY, cropWidth, cropHeight, rotation);
+  }
   private static native boolean nativeIsEnabled();
   private static native long nativeCreateRenderTarget(int width, int height);
   private static native int nativeRenderTargetTexture(long handle);
@@ -51,4 +56,7 @@ final class NativeHardwareBuffer {
   private static native long nativeRetain(long handle);
   private static native void nativeRelease(long handle);
   private static native void nativeReadPixels(long handle, ByteBuffer destination);
+  // fbjni registers alias_ref<jobject> parameters as java.lang.Object.
+  private static native long nativeWrapImage(Object buffer, Object image, int cropX, int cropY,
+      int cropWidth, int cropHeight, int rotation);
 }

@@ -184,6 +184,35 @@ public class VideoCompositionItemDecoder extends MediaCodec.Callback {
   /**
    * @return the width of the decoded video in pixels after rotation
    */
+  /**
+   * Whether the track decodes to 8-bit SDR pictures: only those go through
+   * ImageReader's YUV 4:2:0 buffers; HDR and 10-bit keep the GL path, whose
+   * SurfaceTexture handles their formats.
+   */
+  public synchronized boolean isEightBitSdr() {
+    if (format == null) return false;
+    if (format.containsKey(MediaFormat.KEY_COLOR_TRANSFER)) {
+      int transfer = format.getInteger(MediaFormat.KEY_COLOR_TRANSFER);
+      if (transfer == MediaFormat.COLOR_TRANSFER_HLG || transfer == MediaFormat.COLOR_TRANSFER_ST2084)
+        return false;
+    }
+    if (format.containsKey(MediaFormat.KEY_COLOR_STANDARD) &&
+        format.getInteger(MediaFormat.KEY_COLOR_STANDARD) == MediaFormat.COLOR_STANDARD_BT2020)
+      return false;
+    String mime = format.getString(MediaFormat.KEY_MIME);
+    if (!MediaFormat.MIMETYPE_VIDEO_AVC.equals(mime) && !MediaFormat.MIMETYPE_VIDEO_HEVC.equals(mime))
+      return false;
+    if (format.containsKey(MediaFormat.KEY_PROFILE)) {
+      int profile = format.getInteger(MediaFormat.KEY_PROFILE);
+      if (MediaFormat.MIMETYPE_VIDEO_HEVC.equals(mime))
+        return profile == android.media.MediaCodecInfo.CodecProfileLevel.HEVCProfileMain;
+      return profile != android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10 &&
+        profile != android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh422 &&
+        profile != android.media.MediaCodecInfo.CodecProfileLevel.AVCProfileHigh444;
+    }
+    return true;
+  }
+
   public int getVideoWidth() {
     return videoWidth;
   }

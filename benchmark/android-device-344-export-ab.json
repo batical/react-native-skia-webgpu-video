@@ -1,0 +1,964 @@
+{
+  "schema": "rnskv-export-ab-1",
+  "date": "2026-10-15",
+  "executionTarget": "device",
+  "device": "Google Pixel 8a",
+  "osVersion": "17",
+  "order": [
+    "c1",
+    "base",
+    "c2",
+    "ir",
+    "c3"
+  ],
+  "notes": [
+    "Release APKs signed with the debug key; 3 repetitions per case; catalog 2026-10-07.1 profile full.",
+    "4k-x8-lazy-maxLongSide1280 asks for scaled frames, so it keeps the EGL decode path in 'ir'.",
+    "A third-party app (com.azzapp.app_dev) was playing a video in the background during part of the runs; it was paused by the end.",
+    "c3 rep1 of the 4K case failed during playback ('Too many missing settled frames'), before its export.",
+    "Identical output byte counts are a hint of identical encoded pixels, not a pixel validation; the interop profile checked pixels separately.",
+    "ir-4k / egl-4k: native-size 4K cases, ImageReader build then the EGL build; rep1 of 4k-x8-lazy failed in both at preview:seek-settle, before its export."
+  ],
+  "runs": {
+    "base": {
+      "label": "pixel-306-export-base1",
+      "description": "3.0.6, CPU readback export (a2a01ae)",
+      "sha256": "b2d7b26f59d24feeecc09843f5f0bbdafdc1ecc766935c627adc0c628db88208",
+      "skia": "3.0.6",
+      "startedAt": "2026-10-15T06:50:46.817Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            12568.1,
+            12602.7,
+            12869.0
+          ],
+          "bytes": [
+            1753180,
+            1753180,
+            1753180
+          ],
+          "medianEncodeMs": 12602.7
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            6351.6,
+            6502.6,
+            6025.9
+          ],
+          "bytes": [
+            1104764,
+            1104764,
+            1104764
+          ],
+          "medianEncodeMs": 6351.6
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            1762.6,
+            1750.0,
+            1722.1
+          ],
+          "bytes": [
+            140879,
+            140879,
+            140879
+          ],
+          "medianEncodeMs": 1750.0
+        }
+      }
+    },
+    "c1": {
+      "label": "pixel-344-export-c1",
+      "description": "3.4.4, GPU export into AHardwareBuffers, EGL decode",
+      "sha256": "c97462dcf8de8e4f86d39c25b4065d1067a93c75e271675f463bf149d4246d95",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T06:47:26.270Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            11708.5,
+            12085.7,
+            12297.4
+          ],
+          "bytes": [
+            1753180,
+            1753180,
+            1753180
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 31.394,
+              "decode": 15.766,
+              "import": 5.397,
+              "prepare": 0.299,
+              "target": 2.025,
+              "draw": 0.765,
+              "gpu": 2.355,
+              "encode": 3.979,
+              "yield": 0.808
+            },
+            {
+              "total": 32.668,
+              "decode": 16.34,
+              "import": 5.537,
+              "prepare": 0.328,
+              "target": 2.105,
+              "draw": 0.813,
+              "gpu": 2.427,
+              "encode": 4.306,
+              "yield": 0.812
+            },
+            {
+              "total": 33.254,
+              "decode": 16.806,
+              "import": 5.576,
+              "prepare": 0.346,
+              "target": 2.153,
+              "draw": 0.799,
+              "gpu": 2.493,
+              "encode": 4.216,
+              "yield": 0.865
+            }
+          ],
+          "medianEncodeMs": 12085.7
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            5902.1,
+            5822.6,
+            6045.4
+          ],
+          "bytes": [
+            1104764,
+            1104764,
+            1104764
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 30.998,
+              "decode": 11.864,
+              "import": 7.319,
+              "prepare": 0.359,
+              "target": 2.314,
+              "draw": 0.901,
+              "gpu": 2.68,
+              "encode": 4.72,
+              "yield": 0.842
+            },
+            {
+              "total": 30.849,
+              "decode": 11.818,
+              "import": 7.25,
+              "prepare": 0.347,
+              "target": 2.274,
+              "draw": 0.909,
+              "gpu": 2.684,
+              "encode": 4.712,
+              "yield": 0.854
+            },
+            {
+              "total": 31.311,
+              "decode": 11.868,
+              "import": 7.528,
+              "prepare": 0.341,
+              "target": 2.288,
+              "draw": 0.939,
+              "gpu": 2.664,
+              "encode": 4.824,
+              "yield": 0.859
+            }
+          ],
+          "medianEncodeMs": 5902.1
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            1740.4,
+            1851.3,
+            1736.9
+          ],
+          "bytes": [
+            140879,
+            140879,
+            140879
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 24.329,
+              "decode": 9.312,
+              "import": 4.399,
+              "prepare": 0.35,
+              "target": 1.464,
+              "draw": 0.716,
+              "gpu": 2.355,
+              "encode": 4.907,
+              "yield": 0.826
+            },
+            {
+              "total": 25.048,
+              "decode": 9.758,
+              "import": 4.502,
+              "prepare": 0.341,
+              "target": 1.591,
+              "draw": 0.765,
+              "gpu": 2.315,
+              "encode": 5.017,
+              "yield": 0.759
+            },
+            {
+              "total": 24.509,
+              "decode": 9.796,
+              "import": 4.238,
+              "prepare": 0.36,
+              "target": 1.474,
+              "draw": 0.682,
+              "gpu": 2.211,
+              "encode": 5.022,
+              "yield": 0.727
+            }
+          ],
+          "medianEncodeMs": 1740.4
+        }
+      }
+    },
+    "c2": {
+      "label": "pixel-344-export-c2",
+      "description": "same build as c1",
+      "sha256": "3941049fbd77f8f8fb084f22ad004a9ce054ee5d663aca2df438314253687a64",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T06:54:07.500Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            11653.2,
+            12350.7,
+            12023.7
+          ],
+          "bytes": [
+            1753180,
+            1753180,
+            1753180
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 31.237,
+              "decode": 15.884,
+              "import": 5.242,
+              "prepare": 0.304,
+              "target": 1.927,
+              "draw": 0.745,
+              "gpu": 2.308,
+              "encode": 3.973,
+              "yield": 0.854
+            },
+            {
+              "total": 33.473,
+              "decode": 17.021,
+              "import": 5.545,
+              "prepare": 0.314,
+              "target": 2.135,
+              "draw": 0.801,
+              "gpu": 2.449,
+              "encode": 4.348,
+              "yield": 0.859
+            },
+            {
+              "total": 32.551,
+              "decode": 16.345,
+              "import": 5.525,
+              "prepare": 0.306,
+              "target": 2.074,
+              "draw": 0.781,
+              "gpu": 2.427,
+              "encode": 4.251,
+              "yield": 0.842
+            }
+          ],
+          "medianEncodeMs": 12023.7
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            5585.8,
+            5780.0,
+            5690.7
+          ],
+          "bytes": [
+            1104764,
+            1104764,
+            1104764
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 29.354,
+              "decode": 11.21,
+              "import": 6.977,
+              "prepare": 0.332,
+              "target": 2.032,
+              "draw": 0.821,
+              "gpu": 2.566,
+              "encode": 4.561,
+              "yield": 0.855
+            },
+            {
+              "total": 30.555,
+              "decode": 11.907,
+              "import": 7.219,
+              "prepare": 0.364,
+              "target": 2.159,
+              "draw": 0.85,
+              "gpu": 2.546,
+              "encode": 4.65,
+              "yield": 0.861
+            },
+            {
+              "total": 29.982,
+              "decode": 11.443,
+              "import": 7.047,
+              "prepare": 0.36,
+              "target": 2.079,
+              "draw": 0.829,
+              "gpu": 2.542,
+              "encode": 4.753,
+              "yield": 0.929
+            }
+          ],
+          "medianEncodeMs": 5690.7
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            1739.8,
+            1704.3,
+            1769.1
+          ],
+          "bytes": [
+            140879,
+            140879,
+            140879
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 24.292,
+              "decode": 9.367,
+              "import": 4.518,
+              "prepare": 0.286,
+              "target": 1.388,
+              "draw": 0.714,
+              "gpu": 2.258,
+              "encode": 5.044,
+              "yield": 0.715
+            },
+            {
+              "total": 24.073,
+              "decode": 8.891,
+              "import": 4.633,
+              "prepare": 0.265,
+              "target": 1.456,
+              "draw": 0.75,
+              "gpu": 2.336,
+              "encode": 5.003,
+              "yield": 0.738
+            },
+            {
+              "total": 25.13,
+              "decode": 9.618,
+              "import": 4.567,
+              "prepare": 0.314,
+              "target": 1.608,
+              "draw": 0.747,
+              "gpu": 2.419,
+              "encode": 5.004,
+              "yield": 0.854
+            }
+          ],
+          "medianEncodeMs": 1739.8
+        }
+      }
+    },
+    "ir": {
+      "label": "pixel-ir-export-1",
+      "description": "c1 + ImageReader decode at native size",
+      "sha256": "35a463a88e670bd4c58cbbf7cb9aebb36e3d4362cab91169ab11ae63e742052e",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T07:19:00.410Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            12403.0,
+            12166.8,
+            12050.2
+          ],
+          "bytes": [
+            1753180,
+            1753180,
+            1753180
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 33.297,
+              "decode": 16.971,
+              "import": 5.577,
+              "prepare": 0.319,
+              "target": 2.087,
+              "draw": 0.826,
+              "gpu": 2.43,
+              "encode": 4.278,
+              "yield": 0.811
+            },
+            {
+              "total": 32.912,
+              "decode": 16.565,
+              "import": 5.548,
+              "prepare": 0.322,
+              "target": 2.14,
+              "draw": 0.795,
+              "gpu": 2.443,
+              "encode": 4.266,
+              "yield": 0.834
+            },
+            {
+              "total": 32.782,
+              "decode": 16.542,
+              "import": 5.586,
+              "prepare": 0.307,
+              "target": 2.126,
+              "draw": 0.805,
+              "gpu": 2.417,
+              "encode": 4.187,
+              "yield": 0.812
+            }
+          ],
+          "medianEncodeMs": 12166.8
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            3686.7,
+            3717.5,
+            3755.6
+          ],
+          "bytes": [
+            1161982,
+            1161982,
+            1161982
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 18.894,
+              "decode": 2.886,
+              "import": 6.276,
+              "prepare": 0.314,
+              "target": 1.435,
+              "draw": 0.506,
+              "gpu": 2.475,
+              "encode": 4.2,
+              "yield": 0.802
+            },
+            {
+              "total": 18.802,
+              "decode": 2.718,
+              "import": 6.367,
+              "prepare": 0.303,
+              "target": 1.513,
+              "draw": 0.519,
+              "gpu": 2.411,
+              "encode": 4.225,
+              "yield": 0.747
+            },
+            {
+              "total": 19.2,
+              "decode": 2.631,
+              "import": 6.567,
+              "prepare": 0.323,
+              "target": 1.65,
+              "draw": 0.565,
+              "gpu": 2.416,
+              "encode": 4.332,
+              "yield": 0.717
+            }
+          ],
+          "medianEncodeMs": 3717.5
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            1265.3,
+            1285.3,
+            1289.1
+          ],
+          "bytes": [
+            163216,
+            163216,
+            163216
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 16.789,
+              "decode": 2.865,
+              "import": 4.257,
+              "prepare": 0.251,
+              "target": 1.16,
+              "draw": 0.54,
+              "gpu": 2.266,
+              "encode": 4.675,
+              "yield": 0.774
+            },
+            {
+              "total": 16.903,
+              "decode": 2.953,
+              "import": 4.103,
+              "prepare": 0.322,
+              "target": 1.161,
+              "draw": 0.518,
+              "gpu": 2.172,
+              "encode": 5.0,
+              "yield": 0.673
+            },
+            {
+              "total": 17.198,
+              "decode": 3.167,
+              "import": 4.174,
+              "prepare": 0.27,
+              "target": 1.176,
+              "draw": 0.569,
+              "gpu": 2.32,
+              "encode": 4.69,
+              "yield": 0.832
+            }
+          ],
+          "medianEncodeMs": 1285.3
+        }
+      }
+    },
+    "c3": {
+      "label": "pixel-344-export-c3",
+      "description": "same build as c1, run right after ir",
+      "sha256": "f676ed7628152777cdbfef64d4094edfed6d1c09aa7eba093744351d0ee6a392",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T07:22:21.274Z",
+      "cases": {
+        "4k-x8-lazy-maxLongSide1280": {
+          "status": [
+            "passed",
+            "failed",
+            "passed"
+          ],
+          "encodeMs": [
+            11771.4,
+            12336.9
+          ],
+          "bytes": [
+            1753180,
+            1753180
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 31.683,
+              "decode": 16.257,
+              "import": 5.26,
+              "prepare": 0.321,
+              "target": 1.902,
+              "draw": 0.751,
+              "gpu": 2.385,
+              "encode": 4.013,
+              "yield": 0.794
+            },
+            {
+              "total": 33.565,
+              "decode": 16.949,
+              "import": 5.653,
+              "prepare": 0.337,
+              "target": 2.12,
+              "draw": 0.804,
+              "gpu": 2.474,
+              "encode": 4.347,
+              "yield": 0.882
+            }
+          ],
+          "medianEncodeMs": 12054.1
+        },
+        "native-hevc-1080p-rot270": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            5767.1,
+            5802.9,
+            5920.4
+          ],
+          "bytes": [
+            1104764,
+            1104764,
+            1104764
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 30.112,
+              "decode": 11.443,
+              "import": 7.149,
+              "prepare": 0.375,
+              "target": 2.142,
+              "draw": 0.864,
+              "gpu": 2.582,
+              "encode": 4.645,
+              "yield": 0.912
+            },
+            {
+              "total": 30.767,
+              "decode": 11.574,
+              "import": 7.485,
+              "prepare": 0.394,
+              "target": 2.252,
+              "draw": 0.885,
+              "gpu": 2.656,
+              "encode": 4.612,
+              "yield": 0.909
+            },
+            {
+              "total": 31.203,
+              "decode": 11.856,
+              "import": 7.482,
+              "prepare": 0.348,
+              "target": 2.188,
+              "draw": 0.879,
+              "gpu": 2.701,
+              "encode": 4.798,
+              "yield": 0.949
+            }
+          ],
+          "medianEncodeMs": 5802.9
+        },
+        "encode-h264-copy": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            1715.2,
+            1639.3,
+            1752.6
+          ],
+          "bytes": [
+            140879,
+            140879,
+            140879
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 24.188,
+              "decode": 9.157,
+              "import": 4.383,
+              "prepare": 0.295,
+              "target": 1.535,
+              "draw": 0.75,
+              "gpu": 2.372,
+              "encode": 5.004,
+              "yield": 0.691
+            },
+            {
+              "total": 23.394,
+              "decode": 8.89,
+              "import": 4.374,
+              "prepare": 0.312,
+              "target": 1.396,
+              "draw": 0.732,
+              "gpu": 2.175,
+              "encode": 4.713,
+              "yield": 0.803
+            },
+            {
+              "total": 24.935,
+              "decode": 9.256,
+              "import": 4.637,
+              "prepare": 0.325,
+              "target": 1.655,
+              "draw": 0.784,
+              "gpu": 2.392,
+              "encode": 5.145,
+              "yield": 0.74
+            }
+          ],
+          "medianEncodeMs": 1715.2
+        }
+      }
+    },
+    "ir-4k": {
+      "label": "pixel-ir-4k-1",
+      "description": "ImageReader build, native-size 4K cases",
+      "sha256": "08590e3b73f38c275470613466afc1a7f27d61cfb1af42524ddc34e216831e2c",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T07:41:01.760Z",
+      "cases": {
+        "4k-x8-lazy": {
+          "status": [
+            "passed",
+            "failed",
+            "passed"
+          ],
+          "encodeMs": [
+            13528.7,
+            13471.9
+          ],
+          "bytes": [
+            1669820,
+            1669820
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 36.522,
+              "decode": 8.465,
+              "import": 16.221,
+              "prepare": 0.362,
+              "target": 2.158,
+              "draw": 0.807,
+              "gpu": 2.94,
+              "encode": 4.68,
+              "yield": 0.889
+            },
+            {
+              "total": 36.618,
+              "decode": 8.636,
+              "import": 16.128,
+              "prepare": 0.374,
+              "target": 2.164,
+              "draw": 0.796,
+              "gpu": 2.948,
+              "encode": 4.689,
+              "yield": 0.883
+            }
+          ],
+          "failures": [
+            {
+              "repetition": 1,
+              "reason": "Preview operation timed out",
+              "stage": "preview:seek-settle"
+            }
+          ],
+          "medianEncodeMs": 13500.3
+        },
+        "4k-x3-simultaneous": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            8737.2,
+            8940.7,
+            9033.5
+          ],
+          "bytes": [
+            1182422,
+            1182422,
+            1182422
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 55.664,
+              "decode": 7.323,
+              "import": 36.397,
+              "prepare": 0.387,
+              "target": 2.14,
+              "draw": 0.983,
+              "gpu": 2.686,
+              "encode": 4.869,
+              "yield": 0.879
+            },
+            {
+              "total": 56.773,
+              "decode": 7.491,
+              "import": 36.606,
+              "prepare": 0.392,
+              "target": 2.328,
+              "draw": 1.066,
+              "gpu": 2.837,
+              "encode": 5.148,
+              "yield": 0.907
+            },
+            {
+              "total": 57.813,
+              "decode": 8.135,
+              "import": 37.053,
+              "prepare": 0.389,
+              "target": 2.279,
+              "draw": 1.049,
+              "gpu": 2.848,
+              "encode": 5.14,
+              "yield": 0.92
+            }
+          ],
+          "medianEncodeMs": 8940.7
+        }
+      }
+    },
+    "egl-4k": {
+      "label": "pixel-344-4k-1",
+      "description": "EGL decode build (c1), native-size 4K cases",
+      "sha256": "380eddcd381bd9933f162088eff40afff9617463c81aae3a879cf87d7a523202",
+      "skia": "3.4.4",
+      "startedAt": "2026-10-15T07:47:08.411Z",
+      "cases": {
+        "4k-x8-lazy": {
+          "status": [
+            "passed",
+            "failed",
+            "passed"
+          ],
+          "encodeMs": [
+            23762.8,
+            25097.5
+          ],
+          "bytes": [
+            1672922,
+            1672922
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 65.058,
+              "decode": 31.388,
+              "import": 20.871,
+              "prepare": 0.431,
+              "target": 2.412,
+              "draw": 0.942,
+              "gpu": 3.089,
+              "encode": 4.952,
+              "yield": 0.973
+            },
+            {
+              "total": 69.026,
+              "decode": 33.357,
+              "import": 21.893,
+              "prepare": 0.427,
+              "target": 2.645,
+              "draw": 1.006,
+              "gpu": 3.251,
+              "encode": 5.376,
+              "yield": 1.071
+            }
+          ],
+          "failures": [
+            {
+              "repetition": 1,
+              "reason": "Preview operation timed out",
+              "stage": "preview:seek-settle"
+            }
+          ],
+          "medianEncodeMs": 24430.2
+        },
+        "4k-x3-simultaneous": {
+          "status": [
+            "passed",
+            "passed",
+            "passed"
+          ],
+          "encodeMs": [
+            21198.1,
+            20865.2,
+            20569.1
+          ],
+          "bytes": [
+            1184273,
+            1184273,
+            1184273
+          ],
+          "profilePerFrameMs": [
+            {
+              "total": 138.841,
+              "decode": 73.532,
+              "import": 51.153,
+              "prepare": 0.472,
+              "target": 2.746,
+              "draw": 1.24,
+              "gpu": 2.99,
+              "encode": 5.675,
+              "yield": 1.034
+            },
+            {
+              "total": 136.661,
+              "decode": 72.222,
+              "import": 50.541,
+              "prepare": 0.467,
+              "target": 2.763,
+              "draw": 1.206,
+              "gpu": 2.873,
+              "encode": 5.577,
+              "yield": 1.012
+            },
+            {
+              "total": 134.698,
+              "decode": 69.612,
+              "import": 50.298,
+              "prepare": 0.487,
+              "target": 3.066,
+              "draw": 1.322,
+              "gpu": 2.973,
+              "encode": 5.927,
+              "yield": 1.013
+            }
+          ],
+          "medianEncodeMs": 20865.2
+        }
+      }
+    }
+  }
+}
