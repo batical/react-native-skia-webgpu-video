@@ -20,7 +20,12 @@ const mockSurface = {
   flush: jest.fn(),
   dispose: jest.fn(),
 };
-const mockUploadTexture = { nativePointer: 456n, destroy: jest.fn() };
+const mockUploadTexture = {
+  nativePointer: 456n,
+  format: "rgba8unorm",
+  createView: jest.fn(() => ({})),
+  destroy: jest.fn(),
+};
 const mockNativeSource = {
   width: 4,
   height: 2,
@@ -30,21 +35,64 @@ const mockNativeSource = {
 const mockCopy = jest.fn();
 const mockWriteTexture = jest.fn();
 const mockCreateTexture = jest.fn(
-  (_descriptor: GPUTextureDescriptor) => mockUploadTexture,
+  (
+    _descriptor: GPUTextureDescriptor,
+  ): { nativePointer: bigint; destroy: jest.Mock } => mockUploadTexture,
 );
 const mockWrapNative = jest.fn((_pointer: bigint) => mockNativeSource);
+// One wrapper per imported decoder buffer, in creation order.
+const mockYuvImports: {
+  externalTexture: object;
+  beginAccess: jest.Mock;
+  endAccess: jest.Mock;
+  destroy: jest.Mock;
+}[] = [];
+const mockImportYuv = jest.fn((_source: unknown, _descriptor: unknown) => {
+  const wrapper = {
+    externalTexture: {},
+    beginAccess: jest.fn(),
+    endAccess: jest.fn(() => null),
+    destroy: jest.fn(),
+  };
+  mockYuvImports.push(wrapper);
+  return wrapper;
+});
+const mockWriteBuffer = jest.fn();
+const mockSubmit = jest.fn();
+const mockPass = {
+  setPipeline: jest.fn(),
+  setBindGroup: jest.fn(),
+  draw: jest.fn(),
+  end: jest.fn(),
+};
 jest.mock("../gpuDevice", () => ({
   getVideoGpuDevice: () => ({
     createTexture: mockCreateTexture,
     limits: { maxTextureDimension2D: 4096 },
+    createBindGroupLayout: jest.fn(() => ({})),
+    createPipelineLayout: jest.fn(() => ({})),
+    createSampler: jest.fn(() => ({})),
+    createShaderModule: jest.fn(() => ({})),
+    createRenderPipeline: jest.fn(() => ({})),
+    createNativeBufferExternalTexture: mockImportYuv,
+    createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
+    createBindGroup: jest.fn(() => ({})),
+    createCommandEncoder: jest.fn(() => ({
+      beginRenderPass: jest.fn(() => mockPass),
+      finish: jest.fn(() => ({})),
+    })),
     queue: {
       copyExternalImageToTexture: mockCopy,
       writeTexture: mockWriteTexture,
+      writeBuffer: mockWriteBuffer,
+      submit: mockSubmit,
     },
   }),
   createNativeVideoGpuFrame: (pointer: bigint) => mockWrapNative(pointer),
   nativeVideoTextureUsage: 21,
   rgbaVideoTextureUsage: 23,
+  videoShaderStages: { vertex: 1, fragment: 2 },
+  videoUniformBufferUsage: 72,
 }));
 jest.mock("react-native", () => ({ Platform: { OS: "ios" } }));
 jest.mock("react-native-skia", () => ({
@@ -113,6 +161,7 @@ const copyableRgbaFrame = (
 beforeEach(() => {
   clearVideoFrameImages(true);
   jest.clearAllMocks();
+  mockYuvImports.length = 0;
   reserve.mockReset();
   release.mockReset();
   reserve.mockImplementation(() => 17);
@@ -166,17 +215,23 @@ describe("Android ImageReader YUV frames", () => {
       dispose: jest.fn(),
     };
   };
-  const yuvSource = () => ({
+  const yuvSource = (handle = 123n) => ({
+    handle,
     width: 8,
     height: 6,
     pixelFormat: "nv12",
     release: jest.fn(),
   });
+  // The uv mapping written for the last frame: scale, then offset.
+  const lastMapping = () =>
+    Array.from(mockWriteBuffer.mock.calls.at(-1)![2] as Float32Array);
+  const fround = (values: number[]) => values.map(Math.fround);
 
   it("converts, crops and turns the codec buffer into display-sized scratch", () => {
     withAndroidInterop(({ interop }) => {
       const source = yuvSource();
-      mockWrapNative.mockReturnValueOnce(source);
+      const owned = yuvSource();
+      mockWrapNative.mockReturnValueOnce(source).mockReturnValueOnce(owned);
       const frame = yuvFrame(90);
       expect(interop.imageFromVideoFrame(frame)).not.toBeNull();
       expect(mockCreateTexture).toHaveBeenCalledWith(
@@ -185,21 +240,87 @@ describe("Android ImageReader YUV frames", () => {
           format: "rgba8unorm",
         }),
       );
-      // Turned clockwise, the bottom padding comes first along x.
-      expect(mockCopy).toHaveBeenCalledWith(
-        {
-          source,
-          origin: { x: 2, y: 0 },
-          rotation: 90,
-          mirrored: false,
-          flipY: false,
-        },
-        { texture: mockUploadTexture, premultipliedAlpha: false },
-        { width: 4, height: 6 },
-      );
-      // The snapshot owns the pixels: both native leases close after the fence.
+      expect(mockCopy).not.toHaveBeenCalled();
+      // Imported with a reference of its own, keeping the video's encoding.
+      expect(mockWrapNative).toHaveBeenNthCalledWith(2, 123n);
+      expect(mockImportYuv).toHaveBeenCalledWith(owned, {
+        label: "video decoder buffer",
+        rotation: 90,
+        mirrored: false,
+        sourceColorSpace: { primaries: "srgb", transfer: "srgb" },
+      });
+      // Turned clockwise the buffer is 6×8; the bottom padding comes first
+      // along x.
+      expect(lastMapping()).toEqual(fround([4 / 6, 6 / 8, 2 / 6, 0]));
+      const [wrapper] = mockYuvImports;
+      expect(wrapper!.beginAccess).toHaveBeenCalledTimes(1);
+      expect(wrapper!.endAccess).toHaveBeenCalledTimes(1);
+      expect(mockPass.draw).toHaveBeenCalledWith(3);
+      expect(mockSubmit).toHaveBeenCalledTimes(1);
+      // The snapshot owns the pixels: both native leases close after the
+      // fence. The import keeps its own reference until it is released.
       expect(source.release).toHaveBeenCalledTimes(1);
       expect(frame.dispose).toHaveBeenCalledTimes(1);
+      expect(owned.release).not.toHaveBeenCalled();
+      interop.clearVideoFrameImages(true);
+      expect(wrapper!.destroy).toHaveBeenCalledTimes(1);
+      expect(owned.release).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("imports each decoder buffer once and releases them with their producer", () => {
+    withAndroidInterop(({ interop }) => {
+      const frames = [123n, 124n, 123n].map((handle, index) => {
+        mockWrapNative.mockReturnValueOnce(yuvSource(handle));
+        if (index < 2) mockWrapNative.mockReturnValueOnce(yuvSource(handle));
+        const frame = { ...yuvFrame(0), id: index + 1 };
+        interop.imageFromVideoFrame(frame);
+        return frame;
+      });
+      // The third frame is the first buffer again: only its access reopens.
+      expect(mockImportYuv).toHaveBeenCalledTimes(2);
+      expect(mockYuvImports[0]!.beginAccess).toHaveBeenCalledTimes(2);
+      expect(mockYuvImports[1]!.beginAccess).toHaveBeenCalledTimes(1);
+      // The mapping did not change, so it is written once per import.
+      expect(mockWriteBuffer).toHaveBeenCalledTimes(2);
+      interop.releaseVideoFrameImage(frames[2]!);
+      for (const wrapper of mockYuvImports)
+        expect(wrapper.destroy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("keeps at most six decoder buffers per producer", () => {
+    withAndroidInterop(({ interop }) => {
+      let next = 200n;
+      mockWrapNative.mockImplementation((pointer) =>
+        // Each frame shows a new buffer; an import wraps the same one again.
+        yuvSource(pointer === 123n ? next++ : pointer),
+      );
+      try {
+        for (let index = 0; index < 7; index++)
+          interop.imageFromVideoFrame({ ...yuvFrame(0), id: index + 1 });
+      } finally {
+        mockWrapNative.mockImplementation(() => mockNativeSource);
+      }
+      expect(mockImportYuv).toHaveBeenCalledTimes(7);
+      // The least recently drawn buffer went first.
+      expect(
+        mockYuvImports.map((wrapper) => wrapper.destroy.mock.calls.length),
+      ).toEqual([1, 0, 0, 0, 0, 0, 0]);
+    });
+  });
+
+  it("closes the buffer access when the draw fails", () => {
+    withAndroidInterop(({ interop }) => {
+      mockWrapNative.mockReturnValueOnce(yuvSource());
+      mockSubmit.mockImplementationOnce(() => {
+        throw new Error("submit failed");
+      });
+      expect(() => interop.imageFromVideoFrame(yuvFrame(0))).toThrow(
+        "submit failed",
+      );
+      expect(mockYuvImports[0]!.beginAccess).toHaveBeenCalledTimes(1);
+      expect(mockYuvImports[0]!.endAccess).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -217,8 +338,14 @@ describe("Android ImageReader YUV frames", () => {
       withAndroidInterop(({ interop }) => {
         mockWrapNative.mockReturnValueOnce(yuvSource());
         interop.imageFromVideoFrame(yuvFrame(rotation, region));
-        expect(mockCopy.mock.calls.at(-1)![0].origin).toEqual(
-          expected[rotation],
+        // The offset is the origin in the upright buffer, 8×6 or turned 6×8.
+        const turned = rotation === 90 || rotation === 270;
+        const [width, height] = turned ? [6, 8] : [8, 6];
+        expect(lastMapping().slice(2)).toEqual(
+          fround([
+            expected[rotation]!.x / width,
+            expected[rotation]!.y / height,
+          ]),
         );
       });
     }
@@ -238,6 +365,7 @@ describe("Android ImageReader YUV frames", () => {
         ),
       ).toThrow("Native video buffer region or YUV layout mismatch");
       expect(mockCopy).not.toHaveBeenCalled();
+      expect(mockImportYuv).not.toHaveBeenCalled();
     });
   });
 
@@ -249,7 +377,7 @@ describe("Android ImageReader YUV frames", () => {
         pixelFormat: "bgra8",
       });
       expect(interop.imageFromVideoFrame(yuvFrame(0))).not.toBeNull();
-      expect(mockCopy).toHaveBeenCalledTimes(1);
+      expect(mockImportYuv).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -2,10 +2,53 @@ const mockRuntimeTasks: Array<() => void> = [];
 const mockCalls: string[] = [];
 const mockImport = jest.fn();
 const mockNativeFrame = jest.fn();
+// The YUV conversion of decoded ImageReader frames (see yuvBlit.ts).
+const mockYuvWrappers: { destroy: jest.Mock }[] = [];
+const mockDevice = {
+  importSharedTextureMemory: mockImport,
+  createTexture: jest.fn((descriptor: { size: object }) => ({
+    ...descriptor.size,
+    format: "rgba8unorm",
+    createView: jest.fn(() => ({})),
+    destroy: jest.fn(() => mockCalls.push("source.destroy")),
+  })),
+  createBindGroupLayout: jest.fn(() => ({})),
+  createPipelineLayout: jest.fn(() => ({})),
+  createSampler: jest.fn(() => ({})),
+  createShaderModule: jest.fn(() => ({})),
+  createRenderPipeline: jest.fn(() => ({})),
+  createNativeBufferExternalTexture: jest.fn(() => {
+    const wrapper = {
+      externalTexture: {},
+      beginAccess: jest.fn(),
+      endAccess: jest.fn(() => null),
+      destroy: jest.fn(() => mockCalls.push("yuv.destroy")),
+    };
+    mockYuvWrappers.push(wrapper);
+    return wrapper;
+  }),
+  createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
+  createBindGroup: jest.fn(() => ({})),
+  createCommandEncoder: jest.fn(() => ({
+    beginRenderPass: jest.fn(() => ({
+      setPipeline: jest.fn(),
+      setBindGroup: jest.fn(),
+      draw: jest.fn(),
+      end: jest.fn(),
+    })),
+    finish: jest.fn(() => ({})),
+  })),
+  queue: {
+    writeBuffer: jest.fn(),
+    submit: jest.fn(() => mockCalls.push("convert")),
+  },
+};
 jest.mock("../gpuDevice", () => ({
-  getVideoGpuDevice: jest.fn(() => ({ importSharedTextureMemory: mockImport })),
-  createNativeVideoGpuFrame: mockNativeFrame,
+  getVideoGpuDevice: jest.fn(() => mockDevice),
+  createNativeVideoGpuFrame: (handle: bigint) => mockNativeFrame(handle),
   nativeVideoTextureUsage: 20,
+  videoShaderStages: { vertex: 1, fragment: 2 },
+  videoUniformBufferUsage: 72,
 }));
 jest.mock("react-native-worklets", () => ({
   createWorkletRuntime: jest.fn(() => ({ name: "export" })),
@@ -86,6 +129,7 @@ jest.mock("../RNSkiaVideoModule", () => ({
 
 import { Skia } from "react-native-skia";
 import RNSkiaVideoModule from "../RNSkiaVideoModule";
+import type { VideoFrame } from "../types";
 import { exportVideoComposition } from "../exportVideoComposition";
 import { ownVideoFrames } from "../frameInterop";
 
@@ -177,6 +221,7 @@ beforeEach(() => {
   mockCalls.length = 0;
   mockRuntimeTasks.length = 0;
   nextFence = 70n;
+  mockYuvWrappers.length = 0;
   mockImport.mockReset().mockImplementation(() => sharedMemory());
   jest.spyOn(console, "warn").mockImplementation(() => undefined);
 });
@@ -262,6 +307,116 @@ describe("Android GPU export", () => {
     for (const memory of mockImport.mock.results.map((r) => r.value))
       expect(memory.destroy).toHaveBeenCalledTimes(1);
     expect(encoder.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("samples ImageReader frames in place once converted, without snapshots or waits", async () => {
+    const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+    makeImage.mockImplementation(() => ({
+      dispose: jest.fn(() => mockCalls.push("image.dispose")),
+    }));
+    mockNativeFrame.mockImplementation((handle: bigint) => ({
+      handle,
+      width: 648,
+      height: 368,
+      pixelFormat: "bgra8",
+      release: jest.fn(() => mockCalls.push(`frame${handle}.release`)),
+    }));
+    const frames: VideoFrame[] = [];
+    let id = 0;
+    const { promise } = prepare(() => {
+      const frameId = ++id;
+      const frame: VideoFrame = {
+        id: frameId,
+        producerId: 7,
+        width: 640,
+        height: 360,
+        rotation: 0,
+        // The ImageReader cycles through its buffers.
+        texture: {
+          kind: "native-buffer",
+          nativeBuffer: frameId === 2 ? 501n : 500n,
+          region: { x: 0, y: 0, width: 640, height: 360 },
+          rotation: 0,
+        },
+        dispose: jest.fn(() => mockCalls.push(`lease${frameId}.dispose`)),
+      };
+      frames.push(frame);
+      return { clip: frame };
+    });
+    await pumpAll();
+    await promise;
+    expect(jest.mocked(console.warn).mock.calls).toEqual([]);
+    // No copy through frameInterop, no snapshot, no wait of its own.
+    expect(ownVideoFrames).not.toHaveBeenCalled();
+    expect(mockDevice.createTexture).toHaveBeenCalledTimes(1);
+    const source = mockDevice.createTexture.mock.results[0]!.value;
+    expect(makeImage.mock.calls).toEqual([[source], [source], [source]]);
+    // Two buffers, each imported once.
+    expect(mockDevice.createNativeBufferExternalTexture).toHaveBeenCalledTimes(
+      2,
+    );
+    const exported = mockCalls.slice(
+      mockCalls.indexOf("releaseFrameBuffer") + 1,
+    );
+    // The conversion precedes the drawing; a lease is given back after the
+    // next frame's conversion, once its own frame's checked flush returned.
+    expect(exported.slice(0, 3)).toEqual(["convert", "beginAccess", "draw"]);
+    const second = exported.indexOf("convert", 3);
+    expect(exported.indexOf("lease1.dispose")).toBeGreaterThan(second);
+    expect(exported.lastIndexOf("target.flush")).toBeLessThan(
+      exported.indexOf("lease3.dispose"),
+    );
+    for (const frame of frames) expect(frame.dispose).toHaveBeenCalledTimes(1);
+    // Everything is released once the export ends.
+    for (const wrapper of mockYuvWrappers)
+      expect(wrapper.destroy).toHaveBeenCalledTimes(1);
+    expect(source.destroy).toHaveBeenCalledTimes(1);
+    expect(RNSkiaVideoModule.releaseMemory).toHaveBeenCalledWith(42);
+    makeImage.mockReset();
+    mockNativeFrame.mockReset();
+  });
+
+  it("closes the fresh lease Android hands out for a picture a clip holds", async () => {
+    const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+    makeImage.mockImplementation(() => ({ dispose: jest.fn() }));
+    mockNativeFrame.mockImplementation((handle: bigint) => ({
+      handle,
+      width: 640,
+      height: 360,
+      pixelFormat: "bgra8",
+      release: jest.fn(),
+    }));
+    // The first picture is held over two export frames: each decode leases
+    // it again.
+    const ids = [1, 1, 2];
+    const frames: VideoFrame[] = [];
+    const { promise } = prepare(() => {
+      const frame: VideoFrame = {
+        id: ids[frames.length]!,
+        producerId: 7,
+        width: 640,
+        height: 360,
+        rotation: 0,
+        texture: {
+          kind: "native-buffer",
+          nativeBuffer: 500n,
+          region: { x: 0, y: 0, width: 640, height: 360 },
+          rotation: 0,
+        },
+        dispose: jest.fn(),
+      };
+      frames.push(frame);
+      return { clip: frame };
+    });
+    await pumpAll();
+    await promise;
+    expect(console.warn).not.toHaveBeenCalled();
+    // Two pictures, two conversions; every lease closes exactly once.
+    expect(makeImage).toHaveBeenCalledTimes(2);
+    for (const frame of frames) expect(frame.dispose).toHaveBeenCalledTimes(1);
+    expect(RNSkiaVideoModule.releaseMemory).toHaveBeenCalledWith(42);
+    makeImage.mockReset();
+    mockNativeFrame.mockReset();
   });
 
   it("keeps copying decoded frames: only the output is GPU-direct", async () => {

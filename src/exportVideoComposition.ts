@@ -677,9 +677,9 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                     )
                   : new Error("Encoder cannot lend frame buffers");
                 state.gpu = failure === null;
-                // iOS: the same IOSurface import then samples decoded frames.
-                if (state.gpu && bgra)
-                  state.imports = createExportFrameImports();
+                // Decoded frames are sampled in place too: on iOS through the
+                // same IOSurface import, on Android once converted from YUV.
+                if (state.gpu) state.imports = createExportFrameImports();
                 if (!state.gpu) {
                   console.warn(
                     "[react-native-skia-webgpu-video] GPU export unavailable, using CPU readback:",

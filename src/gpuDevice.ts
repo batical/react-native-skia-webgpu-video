@@ -2,6 +2,8 @@
 import { Platform } from "react-native";
 import { Skia } from "react-native-skia";
 import {
+  GPUBufferUsage,
+  GPUShaderStage,
   GPUTextureUsage,
   importDevice,
   installWebGPU,
@@ -68,3 +70,11 @@ export const nativeVideoTextureUsage =
 // descriptor unchanged: that path renders into its destination attachment.
 export const rgbaVideoTextureUsage =
   nativeVideoTextureUsage | GPUTextureUsage.COPY_DST;
+
+// The flag globals exist only on the RN runtime: worklets capture these.
+export const videoShaderStages = {
+  vertex: GPUShaderStage.VERTEX,
+  fragment: GPUShaderStage.FRAGMENT,
+};
+export const videoUniformBufferUsage =
+  GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;

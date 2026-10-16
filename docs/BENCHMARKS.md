@@ -1,6 +1,13 @@
 # Comparer Skia Video et Skia 3 / WebGPU
 
-Dernière campagne, **14–15 octobre 2026**, sur **Skia 3.4.4 / WebGPU 0.14.2**. Elle mesure la vitesse d'export, pas la mémoire longue durée. Trois répétitions par cas, médianes, en Release.
+Dernière campagne, **16 octobre 2026**, de **Skia 3.4.4 / WebGPU 0.14.2** vers **Skia 3.6.1 / WebGPU 0.16.0**. Trois répétitions par cas, médianes, en Release.
+- **iPhone 15 Pro :** neutre, avec le même profil par image dans quatre séries alternées. HEVC 1080p 731–734 → 728–790 ms, 640×360 174–223 → 168–169 ms, 8×4K réduits 2,72–2,79 → 2,68–2,73 s.
+- **Pixel 8a, avec l'import en place des frames `ImageReader` à l'export :** HEVC 1080p **3,80 → 3,00 s**, 640×360 **1,25 → 1,16 s**, 8×4K natifs **13,5 → 10,0 s**, 3×4K simultanés **8,8 → 5,8 s**. Les 8×4K réduits, décodés par EGL, restent à 12,0–12,5 s.
+- **Contrôles de pixels sur Pixel :** décodage CPU/GPU 10/10 à ±1, export de mire et d'une vidéo décodée identiques au readback. Sans la correction de couleurs de cette migration, le décodage échoue sur 10/10 cas.
+
+Preuves : [`ios-device-361-ab.json`](../benchmark/ios-device-361-ab.json), [`android-device-361-ab.json`](../benchmark/android-device-361-ab.json) ; voir la [vérification](../migration/skia-3.6.1/verification.md).
+
+Campagne précédente, **14–15 octobre 2026**, sur **Skia 3.4.4 / WebGPU 0.14.2**. Elle mesure la vitesse d'export, pas la mémoire longue durée. Trois répétitions par cas, médianes, en Release.
 - **iPhone 15 Pro, face à 3.0.6 :** HEVC 1080p **956 → 735–738 ms**, 640×360 **235 → 175–210 ms**, 8×4K réduits à 1280 **2,95 → 2,73–2,85 s**.
 - **Pixel 8a, avec le décodage `ImageReader` :** HEVC 1080p **6,35 → 3,72 s**, 640×360 **1,75 → 1,29 s**, 8×4K natifs **23,8–25,1 → 13,5 s** (face au décodage EGL), 3×4K simultanés **20,6–21,2 → 8,7–9,0 s**.
 - **Contrôles de pixels sur Pixel :** décodage CPU/GPU 10/10, export de mire réussi.

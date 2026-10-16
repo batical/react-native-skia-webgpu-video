@@ -1,0 +1,510 @@
+--- a/node_modules/react-native-skia/cpp/api/JsiSkCanvas.h
++++ b/node_modules/react-native-skia/cpp/api/JsiSkCanvas.h
+@@ -1,6 +1,7 @@
+ #pragma once
+ 
+ #include <memory>
++#include <stdexcept>
+ #include <string>
+ #include <utility>
+ #include <vector>
+@@ -51,15 +52,15 @@
+ public:
+   static constexpr const char *CLASS_NAME = "Canvas";
+ 
+-  void drawPaint(std::shared_ptr<SkPaint> paint) { _canvas->drawPaint(*paint); }
++  void drawPaint(std::shared_ptr<SkPaint> paint) { getCanvas()->drawPaint(*paint); }
+ 
+   void drawLine(double x1, double y1, double x2, double y2,
+                 std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawLine(x1, y1, x2, y2, *paint);
++    getCanvas()->drawLine(x1, y1, x2, y2, *paint);
+   }
+ 
+   void drawRect(std::shared_ptr<SkRect> rect, std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawRect(*rect, *paint);
++    getCanvas()->drawRect(*rect, *paint);
+   }
+ 
+   // The drawImage* variants stay raw: they dispatch on exact argument counts
+@@ -72,7 +73,7 @@
+     if (count >= 4 && !arguments[3].isNull() && !arguments[3].isUndefined()) {
+       paint = JsiSkPaint::fromValue(runtime, arguments[3]);
+     }
+-    _canvas->drawImage(image, x, y, SkSamplingOptions(), paint.get());
++    getCanvas()->drawImage(image, x, y, SkSamplingOptions(), paint.get());
+     return jsi::Value::undefined();
+   }
+ 
+@@ -82,7 +83,7 @@
+     auto dest = JsiSkRect::fromValue(runtime, arguments[2]);
+     auto paint = JsiSkPaint::fromValue(runtime, arguments[3]);
+     auto fastSample = count >= 5 && arguments[4].getBool();
+-    _canvas->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),
++    getCanvas()->drawImageRect(image, *src, *dest, SkSamplingOptions(), paint.get(),
+                            fastSample ? SkCanvas::kFast_SrcRectConstraint
+                                       : SkCanvas::kStrict_SrcRectConstraint);
+     return jsi::Value::undefined();
+@@ -98,7 +99,7 @@
+     if (count >= 6 && !arguments[5].isNull() && !arguments[5].isUndefined()) {
+       paint = JsiSkPaint::fromValue(runtime, arguments[5]);
+     }
+-    _canvas->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());
++    getCanvas()->drawImage(image, x, y, SkSamplingOptions({B, C}), paint.get());
+     return jsi::Value::undefined();
+   }
+ 
+@@ -112,7 +113,7 @@
+     if (count >= 6 && !arguments[5].isNull() && !arguments[5].isUndefined()) {
+       paint = JsiSkPaint::fromValue(runtime, arguments[5]);
+     }
+-    _canvas->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());
++    getCanvas()->drawImage(image, x, y, SkSamplingOptions(fm, mm), paint.get());
+     return jsi::Value::undefined();
+   }
+ 
+@@ -125,7 +126,7 @@
+     if (count >= 5 && !arguments[4].isNull() && !arguments[4].isUndefined()) {
+       paint = JsiSkPaint::fromValue(runtime, arguments[4]);
+     }
+-    _canvas->drawImageNine(image.get(), center->round(), *dest, fm,
++    getCanvas()->drawImageNine(image.get(), center->round(), *dest, fm,
+                            paint.get());
+     return jsi::Value::undefined();
+   }
+@@ -142,7 +143,7 @@
+     }
+     auto constraint =
+         SkCanvas::kStrict_SrcRectConstraint; // TODO: get from caller
+-    _canvas->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),
++    getCanvas()->drawImageRect(image.get(), *src, *dest, SkSamplingOptions({B, C}),
+                            paint.get(), constraint);
+     return jsi::Value::undefined();
+   }
+@@ -158,44 +159,44 @@
+       paint = JsiSkPaint::fromValue(runtime, arguments[5]);
+     }
+     auto constraint = SkCanvas::kStrict_SrcRectConstraint;
+-    _canvas->drawImageRect(image.get(), *src, *dest, {filter, mipmap},
++    getCanvas()->drawImageRect(image.get(), *src, *dest, {filter, mipmap},
+                            paint.get(), constraint);
+     return jsi::Value::undefined();
+   }
+ 
+   void drawCircle(double cx, double cy, double radius,
+                   std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawCircle(cx, cy, radius, *paint);
++    getCanvas()->drawCircle(cx, cy, radius, *paint);
+   }
+ 
+   void drawArc(std::shared_ptr<SkRect> oval, double startAngle,
+                double sweepAngle, bool useCenter,
+                std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);
++    getCanvas()->drawArc(*oval, startAngle, sweepAngle, useCenter, *paint);
+   }
+ 
+   void drawRRect(std::shared_ptr<SkRRect> rect,
+                  std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawRRect(*rect, *paint);
++    getCanvas()->drawRRect(*rect, *paint);
+   }
+ 
+   void drawDRRect(std::shared_ptr<SkRRect> outer,
+                   std::shared_ptr<SkRRect> inner,
+                   std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawDRRect(*outer, *inner, *paint);
++    getCanvas()->drawDRRect(*outer, *inner, *paint);
+   }
+ 
+   void drawOval(std::shared_ptr<SkRect> rect, std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawOval(*rect, *paint);
++    getCanvas()->drawOval(*rect, *paint);
+   }
+ 
+-  void restoreToCount(double c) { _canvas->restoreToCount(c); }
++  void restoreToCount(double c) { getCanvas()->restoreToCount(c); }
+ 
+-  int getSaveCount() { return static_cast<int>(_canvas->getSaveCount()); }
++  int getSaveCount() { return static_cast<int>(getCanvas()->getSaveCount()); }
+ 
+   std::shared_ptr<JsiSkMatrix> getTotalMatrix() {
+     return std::make_shared<JsiSkMatrix>(getContext(),
+-                                         _canvas->getTotalMatrix());
++                                         getCanvas()->getTotalMatrix());
+   }
+ 
+   void drawPoints(double pointMode, std::vector<SkPoint> points,
+@@ -204,12 +205,12 @@
+       return;
+     }
+     auto p = SkSpan(points.data(), points.size());
+-    _canvas->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);
++    getCanvas()->drawPoints(static_cast<SkCanvas::PointMode>(pointMode), p, *paint);
+   }
+ 
+   void drawVertices(sk_sp<SkVertices> vertices, double blendMode,
+                     std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawVertices(vertices, toBlendMode(blendMode), *paint);
++    getCanvas()->drawVertices(vertices, toBlendMode(blendMode), *paint);
+   }
+ 
+   JSI_HOST_FUNCTION(drawPatch) {
+@@ -279,7 +280,7 @@
+       paint = JsiSkPaint::fromValue(runtime, arguments[4]);
+     }
+     SkPaint defaultPaint;
+-    _canvas->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),
++    getCanvas()->drawPatch(cubics.data(), colors.empty() ? nullptr : colors.data(),
+                        texs.empty() ? nullptr : texs.data(), blendMode,
+                        paint ? *paint : defaultPaint);
+     return jsi::Value::undefined();
+@@ -287,19 +288,19 @@
+ 
+   void drawPath(std::shared_ptr<SkPathBuilder> path,
+                 std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawPath(path->snapshot(), *paint);
++    getCanvas()->drawPath(path->snapshot(), *paint);
+   }
+ 
+   void drawText(std::string textVal, double x, double y,
+                 std::shared_ptr<SkPaint> paint, std::shared_ptr<SkFont> font) {
+     auto text = textVal.c_str();
+-    _canvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,
++    getCanvas()->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, x, y,
+                             *font, *paint);
+   }
+ 
+   void drawTextBlob(sk_sp<SkTextBlob> blob, double x, double y,
+                     std::shared_ptr<SkPaint> paint) {
+-    _canvas->drawTextBlob(blob, x, y, *paint);
++    getCanvas()->drawTextBlob(blob, x, y, *paint);
+   }
+ 
+   void drawGlyphs(std::vector<int> glyphIds, std::vector<SkPoint> positions,
+@@ -321,7 +322,7 @@
+ 
+     auto g = SkSpan(glyphs.data(), glyphs.size());
+     auto p = SkSpan(positions.data(), positions.size());
+-    _canvas->drawGlyphs(g, p, origin, *font, *paint);
++    getCanvas()->drawGlyphs(g, p, origin, *font, *paint);
+   }
+ 
+   void drawSvg(sk_sp<SkSVGDOM> svgdom, JsiOptional<double> w,
+@@ -329,26 +330,26 @@
+     if (w.has_value() && h.has_value()) {
+       svgdom->setContainerSize(SkSize::Make(*w, *h));
+     } else {
+-      auto canvasSize = _canvas->getBaseLayerSize();
++      auto canvasSize = getCanvas()->getBaseLayerSize();
+       svgdom->setContainerSize(SkSize::Make(canvasSize));
+     }
+-    svgdom->render(_canvas);
++    svgdom->render(getCanvas());
+   }
+ 
+   void clipPath(std::shared_ptr<SkPathBuilder> path, double op,
+                 bool doAntiAlias) {
+-    _canvas->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);
++    getCanvas()->clipPath(path->snapshot(), static_cast<SkClipOp>(op), doAntiAlias);
+   }
+ 
+   void clipRect(std::shared_ptr<SkRect> rect, double op, bool doAntiAlias) {
+-    _canvas->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);
++    getCanvas()->clipRect(*rect, static_cast<SkClipOp>(op), doAntiAlias);
+   }
+ 
+   void clipRRect(std::shared_ptr<SkRRect> rrect, double op, bool doAntiAlias) {
+-    _canvas->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);
++    getCanvas()->clipRRect(*rrect, static_cast<SkClipOp>(op), doAntiAlias);
+   }
+ 
+-  int save() { return _canvas->save(); }
++  int save() { return getCanvas()->save(); }
+ 
+   JSI_HOST_FUNCTION(saveLayer) {
+     // Keep the wrapper smart pointers alive for the duration of the call:
+@@ -372,35 +373,35 @@
+         count >= 4 && !arguments[3].isNull() && !arguments[3].isUndefined()
+             ? static_cast<SkCanvas::SaveLayerFlags>(arguments[3].asNumber())
+             : 0;
+-    return jsi::Value(_canvas->saveLayer(SkCanvas::SaveLayerRec(
++    return jsi::Value(getCanvas()->saveLayer(SkCanvas::SaveLayerRec(
+         boundsPtr.get(), paintPtr.get(), backdropPtr.get(), flags)));
+   }
+ 
+-  void restore() { _canvas->restore(); }
++  void restore() { getCanvas()->restore(); }
+ 
+   void rotate(double degrees, double rx, double ry) {
+-    _canvas->rotate(degrees, rx, ry);
++    getCanvas()->rotate(degrees, rx, ry);
+   }
+ 
+-  void translate(double dx, double dy) { _canvas->translate(dx, dy); }
++  void translate(double dx, double dy) { getCanvas()->translate(dx, dy); }
+ 
+-  void scale(double sx, double sy) { _canvas->scale(sx, sy); }
++  void scale(double sx, double sy) { getCanvas()->scale(sx, sy); }
+ 
+-  void skew(double sx, double sy) { _canvas->skew(sx, sy); }
++  void skew(double sx, double sy) { getCanvas()->skew(sx, sy); }
+ 
+   void drawColor(JsiColor cl, JsiOptional<double> mode) {
+     if (mode.has_value()) {
+-      _canvas->drawColor(cl, toBlendMode(*mode));
++      getCanvas()->drawColor(cl, toBlendMode(*mode));
+     } else {
+-      _canvas->drawColor(cl);
++      getCanvas()->drawColor(cl);
+     }
+   }
+ 
+-  void clear(JsiColor cl) { _canvas->clear(cl); }
++  void clear(JsiColor cl) { getCanvas()->clear(cl); }
+ 
+-  void concat(std::shared_ptr<SkMatrix> matrix) { _canvas->concat(*matrix); }
++  void concat(std::shared_ptr<SkMatrix> matrix) { getCanvas()->concat(*matrix); }
+ 
+-  void drawPicture(sk_sp<SkPicture> picture) { _canvas->drawPicture(picture); }
++  void drawPicture(sk_sp<SkPicture> picture) { getCanvas()->drawPicture(picture); }
+ 
+   JSI_HOST_FUNCTION(drawAtlas) {
+     auto atlas = JsiSkImage::fromValue(runtime, arguments[0]);
+@@ -473,13 +474,14 @@
+     auto x = SkSpan(xforms.data(), xforms.size());
+     auto t = SkSpan(skRects.data(), skRects.size());
+     auto c = SkSpan(colors.data(), colors.size());
+-    _canvas->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,
++    getCanvas()->drawAtlas(atlas.get(), x, t, c, blendMode, sampling, nullptr,
+                        paint.get());
+ 
+     return jsi::Value::undefined();
+   }
+ 
+   JSI_HOST_FUNCTION(readPixels) {
++    getCanvas(); // Validate before allocating a readback buffer.
+     auto srcX = static_cast<int>(arguments[0].asNumber());
+     auto srcY = static_cast<int>(arguments[1].asNumber());
+     auto info = JsiSkImageInfo::fromValue(runtime, arguments[2]);
+@@ -523,13 +525,14 @@
+       return dest;
+     }
+ 
+-    if (!_canvas->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {
++    if (!getCanvas()->readPixels(*info, bfrPtr, bytesPerRow, srcX, srcY)) {
+       return jsi::Value::null();
+     }
+     return dest;
+   }
+ 
+   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
++    installMethod(runtime, prototype, "dispose", &JsiSkCanvas::dispose);
+     installMethod(runtime, prototype, "drawPaint", &JsiSkCanvas::drawPaint);
+     installMethod(runtime, prototype, "drawLine", &JsiSkCanvas::drawLine);
+     installMethod(runtime, prototype, "drawRect", &JsiSkCanvas::drawRect);
+@@ -606,7 +609,21 @@
+   }
+ 
+   void setCanvas(SkCanvas *canvas) { _canvas = canvas; }
+-  SkCanvas *getCanvas() { return _canvas; }
++  SkCanvas *getCanvas() {
++    if (!_canvas) throw std::runtime_error("Canvas has been disposed");
++    return _canvas;
++  }
++  // Release the owning surface deterministically. The caller must
++  // submit/wait for its recording before disposal. Off the creating
++  // thread, the surface is handed to that thread's dispatcher.
++  void dispose() {
++    _canvas = nullptr;
++    if (_dispatcher) {
++      _dispatcher->release(std::move(_surface));
++    } else {
++      _surface.reset();
++    }
++  }
+ 
+   // Optionally associate the canvas with its owning surface, keeping it alive
+   // as long as the canvas. This lets readPixels fall back to a surface
+@@ -619,7 +636,7 @@
+   }
+ 
+ private:
+-  SkCanvas *_canvas;
++  SkCanvas *_canvas = nullptr;
+   sk_sp<SkSurface> _surface;
+   std::shared_ptr<Dispatcher> _dispatcher;
+ };
+--- a/node_modules/react-native-skia/src/skia/types/Canvas.ts
++++ b/node_modules/react-native-skia/src/skia/types/Canvas.ts
+@@ -32,6 +32,8 @@
+ }
+ 
+ export interface SkCanvas {
++  /** Release the owning surface after flushing; idempotent. */
++  dispose(): void;
+   /**
+    * Draws the given image with its top-left corner at (left, top) using the current clip,
+    * the current matrix, and optionally-provided paint.
+--- a/node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts
++++ b/node_modules/react-native-skia/lib/typescript/src/skia/types/Canvas.d.ts
+@@ -23,6 +23,8 @@
+     SaveLayerF16ColorType = 16
+ }
+ export interface SkCanvas {
++  /** Release the owning surface after flushing; idempotent. */
++  dispose(): void;
+     /**
+      * Draws the given image with its top-left corner at (left, top) using the current clip,
+      * the current matrix, and optionally-provided paint.
+--- a/node_modules/react-native-skia/cpp/api/JsiSkSurface.h
++++ b/node_modules/react-native-skia/cpp/api/JsiSkSurface.h
+@@ -44,6 +44,25 @@
+     _dispatcher->processQueue();
+   }
+ 
++  // Opt-in for consumers that release native buffers after GPU completion.
++  // Other Skia surfaces preserve their existing flush/snapshot behavior.
++  void enableCheckedSubmissions() {
++    if (!getObject()->recorder()) {
++      throw std::runtime_error("Checked GPU submissions require a Graphite surface");
++    }
++    _checkedSubmissions = true;
++  }
++
++  void submitRecording(skgpu::graphite::Recording *recording,
++                       skgpu::graphite::SyncToCpu syncToCpu =
++                           skgpu::graphite::SyncToCpu::kNo) {
++    if (_checkedSubmissions) {
++      DawnContext::getInstance().submitRecordingChecked(recording, syncToCpu);
++    } else {
++      DawnContext::getInstance().submitRecording(recording, syncToCpu);
++    }
++  }
++
+   ~JsiSkSurface() override {
+     if (!isDisposed()) {
+       releaseResources();
+@@ -76,7 +95,7 @@
+     // only Graphite-backed surfaces need to snap and submit a recording.
+     if (auto *recorder = surface->recorder()) {
+       auto recording = recorder->snap();
+-      DawnContext::getInstance().submitRecording(
++      submitRecording(
+           recording.get(), sync ? skgpu::graphite::SyncToCpu::kYes
+                                 : skgpu::graphite::SyncToCpu::kNo);
+     }
+@@ -111,11 +130,15 @@
+     } else {
+       image = surface->makeImageSnapshot();
+     }
++    // Preserve the previously published image if snapshot allocation failed.
++    if (!image) {
++      throw jsi::JSError(runtime, "Cannot allocate Skia surface snapshot");
++    }
+     // A raster surface (e.g. Skia.Surface.Make) has no Graphite recorder; its
+     // snapshot is already a valid CPU image, so skip the recording submit.
+     if (auto *recorder = surface->recorder()) {
+       auto recording = recorder->snap();
+-      DawnContext::getInstance().submitRecording(recording.get());
++      submitRecording(recording.get());
+     }
+     if (count > 1 && arguments[1].isObject()) {
+       auto jsiImage = getJsiObject<JsiSkImage>(runtime, arguments[1]);
+@@ -188,6 +211,8 @@
+                       &JsiSkSurface::makeImageSnapshot);
+     installMethod(runtime, prototype, "asImage", &JsiSkSurface::asImage);
+     installMethod(runtime, prototype, "flush", &JsiSkSurface::flush);
++    installMethod(runtime, prototype, "enableCheckedSubmissions",
++                  &JsiSkSurface::enableCheckedSubmissions);
+   }
+ 
+ protected:
+@@ -203,6 +228,7 @@
+ 
+ private:
+   std::shared_ptr<Dispatcher> _dispatcher;
++  bool _checkedSubmissions = false;
+ };
+ 
+ } // namespace RNSkia
+--- a/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
++++ b/node_modules/react-native-skia/cpp/rnskia/RNDawnContext.h
+@@ -7,6 +7,7 @@
+ #include <functional>
+ #include <memory>
+ #include <mutex>
++#include <stdexcept>
+ #include <thread>
+ #include <utility>
+ #include <vector>
+@@ -225,6 +226,27 @@
+     info.fRecording = recording;
+     fGraphiteContext->insertRecording(info);
+     fGraphiteContext->submit(syncToCpu);
++  }
++
++  // Checked only for surfaces that explicitly opt into this contract. A valid
++  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.
++  void submitRecordingChecked(
++      skgpu::graphite::Recording *recording,
++      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {
++    std::lock_guard<std::mutex> lock(_mutex);
++    if (!recording) {
++      throw std::runtime_error("Cannot create checked Graphite recording");
++    }
++    skgpu::graphite::InsertRecordingInfo info;
++    info.fRecording = recording;
++    auto status = fGraphiteContext->insertRecording(info);
++    if (!static_cast<bool>(status)) {
++      throw std::runtime_error("Graphite rejected a checked recording: " +
++                               status.message());
++    }
++    if (!fGraphiteContext->submit(syncToCpu)) {
++      throw std::runtime_error("Graphite checked submission failed");
++    }
+   }
+ 
+   // Create offscreen surface
+--- a/node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h
++++ b/node_modules/react-native-skia/cpp/rnskia/RNImageProvider.h
+@@ -21,7 +21,7 @@
+   ImageProvider() : fCache(kDefaultNumCachedImages) {}
+   ~ImageProvider() override {}
+ 
+-  static sk_sp<ImageProvider> Make() { return sk_ref_sp(new ImageProvider); }
++  static sk_sp<ImageProvider> Make() { return sk_make_sp<ImageProvider>(); }
+ 
+   sk_sp<SkImage>
+   findOrCreate(skgpu::graphite::Recorder *recorder, const SkImage *image,
+--- a/node_modules/react-native-skia/cpp/api/JsiSkApi.h
++++ b/node_modules/react-native-skia/cpp/api/JsiSkApi.h
+@@ -156,6 +156,19 @@
+   JSI_HOST_FUNCTION(Color) {
+     return JsiSkColor::createCtor()(runtime, thisValue, arguments, count);
+   }
++  // Private video-export cleanup. Only the calling thread's Recorder cache
++  // is trimmed; the shared Context cache and other Recorders are untouched.
++  JSI_HOST_FUNCTION(__rnskvTrimRecorderCache) {
++    auto &context = DawnContext::getInstance();
++    auto *recorder = context.getRecorder();
++    {
++      auto recording = recorder->snap();
++      context.submitRecordingChecked(recording.get(),
++                                     skgpu::graphite::SyncToCpu::kYes);
++    }
++    recorder->freeGpuResources();
++    return jsi::Value::undefined();
++  }
+   JSI_HOST_FUNCTION(getNativeDevice) {
+     // Raw WGPUDevice pointer of the Graphite device, as a BigInt. Consumed by
+     // react-native-webgpu's importDevice(), which AddRefs it; the pointer
+@@ -228,6 +241,8 @@
+   }
+ 
+   static void definePrototype(jsi::Runtime &runtime, jsi::Object &prototype) {
++    installHostMethod(runtime, prototype, "__rnskvTrimRecorderCache",
++                      &JsiSkApi::__rnskvTrimRecorderCache);
+     installHostMethod(runtime, prototype, "getNativeDevice",
+                       &JsiSkApi::getNativeDevice);
+     installHostMethod(runtime, prototype, "Font", &JsiSkApi::Font);

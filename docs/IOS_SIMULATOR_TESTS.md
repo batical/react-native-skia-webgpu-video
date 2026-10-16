@@ -1,5 +1,7 @@
 # Vérifier le fonctionnement sur le simulateur iOS
 
+**16 octobre 2026 (Skia 3.6.1 / WebGPU 0.16.0)** : 50/50 XCTests natifs en Release sur l'arbre migré. Aucun run de scénarios ni de mesure sur simulateur pour cette version ; les mesures sont sur appareil ([vérification](../migration/skia-3.6.1/verification.md)).
+
 **14 octobre 2026 (Skia 3.4.4 / WebGPU 0.14.2)**, sur iPhone 17e, iOS 26.4, en Release :
 - **50/50 XCTest natifs** et **5/5 smoke**.
 - **Attribution A/B des exports :** la référence 3.0.6, la montée de version seule, la fermeture immédiate des imports, puis l'import en place.
