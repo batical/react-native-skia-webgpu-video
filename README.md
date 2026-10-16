@@ -5,8 +5,8 @@
 <p align="center">
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="#status"><img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-f59e0b" /></a>
-  <img alt="React Native Skia 3.4.4" src="https://img.shields.io/badge/Skia-3.4.4-38bdf8" />
-  <img alt="React Native WebGPU 0.14.2" src="https://img.shields.io/badge/WebGPU-0.14.2-a78bfa" />
+  <img alt="React Native Skia 3.6.1" src="https://img.shields.io/badge/Skia-3.6.1-38bdf8" />
+  <img alt="React Native WebGPU 0.16.0" src="https://img.shields.io/badge/WebGPU-0.16.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -26,7 +26,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Alpha software.** The current Skia 3.4.4 / WebGPU 0.14.2 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Long-session memory qualification of this build is still pending. See [status](#status) before adopting this in production.
+> **Alpha software.** The current Skia 3.6.1 / WebGPU 0.16.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Long-session memory qualification of this build is still pending. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -36,8 +36,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.4.4`** |
-| React Native WebGPU | **`react-native-webgpu@0.14.2`** (both resolve `react-native-webgpu-dawn@154.3.0`) |
+| React Native Skia | **`react-native-skia@3.6.1`** |
+| React Native WebGPU | **`react-native-webgpu@0.16.0`** (both resolve `react-native-webgpu-dawn@154.3.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+** |
@@ -59,7 +59,7 @@ npm pack
 Then, from your React Native application:
 
 ```sh
-npm install --save-exact react-native-skia@3.4.4 react-native-webgpu@0.14.2 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.6.1 react-native-webgpu@0.16.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
 npm install /path/to/react-native-skia-webgpu-video-0.1.0-alpha.0.tgz
 ```
 
@@ -224,27 +224,27 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 
 ## Benchmarks
 
-Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1`, median export wall time. Raw evidence: [iOS device](benchmark/ios-device-344-export-ab.json), [iOS simulator](benchmark/ios-simulator-344-export-ab.json), [Android device](benchmark/android-device-344-export-ab.json); protocol and limits in the [verification report](migration/skia-3.4.4/verification.md).
+Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1`, median export wall time. Raw evidence: [iOS device](benchmark/ios-device-361-ab.json), [Android device](benchmark/android-device-361-ab.json); protocol and limits in the [verification report](migration/skia-3.6.1/verification.md). Earlier campaigns: [3.4.4](migration/skia-3.4.4/verification.md).
 
-**iPhone 15 Pro (iOS 27.0.1)**, Skia 3.0.6 vs this release:
+**iPhone 15 Pro (iOS 27.0.1)**, four alternating series. The export path does not change on iOS, and the per-frame profile is the same in all four; differences between series come from encoder setup and finalization:
 
-| Export case | 3.0.6 | 3.4.4 |
+| Export case | 3.4.4 | 3.6.1 |
 | --- | --- | --- |
-| HEVC 1080p, rotated, 180 frames | 956 ms | 735–738 ms |
-| H.264 640×360, 60 frames | 235 ms | 175–210 ms |
-| 8 × 4K clips scaled to 1280, 360 frames | 2.95 s | 2.73–2.85 s |
+| HEVC 1080p, rotated, 180 frames | 731–734 ms | 728–790 ms |
+| H.264 640×360, 60 frames | 174–223 ms | 168–169 ms |
+| 8 × 4K clips scaled to 1280, 360 frames | 2.72–2.79 s | 2.68–2.73 s |
 
-**Pixel 8a (Android 17)**:
+**Pixel 8a (Android 17)**. In 3.6.1, decoded `ImageReader` frames are sampled in place during export, as on iOS:
 
-| Export case | 3.0.6 | 3.4.4, GPU output only | 3.4.4 + `ImageReader` |
-| --- | --- | --- | --- |
-| HEVC 1080p, rotated, 180 frames | 6.35 s | 5.69–5.90 s | **3.72 s** |
-| H.264 640×360, 60 frames | 1.75 s | 1.72–1.74 s | **1.29 s** |
-| 8 × 4K clips at native size, 360 frames | — | 23.8–25.1 s | **13.5 s** |
-| 3 simultaneous 4K clips, 150 frames | — | 20.6–21.2 s | **8.7–9.0 s** |
-| 8 × 4K clips scaled to 1280 (EGL decode) | 12.6 s | 12.0 s | 12.2 s |
+| Export case | 3.4.4 | 3.6.1 |
+| --- | --- | --- |
+| HEVC 1080p, rotated, 180 frames | 3.80 s | **3.00 s** (−21%) |
+| H.264 640×360, 60 frames | 1.25 s | **1.16 s** (−7%) |
+| 8 × 4K clips at native size, 360 frames | 13.5 s | **10.0 s** (−26%) |
+| 3 simultaneous 4K clips, 150 frames | 8.8 s | **5.8 s** (−35%) |
+| 8 × 4K clips scaled to 1280 (EGL decode, unchanged path) | 12.0 s | 12.5 s |
 
-Pass `onProfile` to an export to see where the time goes on your own compositions. On the Pixel, a native-size HEVC 1080p frame spends about 2.7 ms decoding, 6.4 ms importing (YUV blit + snapshot), 2.4 ms waiting for the GPU and 4.2 ms encoding; on the iPhone the whole frame takes under 4 ms.
+Pass `onProfile` to an export to see where the time goes on your own compositions. On the Pixel, a native-size HEVC 1080p frame now spends about 2.8 ms decoding, 3.4 ms importing (down from 6.6), 1.8 ms waiting for the GPU and 4.3 ms encoding; on the iPhone the whole frame takes under 4 ms.
 
 Reproduce on your devices with the example app: `node scripts/test-ios-device-ab-run.mjs` (iPhone) and `node scripts/test-android-device-run.mjs` (Android); see the [benchmark guide](docs/BENCHMARKS.md).
 
@@ -252,16 +252,16 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 
 | Area | Current evidence |
 | --- | --- |
-| iOS | Simulator (Release): 50/50 native XCTests, 5/5 smoke scenarios. iPhone 15 Pro: all export cases above passed in 3 runs, with output sizes identical to 3.0.6 ([verification](migration/skia-3.4.4/verification.md)). |
-| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K) and export pattern check passed. 97/102 instrumented tests pass; the 5 failures (CPU RGBA budget) predate this release. |
-| JavaScript / types | 212 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
+| iOS | Simulator (Release): 50/50 native XCTests. iPhone 15 Pro: all export cases above passed in every run, with output sizes identical to 3.4.4 ([verification](migration/skia-3.6.1/verification.md)). |
+| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. WebGPU 0.15+ changed the colors of decoded YUV frames; this release keeps them as decoded ([audit](migration/skia-3.6.1/upstream-audit.md)). Instrumented tests were last run on 3.4.4 (97/102; the 5 failures predate it). |
+| JavaScript / types | 217 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
 | Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
-| Long sessions | Not yet re-run on 3.4.4; the 3.0.6 results below are the latest. |
+| Long sessions | Not yet re-run on 3.4.4 or 3.6.1; the 3.0.6 results below are the latest. |
 
 ### Earlier results (Skia 3.0.6)
 
-These were measured on the previous Skia 3.0.6 / WebGPU 0.12.1 builds and have not been repeated on 3.4.4.
+These were measured on the previous Skia 3.0.6 / WebGPU 0.12.1 builds and have not been repeated since.
 
 - **Lifecycle:** 6/6 consecutive iPhone montages and 4/4 Android montages passed (240 and 160 remounts), with late memory readings flattening or decreasing.
 - **Android AHardwareBuffer playback:** 24/24 focused Release attempts on Pixel 8a passed, including H.264/HEVC 4K and export, with tracked cleanup at zero at a 512 MiB budget ([device diagnostics](docs/ANDROID_DEVICE_306.md)).
@@ -286,7 +286,7 @@ npm run build
 npm run check-package
 ```
 
-Native validation: [iPhone](docs/IOS_DEVICE_TESTS.md), [iOS simulator](docs/IOS_SIMULATOR_TESTS.md), [Android](android/BUILD_VALIDATION.md). The [benchmark guide](docs/BENCHMARKS.md) explains workloads and measured versus unavailable metrics. Upgrading Skia: follow the [upstream notes](docs/UPSTREAM_NOTES.md) and the [3.4.4 migration audit](migration/skia-3.4.4/upstream-audit.md).
+Native validation: [iPhone](docs/IOS_DEVICE_TESTS.md), [iOS simulator](docs/IOS_SIMULATOR_TESTS.md), [Android](android/BUILD_VALIDATION.md). The [benchmark guide](docs/BENCHMARKS.md) explains workloads and measured versus unavailable metrics. Upgrading Skia or WebGPU: follow the [upstream notes](docs/UPSTREAM_NOTES.md) and the [3.6.1 migration audit](migration/skia-3.6.1/upstream-audit.md), and re-run the Pixel `interop` pixel check, which caught a color regression in WebGPU 0.15.
 
 Contributions are welcome through pull requests. Read the [contribution guide](.github/CONTRIBUTING.md) for the checks and native validation expected for a change.
 

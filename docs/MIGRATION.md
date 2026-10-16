@@ -61,13 +61,13 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 
 Audio options retain their existing meaning. A video composition item is silent by default; use `audio: true` or `audio: { volume: 0.8 }` to include its audio during playback and export. Separate `kind: 'audio'` items support music or voice-over. `useVideoPlayback` has its own `volume` option.
 
-Audio is implemented on both native platforms, but the device runs so far (3.0.6 and 3.4.4) did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
+Audio is implemented on both native platforms, but the device runs so far (3.0.6, 3.4.4 and 3.6.1) did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
 
 ## Memory and extensions
 
 Set `configureVideoMemory({ maxBytes })` before allocating sessions. The budget covers tracked resources only; codecs and drivers can retain additional memory. A budget rejection does not silently reduce export dimensions.
 
-On Android with the AHardwareBuffer interop (API 29+, 8-bit SDR H.264/HEVC at the encoded size), the codec writes into an `ImageReader`; WebGPU converts, crops and rotates each YUV buffer into an independent Graphite snapshot after a checked GPU fence. Other sources render through the decoder's private EGL context into an RGBA AHardwareBuffer, or, without the interop, read owned RGBA pixels on the CPU and upload them. All of these avoid Skia's image-count raster-upload cache. CPU Java/JSI backing buffers remain accounted until their aliases and ART/Hermes owners are collected. See the [upstream cache notes](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider) and the [3.4.4 verification](../migration/skia-3.4.4/verification.md).
+On Android with the AHardwareBuffer interop (API 29+, 8-bit SDR H.264/HEVC at the encoded size), the codec writes into an `ImageReader`; WebGPU converts, crops and rotates each YUV buffer, imported once, into an independent Graphite snapshot after a checked GPU fence. Exports skip that snapshot: each clip's frame is converted into a texture of its own and sampled in place, as on iOS. Other sources render through the decoder's private EGL context into an RGBA AHardwareBuffer, or, without the interop, read owned RGBA pixels on the CPU and upload them. All of these avoid Skia's image-count raster-upload cache. CPU Java/JSI backing buffers remain accounted until their aliases and ART/Hermes owners are collected. See the [upstream cache notes](UPSTREAM_NOTES.md#android--éviter-le-cache-dimages-raster-du-provider) and the [3.6.1 verification](../migration/skia-3.6.1/verification.md).
 
 The optional `createFrameProcessor` export factory creates a processor once per export. Its asynchronous `prepareFrame` runs at the requested composition timestamp and its `dispose` must finish all frame readers. Drive animated effects from that timestamp, not an independent display animation loop.
 

@@ -15,6 +15,8 @@ import {
   releaseVideoMemory,
   reserveVideoMemory,
 } from "./memory";
+import { blitYuvFrame, releaseYuvImports, yuvFrameOrigin } from "./yuvBlit";
+import type { YuvImport } from "./yuvBlit";
 
 type FrameTexture =
   | {
@@ -59,32 +61,13 @@ type Cache = {
   cpuReservation: number;
   cpuBytesPerRow: number;
   pendingSources: PendingSource[];
+  /** Android decoder buffers imported once, per producer. */
+  yuvImports: Map<number, YuvImport[]>;
 };
 
 // Capture a scalar on the RN runtime instead of importing Platform inside a
 // worklet. iOS keeps its existing native-buffer and RGBA compatibility paths.
 const uploadAndroidRgba = Platform.OS === "android";
-
-/** The crop rectangle's corner once the buffer is turned clockwise for display:
- * WebGPU's blit takes its source origin in that turned space. */
-const turnedOrigin = (
-  region: { x: number; y: number; width: number; height: number },
-  width: number,
-  height: number,
-  rotation: number,
-): { x: number; y: number } => {
-  "worklet";
-  if (rotation === 90)
-    return { x: height - region.y - region.height, y: region.x };
-  if (rotation === 180)
-    return {
-      x: width - region.x - region.width,
-      y: height - region.y - region.height,
-    };
-  if (rotation === 270)
-    return { x: region.y, y: width - region.x - region.width };
-  return { x: region.x, y: region.y };
-};
 
 const getCache = (): Cache => {
   "worklet";
@@ -105,6 +88,7 @@ const getCache = (): Cache => {
       cpuReservation: 0,
       cpuBytesPerRow: 0,
       pendingSources: [],
+      yuvImports: new Map(),
     };
   }
   return runtime.__rnskwgpuFrames;
@@ -193,6 +177,8 @@ export const clearVideoFrameImages = (releaseStagingSurface = false): void => {
   for (const producer of cache.images.keys()) clearEntry(cache, producer);
   if (releaseStagingSurface) {
     clearStagingSurface(cache);
+    // Every import's last frame completed: the queue drained above.
+    releaseYuvImports(cache.yuvImports);
   }
 };
 
@@ -211,6 +197,10 @@ export const releaseVideoFrameImage = (frame: VideoFrame): void => {
   const cache = getCache();
   const entry = cache.images.get(producer);
   if (entry && entry.id === (frame.id ?? -1)) clearEntry(cache, producer);
+  // Each import ends with a checked flush; after a failed one, only the
+  // drain in clearVideoFrameImages may release the decoder buffers.
+  if (!cache.pendingSources.length)
+    releaseYuvImports(cache.yuvImports, producer);
   if (cache.images.size === 0) clearVideoFrameImages(true);
 };
 
@@ -458,26 +448,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           // as the GL path's SurfaceTexture transform did. RN WebGPU labels
           // driver-defined YUV formats "bgra8", yet Dawn imports them as YUV:
           // the native side checked the format, so the label is not read.
-          const turned = rotation === 90 || rotation === 270;
-          if (
-            (rotation !== 0 && !turned && rotation !== 180) ||
-            region.x < 0 ||
-            region.y < 0 ||
-            region.x + region.width > nativeSource.width ||
-            region.y + region.height > nativeSource.height ||
-            (turned ? region.height : region.width) !== frame.width ||
-            (turned ? region.width : region.height) !== frame.height
-          ) {
-            throw new Error(
-              "Native video buffer region or YUV layout mismatch",
-            );
-          }
-          origin = turnedOrigin(
-            region,
-            nativeSource.width,
-            nativeSource.height,
-            rotation,
-          );
+          origin = yuvFrameOrigin(region, rotation, nativeSource, frame);
         } else if (
           // RN WebGPU labels a single-plane Android RGBA AHB "bgra8". Dawn
           // reads the actual AHB format; the string distinguishes RGB from
@@ -493,25 +464,33 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         // The native call can throw after submitting; retain leases until a
         // checked queue drain even when it does not return normally.
         copyPending = true;
-        device.queue.copyExternalImageToTexture(
-          region
-            ? {
-                source: nativeSource,
-                origin,
-                rotation: rotation as 0 | 90 | 180 | 270,
-                mirrored: false,
-                flipY: false,
-              }
-            : // Keep decoded orientation: drawVideoFrame applies rotation once.
-              {
-                source: nativeSource,
-                rotation: 0,
-                mirrored: false,
-                flipY: false,
-              },
-          { texture: cache.uploadTexture!, premultipliedAlpha: false },
-          { width: frame.width, height: frame.height },
-        );
+        if (region) {
+          // copyExternalImageToTexture would also convert the video's
+          // transfer function and primaries to sRGB (see yuvBlit.ts).
+          blitYuvFrame(
+            device,
+            cache.yuvImports,
+            key,
+            nativeSource,
+            rotation,
+            origin,
+            frame.width,
+            frame.height,
+            cache.uploadTexture!,
+          );
+        } else {
+          // Keep decoded orientation: drawVideoFrame applies rotation once.
+          device.queue.copyExternalImageToTexture(
+            {
+              source: nativeSource,
+              rotation: 0,
+              mirrored: false,
+              flipY: false,
+            },
+            { texture: cache.uploadTexture!, premultipliedAlpha: false },
+            { width: frame.width, height: frame.height },
+          );
+        }
       }
       // Snapshot records an independent texture copy and submits it after
       // the external blit on the shared queue. The wrapper never draws.

@@ -23,6 +23,8 @@ jest.mock("react-native-webgpu", () => ({
     COPY_SRC: 1,
     COPY_DST: 2,
   },
+  GPUBufferUsage: { UNIFORM: 64, COPY_DST: 8 },
+  GPUShaderStage: { VERTEX: 1, FRAGMENT: 2 },
 }));
 
 beforeEach(() => {
