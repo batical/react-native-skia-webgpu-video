@@ -27,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Beta.** The current Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Long-session memory qualification of this build is still pending. See [status](#status) before adopting this in production.
+> **Beta.** The current Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -255,7 +255,7 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 | Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. With Dawn 157 the errors stay within ±1, as with 3.6.1 ([verification](migration/skia-3.7.0/verification.md#pixels)). Instrumented tests were last run on 3.4.4 (97/102; the 5 failures predate it). |
 | JavaScript / types | 217 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
-| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
+| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels; with 3.7.0 they are up to 5.7% smaller than with 3.6.1, cause not confirmed. |
 | Long sessions | Not yet re-run since 3.0.6; the 3.0.6 results below are the latest. |
 
 ### Earlier results (Skia 3.0.6)
