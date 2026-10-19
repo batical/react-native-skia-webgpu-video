@@ -1,5 +1,5 @@
 {
-  "version": "3.6.1",
+  "version": "3.7.0",
   "files": {
     "cpp/api/JsiSkCanvas.h": {
       "before": "91e6f97f34bef620740fabf7a6bb516c462a18daa72afb46ef5a84d1cd4f3158",
@@ -254,13 +254,9 @@
       ]
     },
     "cpp/rnskia/RNDawnContext.h": {
-      "before": "ce5227a851eb4a2c1ba9275589f04e411db892a105997eddbb64961b06ce3c65",
-      "after": "b6a39f12853fda814b77cb2f9160eb17d45a1ab890ca4ed0a4a99ba684950187",
+      "before": "f1be623839d9716d1ae7ce9bc66a02055989c9b69acbfec49d607338f711d0e7",
+      "after": "c0de4e4b37271a77a429c78e646c2e8a7172b6a46e713ff01f31e0782d05738a",
       "edits": [
-        {
-          "before": "#include <mutex>\n#include <thread>\n",
-          "after": "#include <mutex>\n#include <stdexcept>\n#include <thread>\n"
-        },
         {
           "before": "    fGraphiteContext->submit(syncToCpu);\n  }\n",
           "after": "    fGraphiteContext->submit(syncToCpu);\n  }\n\n  // Checked only for surfaces that explicitly opt into this contract. A valid\n  // empty Recording is accepted; Recorder::snap() returns nullptr on failure.\n  void submitRecordingChecked(\n      skgpu::graphite::Recording *recording,\n      skgpu::graphite::SyncToCpu syncToCpu = skgpu::graphite::SyncToCpu::kNo) {\n    std::lock_guard<std::mutex> lock(_mutex);\n    if (!recording) {\n      throw std::runtime_error(\"Cannot create checked Graphite recording\");\n    }\n    skgpu::graphite::InsertRecordingInfo info;\n    info.fRecording = recording;\n    auto status = fGraphiteContext->insertRecording(info);\n    if (!static_cast<bool>(status)) {\n      throw std::runtime_error(\"Graphite rejected a checked recording: \" +\n                               status.message());\n    }\n    if (!fGraphiteContext->submit(syncToCpu)) {\n      throw std::runtime_error(\"Graphite checked submission failed\");\n    }\n  }\n"
@@ -278,8 +274,8 @@
       ]
     },
     "cpp/api/JsiSkApi.h": {
-      "before": "67cb4f045263f10ec53876d1ce1df980e2477d8ebf8f49eec030b06f6ed6d121",
-      "after": "c609adcb77b219b69785d9d8ecef22f5d3b8329d060a470c0b451df1a46959b6",
+      "before": "9abd4dbaa14c13f3ce80a5c475b8ad51f08400fe6b2c119781032486ae72f7eb",
+      "after": "e3e8358e0ecf91b4a0547cdd4467400b14d5d0963402692648d6d0635864a769",
       "edits": [
         {
           "before": "  JSI_HOST_FUNCTION(getNativeDevice) {",

@@ -1,6 +1,13 @@
 # Comparer Skia Video et Skia 3 / WebGPU
 
-Dernière campagne, **16 octobre 2026**, de **Skia 3.4.4 / WebGPU 0.14.2** vers **Skia 3.6.1 / WebGPU 0.16.0**. Trois répétitions par cas, médianes, en Release.
+Dernière campagne, **19 octobre 2026**, de **Skia 3.6.1 / WebGPU 0.16.0** vers **Skia 3.7.0 / WebGPU 0.17.0** (Dawn et Graphite 154.3.0 → 157.0.0). Trois répétitions par cas, médianes, en Release.
+- **iPhone 15 Pro, hors chargeur :** neutre. HEVC 1080p 734 → 731 ms, 640×360 173–211 → 168–171 ms, 8×4K réduits 2,74–2,78 → 2,73–2,79 s. Une première série sur chargeur sans fil, en état thermique *fair*, a été écartée : elle ralentissait la 3.7.0 de 15 à 80 %.
+- **Pixel 8a :** neutre. HEVC 1080p 3,02 → 2,92 s, 640×360 1,18 → 1,23 s, 8×4K réduits 12,2 → 12,5 s, 8×4K natifs 10,0 → 9,8 s et 3×4K simultanés 5,8 → 5,6 s (ces deux derniers face au run 3.6.1 du 16 octobre).
+- **Contrôles de pixels sur Pixel :** décodage CPU/GPU 10/10 à ±1, exports de mire et de vidéo identiques au readback. Les fichiers issus d'`ImageReader` sont jusqu'à 5,7 % plus petits, cause non vérifiée.
+
+Preuves : [`ios-device-370-ab.json`](../benchmark/ios-device-370-ab.json), [`android-device-370-ab.json`](../benchmark/android-device-370-ab.json) ; voir la [vérification](../migration/skia-3.7.0/verification.md).
+
+Campagne précédente, **16 octobre 2026**, de **Skia 3.4.4 / WebGPU 0.14.2** vers **Skia 3.6.1 / WebGPU 0.16.0**. Trois répétitions par cas, médianes, en Release.
 - **iPhone 15 Pro :** neutre, avec le même profil par image dans quatre séries alternées. HEVC 1080p 731–734 → 728–790 ms, 640×360 174–223 → 168–169 ms, 8×4K réduits 2,72–2,79 → 2,68–2,73 s.
 - **Pixel 8a, avec l'import en place des frames `ImageReader` à l'export :** HEVC 1080p **3,80 → 3,00 s**, 640×360 **1,25 → 1,16 s**, 8×4K natifs **13,5 → 10,0 s**, 3×4K simultanés **8,8 → 5,8 s**. Les 8×4K réduits, décodés par EGL, restent à 12,0–12,5 s.
 - **Contrôles de pixels sur Pixel :** décodage CPU/GPU 10/10 à ±1, export de mire et d'une vidéo décodée identiques au readback. Sans la correction de couleurs de cette migration, le décodage échoue sur 10/10 cas.

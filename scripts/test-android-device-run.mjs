@@ -48,6 +48,10 @@ const results = async () => (await adb('shell', `ls ${remote} 2>/dev/null || tru
   .split(/\s+/).filter((name) => /^candidate-[\w.-]+\.json$/.test(name) && !name.endsWith('-idle.json'));
 
 if ((await adb('get-state')).trim() !== 'device') throw new Error('The selected Android device is not ready');
+// Android 17 relaunches a foreground app after its reinstall, without our
+// extras, and the cold start below then lands on that open activity.
+await adb('shell', 'am', 'force-stop', pkg);
+await adb('shell', 'input', 'keyevent', 'KEYCODE_HOME');
 try {
   await adb('install', '-r', options.apk);
 } catch (error) {
