@@ -59,7 +59,8 @@
     "benchmark:compare": "node scripts/benchmark-compare.mjs",
     "benchmark:inventory": "node scripts/benchmark-inventory.mjs",
     "benchmark:fixtures": "node scripts/benchmark-fixture-manifest.mjs",
-    "test:package": "node --test test/package/*.test.mjs"
+    "test:package": "node --test test/package/*.test.mjs",
+    "release": "node scripts/release.mjs"
   },
   "keywords": [
     "react-native",
