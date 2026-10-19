@@ -1,5 +1,7 @@
 # Exécuter les tests sur l'iPhone
 
+Mise à jour du **19 octobre 2026** (Skia 3.7.0 / WebGPU 0.17.0) : quatre runs Release sur iPhone 15 Pro hors chargeur, en alternant 3.7.0 et 3.6.1, avec trois répétitions par cas. L'export iOS ne change pas : profil par image et octets produits identiques. Médianes 3.7.0 : HEVC 1080p 731 ms, H.264 640×360 168–171 ms, 8×4K réduits 2,73–2,79 s, contre 734 ms, 173–211 ms et 2,74–2,78 s en 3.6.1. Une première série, faite sur chargeur sans fil, a été écartée : le téléphone y passe en état thermique *fair* et ralentit de 15 à 80 %. Voir la [vérification](../migration/skia-3.7.0/verification.md#appareil-ios--iphone-15-pro).
+
 Mise à jour du **16 octobre 2026** (Skia 3.6.1 / WebGPU 0.16.0) : quatre runs Release sur iPhone 15 Pro, en alternant 3.4.4 et 3.6.1, avec trois répétitions par cas. L'export iOS ne change pas : le profil par image est identique dans les quatre séries, tout comme les octets produits. Les médianes sont HEVC 1080p 728–790 ms, H.264 640×360 168–169 ms et 8×4K réduits 2,68–2,73 s, contre 731–734 ms, 174–223 ms et 2,72–2,79 s en 3.4.4. Voir la [vérification](../migration/skia-3.6.1/verification.md#appareil-ios--iphone-15-pro).
 
 Mise à jour du **15 octobre 2026** (Skia 3.4.4 / WebGPU 0.14.2) : trois runs Release sur iPhone 15 Pro, dans l'ordre nouvelle version, 3.0.6, nouvelle version, avec trois répétitions par cas.

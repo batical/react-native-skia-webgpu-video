@@ -1,0 +1,1491 @@
+{
+ "schema": "rnskv-export-ab-1",
+ "date": "2026-10-19",
+ "executionTarget": "device",
+ "order": [
+  "base1 (3.6.1), cand1 (3.7.0), cand2 (3.7.0), base2 (3.6.1): phone on a wireless charger, thermal state fair from the end of base1",
+  "cand3 (3.7.0), base3 (3.6.1), base4 (3.6.1), cand4 (3.7.0): phone off the charger"
+ ],
+ "notes": [
+  "Release, iPhone 15 Pro, foreground; 3 repetitions per case; catalog 2026-10-07.1 profile full.",
+  "base runs use the signed 3.6.1 app archived from the previous campaign (ios-361-final: Skia 3.6.1 / WebGPU 0.16.0, Dawn 154.3.0); cand runs use one app built from the migration branch (Skia 3.7.0 / WebGPU 0.17.0, Dawn 157.0.0).",
+  "The first four runs are kept but not used for conclusions: on the wireless charger the phone reached thermal state fair and every CPU stage (decode, encode, import, target) slowed in cand1/cand2, while base2 stayed fast. Off the charger, 3.7.0 matches 3.6.1.",
+  "exportProfile stages are wall time on the export runtime; targetMs includes waits for the bounded encoder pool.",
+  "playDrawsPerSecond counts drawing callbacks during preview playback; it is not a count of presented frames.",
+  "Identical output byte counts are a hint of identical encoded pixels, not a pixel validation."
+ ],
+ "runs": {
+  "base1": {
+   "label": "iphone-370ab-base1",
+   "description": "3.6.1 reference, on charger",
+   "resultSha256": "d7d28fe4530a1f200076c69aaca52ba0230214c26c10cbfbbd73d4010e696565",
+   "executableSha256": "56da5d49c99c4d3097cf6773f0b98c9687d6cde648a147ea5bd92a658d6f6ce7",
+   "bundleSha256": "e0f51ad486646bf7aaeafe104ed7de69e64823f6ed60bd5eaeeee54cf957852e",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:23:09.330Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2821.4,
+      2686.8,
+      4206.6
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.576,
+       "decode": 5.209,
+       "import": 0.149,
+       "prepare": 0.022,
+       "target": 0.258,
+       "draw": 0.053,
+       "gpu": 1.394,
+       "encode": 0.436,
+       "yield": 0.056
+      },
+      {
+       "total": 7.31,
+       "decode": 5.056,
+       "import": 0.145,
+       "prepare": 0.021,
+       "target": 0.182,
+       "draw": 0.051,
+       "gpu": 1.338,
+       "encode": 0.455,
+       "yield": 0.062
+      },
+      {
+       "total": 11.515,
+       "decode": 7.682,
+       "import": 0.251,
+       "prepare": 0.034,
+       "target": 1.424,
+       "draw": 0.077,
+       "gpu": 1.44,
+       "encode": 0.534,
+       "yield": 0.074
+      }
+     ],
+     "playDrawsPerSecond": [
+      58.4,
+      59.2,
+      59.1
+     ],
+     "medianEncodeMs": 2821.4
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      746.4,
+      1466.7,
+      740.9
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.873,
+       "decode": 0.247,
+       "import": 0.123,
+       "prepare": 0.016,
+       "target": 1.341,
+       "draw": 0.037,
+       "gpu": 1.575,
+       "encode": 0.478,
+       "yield": 0.055
+      },
+      {
+       "total": 7.938,
+       "decode": 0.423,
+       "import": 0.313,
+       "prepare": 0.034,
+       "target": 4.288,
+       "draw": 0.136,
+       "gpu": 1.494,
+       "encode": 1.155,
+       "yield": 0.095
+      },
+      {
+       "total": 3.803,
+       "decode": 0.25,
+       "import": 0.123,
+       "prepare": 0.014,
+       "target": 1.268,
+       "draw": 0.035,
+       "gpu": 1.582,
+       "encode": 0.477,
+       "yield": 0.053
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.5,
+      59.6,
+      59.6
+     ],
+     "medianEncodeMs": 746.4
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      173.9,
+      168.4,
+      184.6
+     ],
+     "bytes": [
+      52081,
+      51542,
+      52073
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 2.039,
+       "decode": 0.306,
+       "import": 0.066,
+       "prepare": 0.016,
+       "target": 0.409,
+       "draw": 0.041,
+       "gpu": 0.765,
+       "encode": 0.376,
+       "yield": 0.059
+      },
+      {
+       "total": 2.156,
+       "decode": 0.344,
+       "import": 0.1,
+       "prepare": 0.029,
+       "target": 0.507,
+       "draw": 0.071,
+       "gpu": 0.62,
+       "encode": 0.409,
+       "yield": 0.078
+      },
+      {
+       "total": 2.503,
+       "decode": 0.266,
+       "import": 0.072,
+       "prepare": 0.025,
+       "target": 1.133,
+       "draw": 0.05,
+       "gpu": 0.608,
+       "encode": 0.302,
+       "yield": 0.048
+      }
+     ],
+     "medianEncodeMs": 173.9
+    }
+   }
+  },
+  "cand1": {
+   "label": "iphone-370ab-cand1",
+   "description": "3.7.0, on charger",
+   "resultSha256": "b1ddd6439a71fb9c329271feea9166e657c6909a30c9760c5a9fc4709a471305",
+   "executableSha256": "6ec6da05451069087e321037248b00176b64f47ceec1974a9b390c3826c01c6d",
+   "bundleSha256": "b070976a6511fe5529bbadf33b6b341a941aed2345e2784a897f1f7605581e37",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "fair",
+   "startedAt": "2026-10-19T07:25:39.168Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2678,
+      3080,
+      3925.9
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.181,
+       "decode": 4.982,
+       "import": 0.147,
+       "prepare": 0.019,
+       "target": 0.183,
+       "draw": 0.046,
+       "gpu": 1.349,
+       "encode": 0.398,
+       "yield": 0.057
+      },
+      {
+       "total": 8.407,
+       "decode": 5.688,
+       "import": 0.294,
+       "prepare": 0.03,
+       "target": 0.418,
+       "draw": 0.087,
+       "gpu": 1.254,
+       "encode": 0.566,
+       "yield": 0.068
+      },
+      {
+       "total": 10.75,
+       "decode": 6.824,
+       "import": 0.424,
+       "prepare": 0.037,
+       "target": 0.917,
+       "draw": 0.122,
+       "gpu": 1.634,
+       "encode": 0.705,
+       "yield": 0.087
+      }
+     ],
+     "playDrawsPerSecond": [
+      55.1,
+      59.2,
+      58.6
+     ],
+     "medianEncodeMs": 3080
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      1010.7,
+      1099.8,
+      1496.6
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 5.319,
+       "decode": 0.597,
+       "import": 0.237,
+       "prepare": 0.026,
+       "target": 1.96,
+       "draw": 0.069,
+       "gpu": 1.651,
+       "encode": 0.702,
+       "yield": 0.076
+      },
+      {
+       "total": 5.815,
+       "decode": 0.638,
+       "import": 0.279,
+       "prepare": 0.029,
+       "target": 2.462,
+       "draw": 0.074,
+       "gpu": 1.539,
+       "encode": 0.722,
+       "yield": 0.073
+      },
+      {
+       "total": 8.054,
+       "decode": 0.783,
+       "import": 0.409,
+       "prepare": 0.032,
+       "target": 3.799,
+       "draw": 0.118,
+       "gpu": 1.939,
+       "encode": 0.885,
+       "yield": 0.09
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.3,
+      59.3,
+      59.2
+     ],
+     "medianEncodeMs": 1099.8
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      300.6,
+      265,
+      377.2
+     ],
+     "bytes": [
+      51534,
+      52081,
+      52073
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 4.172,
+       "decode": 1.378,
+       "import": 0.102,
+       "prepare": 0.026,
+       "target": 1.174,
+       "draw": 0.057,
+       "gpu": 0.953,
+       "encode": 0.407,
+       "yield": 0.075
+      },
+      {
+       "total": 3.616,
+       "decode": 0.307,
+       "import": 0.07,
+       "prepare": 0.018,
+       "target": 2.021,
+       "draw": 0.037,
+       "gpu": 0.759,
+       "encode": 0.344,
+       "yield": 0.059
+      },
+      {
+       "total": 5.219,
+       "decode": 0.6,
+       "import": 0.084,
+       "prepare": 0.021,
+       "target": 2.137,
+       "draw": 0.05,
+       "gpu": 0.919,
+       "encode": 1.337,
+       "yield": 0.071
+      }
+     ],
+     "medianEncodeMs": 300.6
+    }
+   }
+  },
+  "cand2": {
+   "label": "iphone-370ab-cand2",
+   "description": "3.7.0, on charger",
+   "resultSha256": "a7648262f14f73c265d386d25be72e0be30a73bd62b2768de2c83c1ab76f282c",
+   "executableSha256": "6ec6da05451069087e321037248b00176b64f47ceec1974a9b390c3826c01c6d",
+   "bundleSha256": "b070976a6511fe5529bbadf33b6b341a941aed2345e2784a897f1f7605581e37",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "fair",
+   "startedAt": "2026-10-19T07:27:58.624Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      4967,
+      4901.7,
+      4273.6
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 13.566,
+       "decode": 7.88,
+       "import": 0.463,
+       "prepare": 0.049,
+       "target": 2.045,
+       "draw": 0.139,
+       "gpu": 1.713,
+       "encode": 1.163,
+       "yield": 0.114
+      },
+      {
+       "total": 13.451,
+       "decode": 7.219,
+       "import": 0.447,
+       "prepare": 0.049,
+       "target": 2.688,
+       "draw": 0.141,
+       "gpu": 1.684,
+       "encode": 1.107,
+       "yield": 0.116
+      },
+      {
+       "total": 11.719,
+       "decode": 7.491,
+       "import": 0.484,
+       "prepare": 0.042,
+       "target": 1.288,
+       "draw": 0.146,
+       "gpu": 1.426,
+       "encode": 0.742,
+       "yield": 0.099
+      }
+     ],
+     "playDrawsPerSecond": [
+      56.6,
+      56.9,
+      57.4
+     ],
+     "medianEncodeMs": 4901.7
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      910.3,
+      817.7,
+      834.4
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 4.829,
+       "decode": 0.461,
+       "import": 0.244,
+       "prepare": 0.027,
+       "target": 2.034,
+       "draw": 0.069,
+       "gpu": 1.451,
+       "encode": 0.466,
+       "yield": 0.078
+      },
+      {
+       "total": 4.297,
+       "decode": 0.313,
+       "import": 0.21,
+       "prepare": 0.02,
+       "target": 1.854,
+       "draw": 0.061,
+       "gpu": 1.125,
+       "encode": 0.658,
+       "yield": 0.058
+      },
+      {
+       "total": 4.345,
+       "decode": 0.339,
+       "import": 0.222,
+       "prepare": 0.023,
+       "target": 1.584,
+       "draw": 0.06,
+       "gpu": 1.628,
+       "encode": 0.422,
+       "yield": 0.068
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.6,
+      59.2,
+      59.6
+     ],
+     "medianEncodeMs": 834.4
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      199.8,
+      203.6,
+      227.2
+     ],
+     "bytes": [
+      52073,
+      52073,
+      52073
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 2.487,
+       "decode": 0.719,
+       "import": 0.079,
+       "prepare": 0.015,
+       "target": 0.422,
+       "draw": 0.038,
+       "gpu": 0.82,
+       "encode": 0.349,
+       "yield": 0.045
+      },
+      {
+       "total": 2.549,
+       "decode": 0.536,
+       "import": 0.077,
+       "prepare": 0.015,
+       "target": 0.689,
+       "draw": 0.046,
+       "gpu": 0.769,
+       "encode": 0.37,
+       "yield": 0.047
+      },
+      {
+       "total": 2.917,
+       "decode": 0.706,
+       "import": 0.086,
+       "prepare": 0.021,
+       "target": 0.702,
+       "draw": 0.045,
+       "gpu": 0.903,
+       "encode": 0.399,
+       "yield": 0.055
+      }
+     ],
+     "medianEncodeMs": 203.6
+    }
+   }
+  },
+  "base2": {
+   "label": "iphone-370ab-base2",
+   "description": "3.6.1 reference, on charger",
+   "resultSha256": "04322160c4821ad774581a1f36cea209403bdc35061b458ca121566c9cfe93b5",
+   "executableSha256": "56da5d49c99c4d3097cf6773f0b98c9687d6cde648a147ea5bd92a658d6f6ce7",
+   "bundleSha256": "e0f51ad486646bf7aaeafe104ed7de69e64823f6ed60bd5eaeeee54cf957852e",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "fair",
+   "startedAt": "2026-10-19T07:30:50.514Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2677,
+      2696.7,
+      2650
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.194,
+       "decode": 5.036,
+       "import": 0.134,
+       "prepare": 0.019,
+       "target": 0.184,
+       "draw": 0.047,
+       "gpu": 1.288,
+       "encode": 0.428,
+       "yield": 0.058
+      },
+      {
+       "total": 7.35,
+       "decode": 5.05,
+       "import": 0.117,
+       "prepare": 0.017,
+       "target": 0.382,
+       "draw": 0.04,
+       "gpu": 1.322,
+       "encode": 0.369,
+       "yield": 0.052
+      },
+      {
+       "total": 7.209,
+       "decode": 5.069,
+       "import": 0.117,
+       "prepare": 0.017,
+       "target": 0.252,
+       "draw": 0.039,
+       "gpu": 1.304,
+       "encode": 0.356,
+       "yield": 0.056
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.1,
+      59.2,
+      59.1
+     ],
+     "medianEncodeMs": 2677
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      739.4,
+      734.7,
+      741.4
+     ],
+     "bytes": [
+      379829,
+      380374,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.825,
+       "decode": 0.261,
+       "import": 0.135,
+       "prepare": 0.017,
+       "target": 1.195,
+       "draw": 0.041,
+       "gpu": 1.594,
+       "encode": 0.522,
+       "yield": 0.06
+      },
+      {
+       "total": 3.799,
+       "decode": 0.242,
+       "import": 0.121,
+       "prepare": 0.014,
+       "target": 1.259,
+       "draw": 0.036,
+       "gpu": 1.58,
+       "encode": 0.498,
+       "yield": 0.049
+      },
+      {
+       "total": 3.834,
+       "decode": 0.25,
+       "import": 0.126,
+       "prepare": 0.014,
+       "target": 1.246,
+       "draw": 0.037,
+       "gpu": 1.622,
+       "encode": 0.491,
+       "yield": 0.048
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.3,
+      59.7,
+      59.6
+     ],
+     "medianEncodeMs": 739.4
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      148,
+      169.5,
+      170.4
+     ],
+     "bytes": [
+      52073,
+      52073,
+      52081
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 1.787,
+       "decode": 0.315,
+       "import": 0.069,
+       "prepare": 0.018,
+       "target": 0.251,
+       "draw": 0.047,
+       "gpu": 0.675,
+       "encode": 0.355,
+       "yield": 0.056
+      },
+      {
+       "total": 2.008,
+       "decode": 0.331,
+       "import": 0.067,
+       "prepare": 0.016,
+       "target": 0.34,
+       "draw": 0.041,
+       "gpu": 0.804,
+       "encode": 0.355,
+       "yield": 0.054
+      },
+      {
+       "total": 2.019,
+       "decode": 0.319,
+       "import": 0.067,
+       "prepare": 0.018,
+       "target": 0.335,
+       "draw": 0.044,
+       "gpu": 0.793,
+       "encode": 0.382,
+       "yield": 0.061
+      }
+     ],
+     "medianEncodeMs": 169.5
+    }
+   }
+  },
+  "cand3": {
+   "label": "iphone-370ab-cand3",
+   "description": "3.7.0, off charger",
+   "resultSha256": "6a8768f42422e699d9971b7aca9395cc6a837e4534a3ee09db91089a69128bf5",
+   "executableSha256": "6ec6da05451069087e321037248b00176b64f47ceec1974a9b390c3826c01c6d",
+   "bundleSha256": "b070976a6511fe5529bbadf33b6b341a941aed2345e2784a897f1f7605581e37",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:43:42.276Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2770.8,
+      2719.7,
+      2732.3
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.434,
+       "decode": 4.942,
+       "import": 0.209,
+       "prepare": 0.029,
+       "target": 0.202,
+       "draw": 0.064,
+       "gpu": 1.408,
+       "encode": 0.513,
+       "yield": 0.067
+      },
+      {
+       "total": 7.401,
+       "decode": 4.795,
+       "import": 0.226,
+       "prepare": 0.031,
+       "target": 0.234,
+       "draw": 0.069,
+       "gpu": 1.446,
+       "encode": 0.528,
+       "yield": 0.072
+      },
+      {
+       "total": 7.436,
+       "decode": 4.845,
+       "import": 0.237,
+       "prepare": 0.03,
+       "target": 0.213,
+       "draw": 0.068,
+       "gpu": 1.441,
+       "encode": 0.53,
+       "yield": 0.072
+      }
+     ],
+     "playDrawsPerSecond": [
+      59,
+      58.7,
+      59.2
+     ],
+     "medianEncodeMs": 2732.3
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      730.6,
+      732.3,
+      730.8
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.768,
+       "decode": 0.281,
+       "import": 0.173,
+       "prepare": 0.02,
+       "target": 0.967,
+       "draw": 0.049,
+       "gpu": 1.683,
+       "encode": 0.541,
+       "yield": 0.054
+      },
+      {
+       "total": 3.781,
+       "decode": 0.273,
+       "import": 0.168,
+       "prepare": 0.019,
+       "target": 1.004,
+       "draw": 0.045,
+       "gpu": 1.686,
+       "encode": 0.531,
+       "yield": 0.054
+      },
+      {
+       "total": 3.757,
+       "decode": 0.268,
+       "import": 0.166,
+       "prepare": 0.018,
+       "target": 1.043,
+       "draw": 0.043,
+       "gpu": 1.645,
+       "encode": 0.523,
+       "yield": 0.05
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.5,
+      59.6,
+      59.7
+     ],
+     "medianEncodeMs": 730.8
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      171.1,
+      174.7,
+      167.2
+     ],
+     "bytes": [
+      51534,
+      51534,
+      51534
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 2.014,
+       "decode": 0.296,
+       "import": 0.072,
+       "prepare": 0.018,
+       "target": 0.38,
+       "draw": 0.041,
+       "gpu": 0.822,
+       "encode": 0.337,
+       "yield": 0.047
+      },
+      {
+       "total": 2.05,
+       "decode": 0.309,
+       "import": 0.082,
+       "prepare": 0.018,
+       "target": 0.398,
+       "draw": 0.042,
+       "gpu": 0.806,
+       "encode": 0.346,
+       "yield": 0.05
+      },
+      {
+       "total": 1.922,
+       "decode": 0.296,
+       "import": 0.077,
+       "prepare": 0.017,
+       "target": 0.347,
+       "draw": 0.037,
+       "gpu": 0.759,
+       "encode": 0.348,
+       "yield": 0.041
+      }
+     ],
+     "medianEncodeMs": 171.1
+    }
+   }
+  },
+  "base3": {
+   "label": "iphone-370ab-base3",
+   "description": "3.6.1 reference, off charger",
+   "resultSha256": "59ac4ff6fc7fb58284e35dd3861ad02ba9c7a07184c8bfe1d2dc5bc99ed0fb9f",
+   "executableSha256": "56da5d49c99c4d3097cf6773f0b98c9687d6cde648a147ea5bd92a658d6f6ce7",
+   "bundleSha256": "e0f51ad486646bf7aaeafe104ed7de69e64823f6ed60bd5eaeeee54cf957852e",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:46:01.619Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2779.1,
+      2869,
+      2782.6
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.479,
+       "decode": 4.882,
+       "import": 0.209,
+       "prepare": 0.028,
+       "target": 0.222,
+       "draw": 0.069,
+       "gpu": 1.468,
+       "encode": 0.53,
+       "yield": 0.071
+      },
+      {
+       "total": 7.73,
+       "decode": 4.736,
+       "import": 0.235,
+       "prepare": 0.034,
+       "target": 0.262,
+       "draw": 0.075,
+       "gpu": 1.512,
+       "encode": 0.801,
+       "yield": 0.076
+      },
+      {
+       "total": 7.583,
+       "decode": 4.777,
+       "import": 0.236,
+       "prepare": 0.034,
+       "target": 0.252,
+       "draw": 0.081,
+       "gpu": 1.477,
+       "encode": 0.65,
+       "yield": 0.076
+      }
+     ],
+     "playDrawsPerSecond": [
+      58.8,
+      58.4,
+      58.7
+     ],
+     "medianEncodeMs": 2782.6
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      738.8,
+      733.4,
+      734.1
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.805,
+       "decode": 0.267,
+       "import": 0.14,
+       "prepare": 0.017,
+       "target": 1.133,
+       "draw": 0.042,
+       "gpu": 1.634,
+       "encode": 0.522,
+       "yield": 0.049
+      },
+      {
+       "total": 3.786,
+       "decode": 0.274,
+       "import": 0.159,
+       "prepare": 0.019,
+       "target": 0.998,
+       "draw": 0.047,
+       "gpu": 1.697,
+       "encode": 0.534,
+       "yield": 0.057
+      },
+      {
+       "total": 3.788,
+       "decode": 0.261,
+       "import": 0.15,
+       "prepare": 0.017,
+       "target": 1.076,
+       "draw": 0.044,
+       "gpu": 1.66,
+       "encode": 0.528,
+       "yield": 0.052
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.6,
+      59.7,
+      59.5
+     ],
+     "medianEncodeMs": 734.1
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      233.2,
+      211.2,
+      203.6
+     ],
+     "bytes": [
+      51534,
+      51534,
+      51534
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 2.077,
+       "decode": 0.314,
+       "import": 0.074,
+       "prepare": 0.018,
+       "target": 0.299,
+       "draw": 0.042,
+       "gpu": 0.885,
+       "encode": 0.391,
+       "yield": 0.055
+      },
+      {
+       "total": 2.063,
+       "decode": 0.309,
+       "import": 0.071,
+       "prepare": 0.017,
+       "target": 0.355,
+       "draw": 0.045,
+       "gpu": 0.86,
+       "encode": 0.355,
+       "yield": 0.05
+      },
+      {
+       "total": 2.009,
+       "decode": 0.299,
+       "import": 0.076,
+       "prepare": 0.019,
+       "target": 0.312,
+       "draw": 0.049,
+       "gpu": 0.847,
+       "encode": 0.355,
+       "yield": 0.051
+      }
+     ],
+     "medianEncodeMs": 211.2
+    }
+   }
+  },
+  "base4": {
+   "label": "iphone-370ab-base4",
+   "description": "3.6.1 reference, off charger",
+   "resultSha256": "aadce506c36033c7d56f1b3668a6352aca4198ae83ff265f90668a8a91b92f58",
+   "executableSha256": "56da5d49c99c4d3097cf6773f0b98c9687d6cde648a147ea5bd92a658d6f6ce7",
+   "bundleSha256": "e0f51ad486646bf7aaeafe104ed7de69e64823f6ed60bd5eaeeee54cf957852e",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:48:20.645Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2915,
+      2727.4,
+      2735.7
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.859,
+       "decode": 5.161,
+       "import": 0.227,
+       "prepare": 0.032,
+       "target": 0.212,
+       "draw": 0.077,
+       "gpu": 1.504,
+       "encode": 0.57,
+       "yield": 0.077
+      },
+      {
+       "total": 7.419,
+       "decode": 4.949,
+       "import": 0.197,
+       "prepare": 0.028,
+       "target": 0.18,
+       "draw": 0.065,
+       "gpu": 1.412,
+       "encode": 0.518,
+       "yield": 0.07
+      },
+      {
+       "total": 7.446,
+       "decode": 4.861,
+       "import": 0.217,
+       "prepare": 0.031,
+       "target": 0.206,
+       "draw": 0.069,
+       "gpu": 1.463,
+       "encode": 0.524,
+       "yield": 0.073
+      }
+     ],
+     "playDrawsPerSecond": [
+      57.6,
+      58.3,
+      59
+     ],
+     "medianEncodeMs": 2735.7
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      733.7,
+      727.5,
+      734.3
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.77,
+       "decode": 0.264,
+       "import": 0.146,
+       "prepare": 0.019,
+       "target": 1.037,
+       "draw": 0.044,
+       "gpu": 1.685,
+       "encode": 0.524,
+       "yield": 0.052
+      },
+      {
+       "total": 3.753,
+       "decode": 0.273,
+       "import": 0.156,
+       "prepare": 0.019,
+       "target": 0.995,
+       "draw": 0.046,
+       "gpu": 1.687,
+       "encode": 0.525,
+       "yield": 0.054
+      },
+      {
+       "total": 3.782,
+       "decode": 0.297,
+       "import": 0.174,
+       "prepare": 0.021,
+       "target": 0.935,
+       "draw": 0.051,
+       "gpu": 1.696,
+       "encode": 0.552,
+       "yield": 0.057
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.6,
+      59.7,
+      59.3
+     ],
+     "medianEncodeMs": 733.7
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      172.8,
+      164.7,
+      228.2
+     ],
+     "bytes": [
+      52073,
+      52081,
+      51542
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 2.019,
+       "decode": 0.295,
+       "import": 0.068,
+       "prepare": 0.016,
+       "target": 0.334,
+       "draw": 0.041,
+       "gpu": 0.864,
+       "encode": 0.349,
+       "yield": 0.052
+      },
+      {
+       "total": 1.909,
+       "decode": 0.286,
+       "import": 0.071,
+       "prepare": 0.018,
+       "target": 0.301,
+       "draw": 0.047,
+       "gpu": 0.781,
+       "encode": 0.359,
+       "yield": 0.047
+      },
+      {
+       "total": 2.05,
+       "decode": 0.315,
+       "import": 0.076,
+       "prepare": 0.016,
+       "target": 0.35,
+       "draw": 0.046,
+       "gpu": 0.819,
+       "encode": 0.375,
+       "yield": 0.053
+      }
+     ],
+     "medianEncodeMs": 172.8
+    }
+   }
+  },
+  "cand4": {
+   "label": "iphone-370ab-cand4",
+   "description": "3.7.0, off charger",
+   "resultSha256": "1acca67b5e3f2280513a0c262a98b3448cc862daa3d9e375a5ff5b8e80234019",
+   "executableSha256": "6ec6da05451069087e321037248b00176b64f47ceec1974a9b390c3826c01c6d",
+   "bundleSha256": "b070976a6511fe5529bbadf33b6b341a941aed2345e2784a897f1f7605581e37",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "iPhone16,1",
+   "osVersion": "27.0.1",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:50:40.113Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2849,
+      2790.5,
+      2732.8
+     ],
+     "bytes": [
+      700699,
+      700699,
+      700699
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 7.656,
+       "decode": 5.111,
+       "import": 0.226,
+       "prepare": 0.029,
+       "target": 0.197,
+       "draw": 0.068,
+       "gpu": 1.427,
+       "encode": 0.527,
+       "yield": 0.071
+      },
+      {
+       "total": 7.392,
+       "decode": 4.746,
+       "import": 0.249,
+       "prepare": 0.029,
+       "target": 0.236,
+       "draw": 0.073,
+       "gpu": 1.458,
+       "encode": 0.524,
+       "yield": 0.078
+      },
+      {
+       "total": 7.441,
+       "decode": 4.812,
+       "import": 0.253,
+       "prepare": 0.033,
+       "target": 0.201,
+       "draw": 0.071,
+       "gpu": 1.463,
+       "encode": 0.534,
+       "yield": 0.074
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.1,
+      57.9,
+      59
+     ],
+     "medianEncodeMs": 2790.5
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      731.2,
+      734.6,
+      726.2
+     ],
+     "bytes": [
+      379829,
+      379829,
+      379829
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 3.774,
+       "decode": 0.287,
+       "import": 0.168,
+       "prepare": 0.019,
+       "target": 0.961,
+       "draw": 0.045,
+       "gpu": 1.696,
+       "encode": 0.545,
+       "yield": 0.053
+      },
+      {
+       "total": 3.796,
+       "decode": 0.264,
+       "import": 0.163,
+       "prepare": 0.018,
+       "target": 1.069,
+       "draw": 0.043,
+       "gpu": 1.682,
+       "encode": 0.505,
+       "yield": 0.052
+      },
+      {
+       "total": 3.742,
+       "decode": 0.265,
+       "import": 0.177,
+       "prepare": 0.019,
+       "target": 0.973,
+       "draw": 0.046,
+       "gpu": 1.688,
+       "encode": 0.522,
+       "yield": 0.053
+      }
+     ],
+     "playDrawsPerSecond": [
+      59.6,
+      59.6,
+      59.7
+     ],
+     "medianEncodeMs": 731.2
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      167.8,
+      164.2,
+      168.7
+     ],
+     "bytes": [
+      51534,
+      51534,
+      51534
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 1.975,
+       "decode": 0.288,
+       "import": 0.076,
+       "prepare": 0.017,
+       "target": 0.382,
+       "draw": 0.038,
+       "gpu": 0.784,
+       "encode": 0.347,
+       "yield": 0.044
+      },
+      {
+       "total": 1.921,
+       "decode": 0.289,
+       "import": 0.076,
+       "prepare": 0.017,
+       "target": 0.308,
+       "draw": 0.044,
+       "gpu": 0.803,
+       "encode": 0.337,
+       "yield": 0.049
+      },
+      {
+       "total": 1.951,
+       "decode": 0.298,
+       "import": 0.08,
+       "prepare": 0.017,
+       "target": 0.315,
+       "draw": 0.047,
+       "gpu": 0.795,
+       "encode": 0.349,
+       "yield": 0.051
+      }
+     ],
+     "medianEncodeMs": 167.8
+    }
+   }
+  }
+ }
+}

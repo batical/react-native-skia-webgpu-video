@@ -8,6 +8,7 @@ import manifest from './fixtures/manifest.json';
 import device from './device.local.json';
 import skiaPackage from 'react-native-skia/package.json';
 import webgpuPackage from 'react-native-webgpu/package.json';
+import videoPackage from 'react-native-skia-webgpu-video/package.json';
 import { runAndroidInteropSmoke } from './android-interop-smoke';
 import { runExportPixelCheck } from './export-pixel-check';
 
@@ -83,7 +84,7 @@ export default function App() {
       measurementClock: 'performance.now',
       buildMode: __DEV__ ? 'debug' : 'release', displayRefreshRate: details.displayRefreshRate,
       thermalState: details.thermalState, powerMode: details.powerMode },
-    backend: { name: 'react-native-skia-webgpu-video', version: '0.1.0-alpha.0',
+    backend: { name: videoPackage.name, version: videoPackage.version,
       skiaVersion: skiaPackage.version, webgpuVersion: webgpuPackage.version, paths: video.getVideoResourceStats().backend },
   }), [profile]);
   if (!helper) return <native.Text>Recompilez l’application de test : le module de mesure manque.</native.Text>;

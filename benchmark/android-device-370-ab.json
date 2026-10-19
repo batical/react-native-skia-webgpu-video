@@ -1,0 +1,650 @@
+{
+ "schema": "rnskv-export-ab-1",
+ "date": "2026-10-19",
+ "executionTarget": "device",
+ "device": "Google Pixel 8a",
+ "osVersion": "17",
+ "order": [
+  "base1 (3.6.1)",
+  "cand1 (3.7.0)",
+  "4k-ref (3.6.1, run of 2026-10-16, not repeated today)",
+  "4k-cand1 (3.7.0)"
+ ],
+ "notes": [
+  "Release APKs signed with the debug key; 3 repetitions per case; catalog 2026-10-07.1 profile full; on mains power; thermal state nominal at the start of every run of 2026-10-19.",
+  "base1 and 4k-ref use candidate-361-final.apk (main 9d1ac51: Skia 3.6.1 / WebGPU 0.16.0, Dawn 154.3.0); cand runs use candidate-370.apk (Skia 3.7.0 / WebGPU 0.17.0, Dawn 157.0.0).",
+  "A first 3.7.0 APK shipped the 3.6.1 JS bundle (Gradle reused it); its runs are kept as *-stalejs.local.json and excluded here. candidate-370.apk was rebuilt with a fresh bundle that reports 3.7.0.",
+  "4k-ref started in thermal state fair after earlier runs on 2026-10-16; the native 4K cases were not repeated on 3.6.1 today to save time.",
+  "4k-x8-lazy-maxLongSide1280 asks for scaled frames, so it keeps the EGL decode path in every build.",
+  "playDrawsPerSecond counts drawing callbacks during preview playback; it is not a count of presented frames.",
+  "Pixel checks (interop profile) are in the verification report; this file only holds export timings."
+ ],
+ "runs": {
+  "base1": {
+   "label": "pixel-370ab-base1",
+   "description": "3.6.1 reference",
+   "resultSha256": "f873713f779ead63473f6e5c875ca4eb051cfb2e9c31d10f6dc06661f97922cb",
+   "apkSha256": "5a715f2674e21aa2bcf20106df4e83b8d3f38ad54727349922cf0b91ff3dff88",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "Google Pixel 8a",
+   "osVersion": "17",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:42:15.489Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      12045.5,
+      12185.9,
+      12428.6
+     ],
+     "bytes": [
+      1753180,
+      1753180,
+      1753180
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 32.41,
+       "decode": 16.246,
+       "import": 5.569,
+       "prepare": 0.314,
+       "target": 2.105,
+       "draw": 0.774,
+       "gpu": 2.45,
+       "encode": 4.179,
+       "yield": 0.773
+      },
+      {
+       "total": 33.054,
+       "decode": 16.68,
+       "import": 5.61,
+       "prepare": 0.33,
+       "target": 2.065,
+       "draw": 0.773,
+       "gpu": 2.471,
+       "encode": 4.31,
+       "yield": 0.814
+      },
+      {
+       "total": 33.781,
+       "decode": 17.123,
+       "import": 5.816,
+       "prepare": 0.326,
+       "target": 2.162,
+       "draw": 0.795,
+       "gpu": 2.476,
+       "encode": 4.243,
+       "yield": 0.84
+      }
+     ],
+     "playDrawsPerSecond": [
+      58.5,
+      58.6,
+      58.7
+     ],
+     "medianEncodeMs": 12185.9
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      2965.1,
+      3071.1,
+      3023
+     ],
+     "bytes": [
+      1162102,
+      1162102,
+      1162102
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 14.899,
+       "decode": 2.735,
+       "import": 3.446,
+       "prepare": 0.254,
+       "target": 1.376,
+       "draw": 0.464,
+       "gpu": 1.744,
+       "encode": 4.187,
+       "yield": 0.694
+      },
+      {
+       "total": 15.522,
+       "decode": 2.821,
+       "import": 3.629,
+       "prepare": 0.286,
+       "target": 1.332,
+       "draw": 0.476,
+       "gpu": 1.846,
+       "encode": 4.396,
+       "yield": 0.737
+      },
+      {
+       "total": 15.37,
+       "decode": 2.9,
+       "import": 3.545,
+       "prepare": 0.271,
+       "target": 1.356,
+       "draw": 0.479,
+       "gpu": 1.781,
+       "encode": 4.269,
+       "yield": 0.768
+      }
+     ],
+     "playDrawsPerSecond": [
+      57.9,
+      58.5,
+      58.6
+     ],
+     "medianEncodeMs": 3023
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      1147.8,
+      1189.9,
+      1175.3
+     ],
+     "bytes": [
+      163241,
+      163241,
+      163241
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 14.845,
+       "decode": 3.228,
+       "import": 2.721,
+       "prepare": 0.24,
+       "target": 1.206,
+       "draw": 0.457,
+       "gpu": 1.702,
+       "encode": 4.647,
+       "yield": 0.644
+      },
+      {
+       "total": 15.762,
+       "decode": 3.395,
+       "import": 2.786,
+       "prepare": 0.302,
+       "target": 1.23,
+       "draw": 0.511,
+       "gpu": 1.847,
+       "encode": 4.907,
+       "yield": 0.784
+      },
+      {
+       "total": 15.552,
+       "decode": 3.176,
+       "import": 2.799,
+       "prepare": 0.261,
+       "target": 1.229,
+       "draw": 0.475,
+       "gpu": 1.648,
+       "encode": 5.247,
+       "yield": 0.716
+      }
+     ],
+     "medianEncodeMs": 1175.3
+    }
+   }
+  },
+  "cand1": {
+   "label": "pixel-370ab-cand1b",
+   "description": "3.7.0",
+   "resultSha256": "5da41f4e8de43e5b7c506e872ccde85aecacec4149ce008f85421eb0ec3682e5",
+   "apkSha256": "396500f19b5353e8768fc90a49e6732d542a1ad4f08d23b239c00651b3ac5ea4",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "Google Pixel 8a",
+   "osVersion": "17",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:50:21.321Z",
+   "cases": {
+    "4k-x8-lazy-maxLongSide1280": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      12457.8,
+      12666.2,
+      12517.4
+     ],
+     "bytes": [
+      1753180,
+      1753180,
+      1753180
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 33.53,
+       "decode": 16.637,
+       "import": 5.898,
+       "prepare": 0.32,
+       "target": 2.307,
+       "draw": 0.796,
+       "gpu": 2.479,
+       "encode": 4.263,
+       "yield": 0.83
+      },
+      {
+       "total": 34.433,
+       "decode": 17.385,
+       "import": 6.04,
+       "prepare": 0.327,
+       "target": 2.344,
+       "draw": 0.804,
+       "gpu": 2.51,
+       "encode": 4.257,
+       "yield": 0.766
+      },
+      {
+       "total": 34.044,
+       "decode": 16.866,
+       "import": 6.05,
+       "prepare": 0.32,
+       "target": 2.43,
+       "draw": 0.822,
+       "gpu": 2.53,
+       "encode": 4.284,
+       "yield": 0.741
+      }
+     ],
+     "playDrawsPerSecond": [
+      58,
+      58.7,
+      58.5
+     ],
+     "medianEncodeMs": 12517.4
+    },
+    "native-hevc-1080p-rot270": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      3151,
+      2874,
+      2918.4
+     ],
+     "bytes": [
+      1096125,
+      1096125,
+      1096125
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 15.762,
+       "decode": 3.076,
+       "import": 3.595,
+       "prepare": 0.275,
+       "target": 1.433,
+       "draw": 0.485,
+       "gpu": 1.847,
+       "encode": 4.348,
+       "yield": 0.703
+      },
+      {
+       "total": 14.379,
+       "decode": 2.758,
+       "import": 3.339,
+       "prepare": 0.256,
+       "target": 1.35,
+       "draw": 0.443,
+       "gpu": 1.659,
+       "encode": 3.844,
+       "yield": 0.731
+      },
+      {
+       "total": 14.592,
+       "decode": 2.864,
+       "import": 3.324,
+       "prepare": 0.247,
+       "target": 1.346,
+       "draw": 0.453,
+       "gpu": 1.746,
+       "encode": 3.912,
+       "yield": 0.702
+      }
+     ],
+     "playDrawsPerSecond": [
+      58.3,
+      58.5,
+      58.3
+     ],
+     "medianEncodeMs": 2918.4
+    },
+    "encode-h264-copy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      1261.4,
+      1233.3,
+      1211.7
+     ],
+     "bytes": [
+      161131,
+      161131,
+      161131
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 16.195,
+       "decode": 3.363,
+       "import": 3.101,
+       "prepare": 0.268,
+       "target": 1.468,
+       "draw": 0.52,
+       "gpu": 1.947,
+       "encode": 4.816,
+       "yield": 0.711
+      },
+      {
+       "total": 15.482,
+       "decode": 3.155,
+       "import": 2.845,
+       "prepare": 0.298,
+       "target": 1.382,
+       "draw": 0.482,
+       "gpu": 1.869,
+       "encode": 4.654,
+       "yield": 0.798
+      },
+      {
+       "total": 15.288,
+       "decode": 3.364,
+       "import": 2.792,
+       "prepare": 0.231,
+       "target": 1.401,
+       "draw": 0.443,
+       "gpu": 1.765,
+       "encode": 4.669,
+       "yield": 0.623
+      }
+     ],
+     "medianEncodeMs": 1233.3
+    }
+   }
+  },
+  "4k-ref": {
+   "label": "pixel-361ab-4k-final1",
+   "description": "3.6.1 reference, native 4K, 2026-10-16",
+   "resultSha256": "a6e96bb20d0536e545294e9f42e0a1543f072c2b32c6635a9cede59c9da07d45",
+   "apkSha256": "5a715f2674e21aa2bcf20106df4e83b8d3f38ad54727349922cf0b91ff3dff88",
+   "skia": "3.6.1",
+   "webgpu": "0.16.0",
+   "device": "Google Pixel 8a",
+   "osVersion": "17",
+   "thermalState": "fair",
+   "startedAt": "2026-10-16T16:22:20.694Z",
+   "cases": {
+    "4k-x8-lazy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      9796.4,
+      10215.3,
+      9988.8
+     ],
+     "bytes": [
+      1669852,
+      1669852,
+      1669852
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 25.96,
+       "decode": 8.279,
+       "import": 4.881,
+       "prepare": 0.303,
+       "target": 1.447,
+       "draw": 0.555,
+       "gpu": 5.751,
+       "encode": 3.911,
+       "yield": 0.834
+      },
+      {
+       "total": 27.623,
+       "decode": 9.162,
+       "import": 5.186,
+       "prepare": 0.315,
+       "target": 1.532,
+       "draw": 0.597,
+       "gpu": 5.821,
+       "encode": 4.107,
+       "yield": 0.904
+      },
+      {
+       "total": 26.937,
+       "decode": 8.892,
+       "import": 5.491,
+       "prepare": 0.349,
+       "target": 1.514,
+       "draw": 0.607,
+       "gpu": 5.055,
+       "encode": 4.136,
+       "yield": 0.893
+      }
+     ],
+     "playDrawsPerSecond": [
+      58,
+      58.5,
+      58.4
+     ],
+     "medianEncodeMs": 9988.8
+    },
+    "4k-x3-simultaneous": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      5614.4,
+      5763.1,
+      5837
+     ],
+     "bytes": [
+      1182530,
+      1182530,
+      1182530
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 34.614,
+       "decode": 8.223,
+       "import": 10.229,
+       "prepare": 0.355,
+       "target": 1.484,
+       "draw": 0.709,
+       "gpu": 7.884,
+       "encode": 4.688,
+       "yield": 1.042
+      },
+      {
+       "total": 35.475,
+       "decode": 8.367,
+       "import": 9.912,
+       "prepare": 0.318,
+       "target": 1.501,
+       "draw": 0.695,
+       "gpu": 8.936,
+       "encode": 4.707,
+       "yield": 1.04
+      },
+      {
+       "total": 36.145,
+       "decode": 9.012,
+       "import": 10.032,
+       "prepare": 0.321,
+       "target": 1.496,
+       "draw": 0.701,
+       "gpu": 8.995,
+       "encode": 4.689,
+       "yield": 0.9
+      }
+     ],
+     "playDrawsPerSecond": [
+      29.7,
+      29.6,
+      28.9
+     ],
+     "medianEncodeMs": 5763.1
+    }
+   }
+  },
+  "4k-cand1": {
+   "label": "pixel-370ab-4k-cand1",
+   "description": "3.7.0, native 4K",
+   "resultSha256": "a469740dc388e7eed93115dfaf0962b811851660361cb197f67f9c03fc8ef596",
+   "apkSha256": "396500f19b5353e8768fc90a49e6732d542a1ad4f08d23b239c00651b3ac5ea4",
+   "skia": "3.7.0",
+   "webgpu": "0.17.0",
+   "device": "Google Pixel 8a",
+   "osVersion": "17",
+   "thermalState": "nominal",
+   "startedAt": "2026-10-19T07:53:44.382Z",
+   "cases": {
+    "4k-x8-lazy": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      9825,
+      9837.2,
+      10171.8
+     ],
+     "bytes": [
+      1660114,
+      1660114,
+      1660114
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 26.141,
+       "decode": 8.423,
+       "import": 4.949,
+       "prepare": 0.286,
+       "target": 1.507,
+       "draw": 0.549,
+       "gpu": 5.629,
+       "encode": 4.032,
+       "yield": 0.766
+      },
+      {
+       "total": 26.548,
+       "decode": 8.931,
+       "import": 5.144,
+       "prepare": 0.29,
+       "target": 1.597,
+       "draw": 0.575,
+       "gpu": 5.058,
+       "encode": 4.117,
+       "yield": 0.835
+      },
+      {
+       "total": 27.492,
+       "decode": 8.977,
+       "import": 5.356,
+       "prepare": 0.317,
+       "target": 1.68,
+       "draw": 0.587,
+       "gpu": 5.521,
+       "encode": 4.216,
+       "yield": 0.837
+      }
+     ],
+     "playDrawsPerSecond": [
+      58.1,
+      58.5,
+      58.5
+     ],
+     "medianEncodeMs": 9837.2
+    },
+    "4k-x3-simultaneous": {
+     "status": [
+      "passed",
+      "passed",
+      "passed"
+     ],
+     "encodeMs": [
+      5535.9,
+      5551.3,
+      5714.5
+     ],
+     "bytes": [
+      1197361,
+      1197361,
+      1197361
+     ],
+     "profilePerFrameMs": [
+      {
+       "total": 34.26,
+       "decode": 7.965,
+       "import": 10.127,
+       "prepare": 0.316,
+       "target": 1.474,
+       "draw": 0.681,
+       "gpu": 8.099,
+       "encode": 4.712,
+       "yield": 0.886
+      },
+      {
+       "total": 34.722,
+       "decode": 7.828,
+       "import": 10.159,
+       "prepare": 0.304,
+       "target": 1.545,
+       "draw": 0.651,
+       "gpu": 8.587,
+       "encode": 4.814,
+       "yield": 0.834
+      },
+      {
+       "total": 35.623,
+       "decode": 7.977,
+       "import": 10.42,
+       "prepare": 0.282,
+       "target": 1.527,
+       "draw": 0.658,
+       "gpu": 9.076,
+       "encode": 4.82,
+       "yield": 0.864
+      }
+     ],
+     "playDrawsPerSecond": [
+      35.2,
+      33.3,
+      30.2
+     ],
+     "medianEncodeMs": 5551.3
+    }
+   }
+  }
+ }
+}

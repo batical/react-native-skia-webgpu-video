@@ -61,7 +61,7 @@ The hooks still expose familiar play, pause, seek, looping, and readiness/error 
 
 Audio options retain their existing meaning. A video composition item is silent by default; use `audio: true` or `audio: { volume: 0.8 }` to include its audio during playback and export. Separate `kind: 'audio'` items support music or voice-over. `useVideoPlayback` has its own `volume` option.
 
-Audio is implemented on both native platforms, but the device runs so far (3.0.6, 3.4.4 and 3.6.1) did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
+Audio is implemented on both native platforms, but the device runs so far (3.0.6, 3.4.4, 3.6.1 and 3.7.0) did not exercise audible output or validate audio synchronization. Test these paths with your application's actual sources before shipping.
 
 ## Memory and extensions
 
