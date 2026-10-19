@@ -4,7 +4,8 @@
 
 <p align="center">
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
-  <a href="#status"><img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-f59e0b" /></a>
+  <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video/beta" /></a>
+  <a href="#status"><img alt="Status: beta" src="https://img.shields.io/badge/status-beta-f59e0b" /></a>
   <img alt="React Native Skia 3.7.0" src="https://img.shields.io/badge/Skia-3.7.0-38bdf8" />
   <img alt="React Native WebGPU 0.17.0" src="https://img.shields.io/badge/WebGPU-0.17.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
@@ -26,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Alpha software.** The current Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Long-session memory qualification of this build is still pending. See [status](#status) before adopting this in production.
+> **Beta.** The current Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -44,24 +45,16 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 
 A native rebuild is required. Expo Go cannot load this module. Skia and WebGPU now share Dawn through the `react-native-webgpu-dawn` npm package: `node` must be on the `PATH` during `pod install` and Gradle builds, and both packages must resolve the same version of it. For iOS, use the deployment target required by your React Native and Skia versions; the example targets iOS 16.4 or later.
 
-### Build the alpha from source
+### Install
 
-These instructions use a local package archive and do not depend on an npm release:
-
-```sh
-git clone https://github.com/batical/react-native-skia-webgpu-video.git
-cd react-native-skia-webgpu-video
-npm ci
-npm run build
-npm pack
-```
-
-Then, from your React Native application:
+The beta is published on npm under the `beta` tag:
 
 ```sh
 npm install --save-exact react-native-skia@3.7.0 react-native-webgpu@0.17.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
-npm install /path/to/react-native-skia-webgpu-video-0.1.0-alpha.1.tgz
+npm install --save-exact react-native-skia-webgpu-video@beta
 ```
+
+Each version requires exact Skia and WebGPU versions (its peer dependencies). The [GitHub releases](https://github.com/batical/react-native-skia-webgpu-video/releases) attach the same package archive, installable by URL. To build it from source instead, run `npm ci`, `npm run build` and `npm pack` in a clone, then `npm install` the resulting `.tgz`.
 
 Keep these versions pinned. If migrating an existing app, remove `@shopify/react-native-skia` and the previous Skia Video package before rebuilding. Follow the [migration guide](docs/MIGRATION.md) to avoid loading both generations in one native application.
 
@@ -76,7 +69,7 @@ module.exports = {
 
 ### Apply the required Skia patch
 
-This alpha includes a version-checked Skia patch for canvas/image-provider ownership, checked GPU submissions and cleanup of the dedicated export recorder cache. Apply it in the **application**, before compiling native code:
+This package includes a version-checked Skia patch for canvas/image-provider ownership, checked GPU submissions and cleanup of the dedicated export recorder cache. Apply it in the **application**, before compiling native code:
 
 ```sh
 npx --no-install skia-video-patch-canvas
@@ -262,7 +255,7 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 | Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. With Dawn 157 the errors stay within ±1, as with 3.6.1 ([verification](migration/skia-3.7.0/verification.md#pixels)). Instrumented tests were last run on 3.4.4 (97/102; the 5 failures predate it). |
 | JavaScript / types | 217 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
-| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
+| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels; with 3.7.0 they are up to 5.7% smaller than with 3.6.1, cause not confirmed. |
 | Long sessions | Not yet re-run since 3.0.6; the 3.0.6 results below are the latest. |
 
 ### Earlier results (Skia 3.0.6)

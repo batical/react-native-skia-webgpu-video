@@ -1,6 +1,6 @@
 {
   "name": "react-native-skia-webgpu-video",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-beta.0",
   "description": "Bounded video composition, playback and export for React Native Skia 3 / Graphite",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -144,7 +144,7 @@
   },
   "react-native": "./src/index.tsx",
   "bin": {
-    "skia-video-patch-canvas": "./scripts/apply-skia-canvas-patch.mjs"
+    "skia-video-patch-canvas": "scripts/apply-skia-canvas-patch.mjs"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.65"
