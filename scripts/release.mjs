@@ -11,6 +11,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// A refusal is an expected outcome here: print its reason, not a stack trace.
+process.on('uncaughtException', (error) => { console.error(`\nrelease: ${error.message}`); process.exit(1); });
 const usage = `npm run release -- [--dry-run] [--tag DIST_TAG] [--notes-file FILE] [--otp CODE]
 
   --dry-run      run every check and build the archive; no tag, release or publish
@@ -64,7 +66,7 @@ console.log(`${name}@${version} → npm dist-tag "${distTag}", git tag ${gitTag}
 const npmUser = capture('npm', ['whoami']);
 if (npmUser.status !== 0 && !options.dryRun) throw new Error('Not logged in to npm: run `npm login` first.');
 if (capture('gh', ['auth', 'status']).status !== 0) throw new Error('The GitHub CLI is not logged in: run `gh auth login` first.');
-const published = capture('npm', ['view', `${name}@${version}`, 'version']);
+const published = capture('npm', ['view', `${name}@${version}`, 'version', '--prefer-online']);
 if (published.status === 0 && published.stdout === version) throw new Error(`${name}@${version} is already on npm; bump the version first.`);
 if (published.status !== 0 && !/E404|404 Not Found/.test(published.stderr)) throw new Error(`Cannot query npm:\n${published.stderr}`);
 
@@ -115,5 +117,21 @@ if (!tagExists) {
 }
 
 run('npm', ['publish', archive, '--tag', distTag, ...(options.otp ? ['--otp', options.otp] : [])]);
-console.log(`\nPublished ${name}@${version}. dist-tags: ${output('npm', ['view', name, 'dist-tags', '--json'])}`);
+
+// The registry can take a while to show a new version, and an account that
+// requires staged publishing holds it until a maintainer approves it (a first
+// publish then only shows the 0.0.0-stage placeholder). Wait, then say which.
+let live = false;
+for (let attempt = 0; attempt < 24 && !live; attempt++) {
+  if (attempt) await new Promise((resolve) => setTimeout(resolve, 5000));
+  live = capture('npm', ['view', `${name}@${version}`, 'version', '--prefer-online']).stdout === version;
+}
+if (!live) {
+  console.log(`\n${name}@${version} is not visible on npm after 2 minutes. If npm staged it, approve it on`);
+  console.log(`https://www.npmjs.com (your packages, Staged Packages tab) or with \`npx npm@latest stage list\` then`);
+  console.log('`npx npm@latest stage approve <stage-id>` (2FA). Running this script again is safe.');
+  process.exit(1);
+}
+const tags = output('npm', ['view', name, 'dist-tags', '--json', '--prefer-online']);
+console.log(`\nPublished ${name}@${version}. dist-tags: ${tags}`);
 console.log(`Install: npm install --save-exact ${name}@${distTag === 'latest' ? version : distTag}`);
