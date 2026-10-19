@@ -34,3 +34,5 @@ npm run release
 ```
 
 `scripts/release.mjs` refuses to run unless both npm and the GitHub CLI are logged in and the version is not on npm yet. A new tag is cut only from a clean `main` equal to `origin/main`, after the host checks pass. npm receives the archive attached to the GitHub release, so both carry the same bytes. A prerelease such as `0.2.0-beta.0` goes to the dist-tag named after it (`beta`), never to `latest`; `--tag` overrides that. Pass `--notes-file` for written release notes, and `--otp` if npm asks for a one-time password. A run that stops after the tag or the GitHub release can be started again: the steps already done are skipped.
+
+The npm account uses staged publishing. The first publish of a new package creates a public `0.0.0-stage` placeholder, and the version may wait for a maintainer's approval (npmjs.com, Staged Packages tab, or `npx npm@latest stage list` then `npx npm@latest stage approve <stage-id>`, both with 2FA). The script waits two minutes for the version to appear, then says so. `npm view` can show a cached package for a while; add `--prefer-online` to check.
