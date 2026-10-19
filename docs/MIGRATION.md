@@ -1,6 +1,6 @@
 # Migrating from React Native Skia Video
 
-This alpha builds on the API of `@azzapp/react-native-skia-video` and its `batical` fork. Most composition and drawing concepts remain, while frame ownership and Skia texture interop change.
+This library builds on the API of `@azzapp/react-native-skia-video` and its `batical` fork. Most composition and drawing concepts remain, while frame ownership and Skia texture interop change.
 
 ## Dependencies and native rebuild
 
