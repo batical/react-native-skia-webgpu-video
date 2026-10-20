@@ -162,6 +162,49 @@ public class CompositionPreviewTest {
     assertFalse("opener or codec thread still alive after release()", decoderThreadsAlive());
   }
 
+  // Without a handler of their own, eager codecs called back on the looper of
+  // the thread that prepared them: the UI thread's, in the app.
+  @Test
+  public void anEagerDecoderCallsBackOnItsCodecThread() throws Exception {
+    List<String> threads = Collections.synchronizedList(new ArrayList<>());
+    open(false);
+    decoder.setOnFrameAvailableListener((item, presentationTimeUs) ->
+      threads.add(Thread.currentThread().getName()));
+    play();
+    long until = SystemClock.uptimeMillis() + 1000;
+    while (SystemClock.uptimeMillis() < until) {
+      pump();
+      SystemClock.sleep(16);
+    }
+    assertTrue("no frame decoded", !threads.isEmpty());
+    for (String thread : new ArrayList<>(threads)) {
+      assertEquals("ReactNativeSkiaVideo-Codecs", thread);
+    }
+  }
+
+  @Test
+  public void releaseStopsAnEagerDecoderCodecThread() throws Exception {
+    open(false);
+    play();
+    long until = SystemClock.uptimeMillis() + 500;
+    while (SystemClock.uptimeMillis() < until) {
+      pump();
+      SystemClock.sleep(16);
+    }
+    assertTrue("no codec thread", decoderThreadsAlive());
+    handler.removeCallbacksAndMessages(null);
+    playback.quitSafely();
+    playback.join(2000);
+    playback = null;
+    decoder.release();
+    decoder = null;
+    long deadline = SystemClock.uptimeMillis() + 3000;
+    while (decoderThreadsAlive() && SystemClock.uptimeMillis() < deadline) {
+      SystemClock.sleep(50);
+    }
+    assertFalse("codec thread still alive after release()", decoderThreadsAlive());
+  }
+
   private void open(boolean lazy) throws Exception {
     composition = composition(video, lazy, MONTAGE);
     decoder = new VideoCompositionDecoder(composition, true);

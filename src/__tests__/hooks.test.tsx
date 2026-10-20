@@ -826,6 +826,240 @@ describe("useVideoComposition", () => {
     expect(drawFrame).toHaveBeenCalledTimes(3);
   });
 
+  describe("redrawOnTime", () => {
+    it("while playing, redraws only for new frames when the time alone changes nothing", () => {
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor, drawFrame } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+      extractor.currentTime = 0.01;
+      tick();
+      extractor.currentTime = 0.02;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+
+      extractor.framesVersion = 1;
+      extractor.currentTime = 0.03;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+    });
+
+    it("redraws when it says the time changes the picture", () => {
+      // A transition from 1 s on: the picture moves with the time there.
+      const redrawOnTime = jest.fn(
+        (_previous: number, current: number) => current >= 1,
+      );
+      const { extractor, drawFrame } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+
+      tick();
+      extractor.currentTime = 0.5;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+
+      extractor.currentTime = 1;
+      tick();
+      extractor.currentTime = 1.01;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(3);
+    });
+
+    it("compares the time with the last drawn one, not the last tick's", () => {
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+      extractor.currentTime = 0.1;
+      tick();
+      extractor.currentTime = 0.2;
+      tick();
+      extractor.currentTime = 0.3;
+      tick();
+      expect(redrawOnTime).toHaveBeenNthCalledWith(1, 0.1, 0.2);
+      expect(redrawOnTime).toHaveBeenNthCalledWith(2, 0.1, 0.3);
+    });
+
+    it("is not asked about a time that has not changed", () => {
+      const redrawOnTime = jest.fn(() => true);
+      const { extractor, drawFrame } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+      tick();
+      tick();
+      tick();
+      expect(redrawOnTime).not.toHaveBeenCalled();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+    });
+
+    it("leaves a player without it drawing at every tick", () => {
+      const { extractor, drawFrame } = setup();
+      extractor.isPlaying = true;
+      extractor.currentTime = 0.01;
+      tick();
+      extractor.currentTime = 0.02;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+    });
+
+    it("gives way to drawWhenPaused: true", () => {
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor, drawFrame } = setup({
+        redrawOnTime,
+        drawWhenPaused: true,
+      });
+      extractor.isPlaying = true;
+      tick();
+      tick();
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(3);
+    });
+
+    it("redraws for a changed drawWhenPaused input", () => {
+      const input = { value: 1 } as { value: number };
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor, drawFrame } = setup({
+        redrawOnTime,
+        drawWhenPaused: [input] as never,
+      });
+      extractor.isPlaying = true;
+      tick();
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+      input.value = 2;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+    });
+
+    it("redraws once for a new drawFrame", () => {
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor, drawFrame, rerender } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+
+      const nextDrawFrame = jest.fn();
+      rerender({
+        composition,
+        drawFrame: nextDrawFrame,
+        width: 100,
+        height: 50,
+        redrawOnTime,
+      });
+      extractor.currentTime = 0.01;
+      tick();
+      expect(nextDrawFrame).toHaveBeenCalledTimes(1);
+      extractor.currentTime = 0.02;
+      tick();
+      expect(nextDrawFrame).toHaveBeenCalledTimes(1);
+    });
+
+    it("redraws when the size changes", () => {
+      const redrawOnTime = jest.fn(() => false);
+      const { extractor, drawFrame, rerender } = setup({ redrawOnTime });
+      extractor.isPlaying = true;
+      tick();
+      rerender({ composition, drawFrame, width: 200, height: 50, redrawOnTime });
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      expect(surfaceCalls()).toHaveLength(2);
+    });
+
+    it("still skips while paused with nothing new", () => {
+      const redrawOnTime = jest.fn(() => true);
+      const { drawFrame } = setup({ redrawOnTime });
+      tick();
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("splitImportAndDraw", () => {
+    it("draws the first frame as soon as it is imported", () => {
+      const { extractor, drawFrame } = setup({ splitImportAndDraw: true });
+      extractor.framesVersion = 1;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+    });
+
+    it("imports a new frame in one tick and draws it in the next", () => {
+      const { extractor, drawFrame } = setup({ splitImportAndDraw: true });
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+
+      extractor.framesVersion = 1;
+      tick();
+      expect(extractor.decodeCompositionFrames).toHaveBeenCalledTimes(2);
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+    });
+
+    it("never defers twice in a row", () => {
+      const { extractor, drawFrame } = setup({ splitImportAndDraw: true });
+      tick();
+      extractor.framesVersion = 1;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+      // The next frame lands on the tick owed a draw: drawn at once, or the
+      // frame before it would never be shown.
+      extractor.framesVersion = 2;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      expect(drawFrame).toHaveBeenLastCalledWith(
+        expect.objectContaining({ currentTime: 0 }),
+      );
+      // A third frame on the following tick is deferred again.
+      extractor.framesVersion = 3;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(3);
+    });
+
+    it("skips the draw of the importing tick even while playing", () => {
+      const { extractor, drawFrame } = setup({ splitImportAndDraw: true });
+      extractor.isPlaying = true;
+      tick();
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      extractor.framesVersion = 1;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(3);
+    });
+
+    it("draws the deferred frame with redrawOnTime saying nothing changed", () => {
+      const { extractor, drawFrame } = setup({
+        splitImportAndDraw: true,
+        redrawOnTime: () => false,
+      });
+      extractor.isPlaying = true;
+      tick();
+      extractor.framesVersion = 1;
+      extractor.currentTime = 0.04;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(1);
+      extractor.currentTime = 0.05;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      expect(drawFrame).toHaveBeenLastCalledWith(
+        expect.objectContaining({ currentTime: 0.05 }),
+      );
+    });
+
+    it("draws a new frame in the tick that imports it by default", () => {
+      const { extractor, drawFrame } = setup();
+      tick();
+      extractor.framesVersion = 1;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("prepares a player drawn first without the legacy GL warm-up surface", () => {
     const { extractor } = setup();
     expect(makeOffscreen).not.toHaveBeenCalled();
