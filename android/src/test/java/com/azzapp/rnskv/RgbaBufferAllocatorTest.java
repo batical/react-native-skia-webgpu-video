@@ -2,6 +2,7 @@ package com.azzapp.rnskv;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -41,6 +42,70 @@ public class RgbaBufferAllocatorTest {
     try { allocator.allocate(64); fail("Expected budget rejection"); }
     catch (IllegalStateException expected) { assertEquals("budget exceeded", expected.getMessage()); }
     assertEquals(0, lifetime.trackedCount());
+  }
+  @Test public void aBudgetRefusalIsRetriedOnceACollectionReturnedDeadBuffers() {
+    BufferLifetime lifetime = new BufferLifetime(token -> { });
+    AtomicInteger collections = new AtomicInteger();
+    AtomicInteger reservations = new AtomicInteger();
+    // Full until a collection has run.
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime, size -> {
+      if (reservations.getAndIncrement() > 0 && collections.get() == 0)
+        throw new IllegalStateException("budget exceeded");
+      return 7;
+    }, token -> fail("Unexpected release"), ByteBuffer::allocateDirect, bytes -> bytes, size -> { },
+      collections::incrementAndGet);
+    allocator.allocate(64);
+    assertNotNull(allocator.allocate(64));
+    assertEquals(1, collections.get());
+    assertEquals(3, reservations.get());
+  }
+  @Test public void aBudgetStillFullAfterTheCollectionsIsRefused() {
+    BufferLifetime lifetime = new BufferLifetime(token -> { });
+    AtomicInteger collections = new AtomicInteger();
+    AtomicInteger reservations = new AtomicInteger();
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime, size -> {
+      int attempt = reservations.getAndIncrement();
+      if (attempt > 0) throw new IllegalStateException("budget exceeded " + attempt);
+      return 7;
+    }, token -> fail("Unexpected release"), size -> {
+      if (reservations.get() > 1) fail("Backing must not be allocated");
+      return ByteBuffer.allocateDirect(size);
+    }, bytes -> bytes, size -> { }, collections::incrementAndGet);
+    allocator.allocate(64);
+    try { allocator.allocate(64); fail("Expected budget rejection"); }
+    catch (IllegalStateException expected) {
+      // The last refusal, after every collection.
+      assertEquals("budget exceeded " + (RgbaBufferAllocator.RECLAIM_ATTEMPTS + 1), expected.getMessage());
+    }
+    assertEquals(RgbaBufferAllocator.RECLAIM_ATTEMPTS, collections.get());
+  }
+  @Test public void noCollectionWithoutABufferToReclaim() {
+    BufferLifetime lifetime = new BufferLifetime(token -> fail("Unexpected release"));
+    AtomicInteger collections = new AtomicInteger();
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime,
+      size -> { throw new IllegalStateException("budget exceeded"); }, token -> fail("Unexpected release"),
+      size -> { fail("Backing must not be allocated"); return null; }, bytes -> bytes, size -> { },
+      collections::incrementAndGet);
+    try { allocator.allocate(64); fail("Expected budget rejection"); }
+    catch (IllegalStateException expected) { assertEquals("budget exceeded", expected.getMessage()); }
+    assertEquals(0, collections.get());
+  }
+  @Test public void theReservationsACollectionReturnsAreDrainedBeforeTheRetry() {
+    List<Long> released = new ArrayList<>();
+    BufferLifetime lifetime = new BufferLifetime(released::add);
+    // The first allocation fails at its alias: one tracked owner holds token 5.
+    AtomicInteger aliases = new AtomicInteger();
+    RgbaBufferAllocator allocator = new RgbaBufferAllocator(lifetime, size -> {
+      if (released.isEmpty() && aliases.get() > 0) throw new IllegalStateException("budget exceeded");
+      return 5;
+    }, released::add, ByteBuffer::allocateDirect, bytes -> {
+      if (aliases.getAndIncrement() == 0) throw new IllegalStateException("alias failed");
+      return bytes;
+    }, size -> { }, () -> lifetime.onlyTracked().enqueue());
+    try { allocator.allocate(64); fail("Expected alias failure"); }
+    catch (IllegalStateException expected) { assertEquals("alias failed", expected.getMessage()); }
+    assertNotNull(allocator.allocate(64));
+    assertEquals(List.of(5L), released);
   }
   @Test public void heapGuardIncludesArtAlignmentAndCleanupHeadroom() {
     long mib = 1024L * 1024;

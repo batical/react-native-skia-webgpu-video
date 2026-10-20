@@ -1,5 +1,6 @@
 package com.azzapp.rnskv;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -9,6 +10,8 @@ import android.util.Log;
 import android.view.Choreographer;
 
 import androidx.media3.common.util.UnstableApi;
+
+import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.io.IOException;
 import java.util.Map;
@@ -60,24 +63,22 @@ public class VideoCompositionFramesExtractor {
 
   // Vsync-aligned release, written and read on the thread that collects frames.
   private long lastVsyncNanos = 0;
-  private long vsyncPeriodNanos = 0;
   private long recordedVsyncNanos = 0;
   private boolean recordingVsync = false;
   /** Notes each vsync's timestamp on the collecting thread, for as long as the preview lives. */
   private final Choreographer.FrameCallback vsyncRecorder = new Choreographer.FrameCallback() {
     @Override
     public void doFrame(long frameTimeNanos) {
-      if (releasing) return;
-      long delta = frameTimeNanos - recordedVsyncNanos;
-      // A missed vsync doubles the gap; only single-period gaps refine the estimate.
-      if (recordedVsyncNanos != 0 && delta > 4_000_000L && delta < 50_000_000L
-          && (vsyncPeriodNanos == 0 || delta < vsyncPeriodNanos * 3 / 2)) {
-        vsyncPeriodNanos = vsyncPeriodNanos == 0 ? delta : (vsyncPeriodNanos * 7 + delta) / 8;
+      if (releasing) {
+        unwatchDisplay();
+        return;
       }
       recordedVsyncNanos = frameTimeNanos;
       Choreographer.getInstance().postFrameCallback(this);
     }
   };
+  // The display the preview is on; null until the first collection, or when unknown.
+  private DisplayVsyncPeriod vsyncPeriod;
   // When that thread last released frames; the playback loop stands back meanwhile.
   private volatile long lastVsyncReleaseNanos = 0;
   // The release itself runs on the playback thread: the decoder's locks are held
@@ -181,10 +182,12 @@ public class VideoCompositionFramesExtractor {
         recordingVsync = true;
       } catch (RuntimeException e) {
         // No looper on this thread: leave the release to the playback loop.
+        return;
       }
+      watchDisplay();
       return;
     }
-    long period = vsyncPeriodNanos;
+    long period = vsyncPeriod != null ? vsyncPeriod.getPeriodNanos() : 0;
     if (period == 0 || recordedVsyncNanos == 0) return;
     // This frame's vsync, whether the recorder has run in this frame yet or not.
     long since = Math.max(0, System.nanoTime() - recordedVsyncNanos);
@@ -199,6 +202,27 @@ public class VideoCompositionFramesExtractor {
     vsyncReleasePosition = position;
     if (vsyncReleasePosted.compareAndSet(false, true)) {
       handler.post(vsyncRelease);
+    }
+  }
+
+  /**
+   * Follows the refresh rate of the display the preview is on, from the
+   * collecting thread, whose looper then receives its changes. Without a React
+   * context (instrumented tests) the period stays unknown and the playback loop
+   * releases on its tick.
+   */
+  private void watchDisplay() {
+    ReactApplicationContext context = ReactNativeSkiaVideoModule.currentReactApplicationContext();
+    if (context == null) return;
+    Activity activity = context.getCurrentActivity();
+    vsyncPeriod = DisplayVsyncPeriod.watch(context,
+      activity != null ? activity.getWindowManager().getDefaultDisplay() : null);
+  }
+
+  private void unwatchDisplay() {
+    if (vsyncPeriod != null) {
+      vsyncPeriod.release();
+      vsyncPeriod = null;
     }
   }
 
