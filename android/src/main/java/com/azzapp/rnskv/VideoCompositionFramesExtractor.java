@@ -6,11 +6,13 @@ import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.Choreographer;
 
 import androidx.media3.common.util.UnstableApi;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGL10;
 
@@ -48,12 +50,48 @@ public class VideoCompositionFramesExtractor {
 
 
   private long pendingSeek = 0;
-  private boolean isPlaying = false;
+  // Read on the thread that collects frames (see releaseForNextVsync), written on the playback thread.
+  private volatile boolean isPlaying = false;
 
-  private long startTime = 0;
-  private long pausePosition = 0;
+  private volatile long startTime = 0;
+  private volatile long pausePosition = 0;
   private boolean isEOS = false;
   private boolean completeDispatched = false;
+
+  // Vsync-aligned release, written and read on the thread that collects frames.
+  private long lastVsyncNanos = 0;
+  private long vsyncPeriodNanos = 0;
+  private long recordedVsyncNanos = 0;
+  private boolean recordingVsync = false;
+  /** Notes each vsync's timestamp on the collecting thread, for as long as the preview lives. */
+  private final Choreographer.FrameCallback vsyncRecorder = new Choreographer.FrameCallback() {
+    @Override
+    public void doFrame(long frameTimeNanos) {
+      if (releasing) return;
+      long delta = frameTimeNanos - recordedVsyncNanos;
+      // A missed vsync doubles the gap; only single-period gaps refine the estimate.
+      if (recordedVsyncNanos != 0 && delta > 4_000_000L && delta < 50_000_000L
+          && (vsyncPeriodNanos == 0 || delta < vsyncPeriodNanos * 3 / 2)) {
+        vsyncPeriodNanos = vsyncPeriodNanos == 0 ? delta : (vsyncPeriodNanos * 7 + delta) / 8;
+      }
+      recordedVsyncNanos = frameTimeNanos;
+      Choreographer.getInstance().postFrameCallback(this);
+    }
+  };
+  // When that thread last released frames; the playback loop stands back meanwhile.
+  private volatile long lastVsyncReleaseNanos = 0;
+  // The release itself runs on the playback thread: the decoder's locks are held
+  // there for whole codec flushes on a seek, and the UI thread must never
+  // wait on them (measured: 65 ms frames when it did).
+  private volatile long vsyncReleasePosition = 0;
+  private final AtomicBoolean vsyncReleasePosted = new AtomicBoolean(false);
+  private final Runnable vsyncRelease = this::runVsyncRelease;
+
+  private void runVsyncRelease() {
+    vsyncReleasePosted.set(false);
+    if (!releasing) decoder.render(vsyncReleasePosition);
+  }
+  private static final long VSYNC_RELEASE_TIMEOUT_NANOS = 100_000_000L;
 
   /**
    * Create a new VideoCompositionFramesExtractor.
@@ -117,7 +155,51 @@ public class VideoCompositionFramesExtractor {
    * when finished, without affecting the producer or other snapshots
    */
   public Map<String, VideoFrame> decodeCompositionFrames() {
-    return decoder.updateVideosFrames();
+    Map<String, VideoFrame> frames = decoder.updateVideosFrames();
+    releaseForNextVsync();
+    return frames;
+  }
+
+  /**
+   * Releases the decoded frames the next vsync is due to show, from the thread
+   * that collects them, right after collecting.
+   *
+   * The playback loop released them on its 10 ms tick, out of phase with the
+   * display, so whether a frame was collected on the vsync after its time or
+   * the one after that was chance: 24 fps on a 60 Hz display came out in
+   * 17/67 ms steps among the 33/50 ms it implies. Released against the vsync's
+   * own timestamp, one vsync ahead, every frame is collected on the first
+   * vsync at or after its time. The position is decided here, against the
+   * vsync; the release is posted to the playback thread, a vsync ahead of the
+   * collection that needs it.
+   */
+  private void releaseForNextVsync() {
+    if (!recordingVsync) {
+      try {
+        // The collecting thread is a Choreographer thread (the UI thread).
+        Choreographer.getInstance().postFrameCallback(vsyncRecorder);
+        recordingVsync = true;
+      } catch (RuntimeException e) {
+        // No looper on this thread: leave the release to the playback loop.
+      }
+      return;
+    }
+    long period = vsyncPeriodNanos;
+    if (period == 0 || recordedVsyncNanos == 0) return;
+    // This frame's vsync, whether the recorder has run in this frame yet or not.
+    long since = Math.max(0, System.nanoTime() - recordedVsyncNanos);
+    long vsyncNanos = recordedVsyncNanos + (since / period) * period;
+    if (vsyncNanos == lastVsyncNanos) return;
+    lastVsyncNanos = vsyncNanos;
+    long vsyncPeriodNanos = period;
+    long position = isPlaying
+      ? (vsyncNanos + vsyncPeriodNanos) / 1000 - startTime
+      : pausePosition;
+    lastVsyncReleaseNanos = System.nanoTime();
+    vsyncReleasePosition = position;
+    if (vsyncReleasePosted.compareAndSet(false, true)) {
+      handler.post(vsyncRelease);
+    }
   }
 
   /**
@@ -241,7 +323,10 @@ public class VideoCompositionFramesExtractor {
       completeDispatched = false;
     }
     decoder.updateWindow(currentPosition);
-    decoder.render(currentPosition);
+    if (System.nanoTime() - lastVsyncReleaseNanos > VSYNC_RELEASE_TIMEOUT_NANOS) {
+      // No one collecting at vsync (not yet, or no longer): release on the tick.
+      decoder.render(currentPosition);
+    }
     if (isEOS && looping) {
       playInternal();
     }

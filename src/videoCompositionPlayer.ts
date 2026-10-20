@@ -74,6 +74,26 @@ type UseVideoCompositionPlayerOptions<T = undefined> = {
    */
   drawWhenPaused?: boolean | SharedValue<unknown>[];
   /**
+   * Whether `drawFrame` can draw something different at `currentTime` than it
+   * drew at `previousTime` from the same decoded frames. By default every time
+   * change redraws, so a playing player draws at every vsync even though the
+   * video only changes at its own frame rate. A drawer whose picture depends on
+   * time only through the frames (or only at known moments, a transition say)
+   * returns false elsewhere, and the player then redraws when a new frame is
+   * decoded instead. Must be a worklet.
+   */
+  redrawOnTime?: (previousTime: number, currentTime: number) => boolean;
+  /**
+   * Import a newly decoded frame in one vsync and draw it in the next, instead
+   * of both in the same one. On Android the import (YUV blit and its checked
+   * GPU wait) and the draw (snapshot and its checked GPU wait) cost about as
+   * much as each other, and together they overrun a 90–120 Hz frame budget on
+   * the UI thread. The picture then trails the clock by one vsync.
+   * The first frame of a session is still drawn as soon as it is imported.
+   * @default false
+   */
+  splitImportAndDraw?: boolean;
+  /**
    * Callback that is called when the composition is ready to play.
    */
   onReadyToPlay?: () => void;
@@ -118,6 +138,8 @@ export const useVideoComposition = <T = undefined>({
   autoPlay = false,
   isLooping = false,
   drawWhenPaused = false,
+  redrawOnTime,
+  splitImportAndDraw = false,
   onReadyToPlay,
   onComplete,
   onError,
@@ -291,6 +313,10 @@ export const useVideoComposition = <T = undefined>({
   const lastDrawnFramesVersion = useSharedValue(-1);
   const lastDrawnTime = useSharedValue(-1);
   const lastDrawnInputs = useSharedValue<unknown[] | null>(null);
+  // Frames version whose new frames the previous vsyncs already imported.
+  const lastImportedVersion = useSharedValue(-1);
+  // Whether the previous vsync imported and left its draw to this one.
+  const drawDeferred = useSharedValue(false);
   // A new drawFrame can draw something else from the same time and frames.
   useEffect(() => {
     lastDrawnTime.value = -1;
@@ -356,6 +382,22 @@ export const useVideoComposition = <T = undefined>({
       sourcesGeneration.value = generation;
       const currentTime = framesExtractor.currentTime;
       const framesVersion = framesExtractor.framesVersion;
+      if (splitImportAndDraw && framesVersion !== lastImportedVersion.value) {
+        // ownVideoFrames above has just imported the new frames: leave the
+        // draw to the next vsync, which finds them in the import cache. Never
+        // twice running: a frame that lands on the vsync owed a draw would
+        // push it again, and the frame before it would never be shown.
+        lastImportedVersion.value = framesVersion;
+        if (
+          !drawDeferred.value &&
+          currentFrame.value !== null &&
+          frameGeneration.value === generation
+        ) {
+          drawDeferred.value = true;
+          return;
+        }
+      }
+      drawDeferred.value = false;
       const inputs = Array.isArray(drawWhenPaused) ? drawWhenPaused : null;
       let inputsSame = true;
       if (inputs) {
@@ -370,18 +412,24 @@ export const useVideoComposition = <T = undefined>({
           }
         }
       }
+      // A negative last time means a redraw was requested (a new drawFrame).
+      const timeSame =
+        currentTime === lastDrawnTime.value ||
+        (redrawOnTime !== undefined &&
+          lastDrawnTime.value >= 0 &&
+          !redrawOnTime(lastDrawnTime.value, currentTime));
       if (
         drawWhenPaused !== true &&
         inputsSame &&
-        !framesExtractor.isPlaying &&
+        (!framesExtractor.isPlaying || redrawOnTime !== undefined) &&
         currentFrame.value !== null &&
         frameGeneration.value === generation &&
         framesVersion === lastDrawnFramesVersion.value &&
-        currentTime === lastDrawnTime.value &&
+        timeSame &&
         surfaceWidth.value === pixelWidth &&
         surfaceHeight.value === pixelHeight
       ) {
-        // Paused with nothing new: the image on screen is still exact, and
+        // Nothing new to show: the image on screen is still exact, and
         // redrawing it at every vsync would only burn GPU time and battery.
         return;
       }

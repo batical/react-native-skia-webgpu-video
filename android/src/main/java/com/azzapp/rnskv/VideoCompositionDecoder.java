@@ -114,15 +114,22 @@ public class VideoCompositionDecoder {
   }
 
   private void prepareCurrent(long positionUs) {
+    if (realTime) {
+      // The codecs call back on their own thread, lazy or not. Left to default
+      // they call back on the looper of the thread that configures them, and
+      // the preview prepares from the UI thread: every buffer of every item,
+      // and the burst after each seek (a loop's wrap, a seam), then queued on
+      // the main looper ahead of the frame that draws them.
+      callbackThread = new HandlerThread("ReactNativeSkiaVideo-Codecs");
+      callbackThread.start();
+      callbacks = new Handler(callbackThread.getLooper());
+    }
     if (realTime && window.isLazy()) {
       // Opening a codec takes tens of milliseconds: not on the thread that
       // draws, nor the one that plays, nor the one the playing codec calls back on.
       openerThread = new HandlerThread("ReactNativeSkiaVideo-Opener");
       openerThread.start();
       opener = new Handler(openerThread.getLooper());
-      callbackThread = new HandlerThread("ReactNativeSkiaVideo-Codecs");
-      callbackThread.start();
-      callbacks = new Handler(callbackThread.getLooper());
     }
     for (VideoComposition.Item item : composition.getItems()) {
       if (!item.isVideo() || !opens(item, positionUs)) {
