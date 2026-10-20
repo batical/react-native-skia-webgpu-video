@@ -1450,7 +1450,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-skia-webgpu-video (0.1.0-beta.0):
+  - react-native-skia-webgpu-video (0.1.0-beta.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2351,7 +2351,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: f413ee411341fb3c34d20e85e9f6f524921fab15
   React-mutationobservernativemodule: 58f6d2adf7d98e72b241608dfa2ddce414d2a4e7
   react-native-skia: 9cfa6a21840b2684f5f1e1d6adcb04fddff7611a
-  react-native-skia-webgpu-video: a0dc08dd5451636f61fa44d8ad373a71d939a12a
+  react-native-skia-webgpu-video: 98b9f335f8cf34330b118ab72e8d4172b9896d96
   react-native-webgpu: 5954e070e7eb3cc06ce3a3cef733c5fe8a163e41
   React-NativeModulesApple: 167e532fb9bae30f3c66636b8ee0092bab263667
   React-networking: 89f6b69755a3176f30e56ba1ba8e214b1518ecfb
