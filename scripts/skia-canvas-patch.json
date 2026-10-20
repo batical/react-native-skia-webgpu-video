@@ -1,5 +1,5 @@
 {
-  "version": "3.7.0",
+  "version": "3.7.1",
   "files": {
     "cpp/api/JsiSkCanvas.h": {
       "before": "91e6f97f34bef620740fabf7a6bb516c462a18daa72afb46ef5a84d1cd4f3158",
