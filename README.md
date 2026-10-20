@@ -6,7 +6,7 @@
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video/beta" /></a>
   <a href="#status"><img alt="Status: beta" src="https://img.shields.io/badge/status-beta-f59e0b" /></a>
-  <img alt="React Native Skia 3.7.0" src="https://img.shields.io/badge/Skia-3.7.0-38bdf8" />
+  <img alt="React Native Skia 3.7.1" src="https://img.shields.io/badge/Skia-3.7.1-38bdf8" />
   <img alt="React Native WebGPU 0.17.0" src="https://img.shields.io/badge/WebGPU-0.17.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
@@ -27,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Beta.** The current Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
+> **Beta.** The Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks); 3.7.1, which only changes iOS presentation on ProMotion displays, passed the native tests, smoke runs and the Pixel pixel check. Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -37,7 +37,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.7.0`** |
+| React Native Skia | **`react-native-skia@3.7.1`** |
 | React Native WebGPU | **`react-native-webgpu@0.17.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
@@ -50,7 +50,7 @@ A native rebuild is required. Expo Go cannot load this module. Skia and WebGPU n
 The beta is published on npm under the `beta` tag:
 
 ```sh
-npm install --save-exact react-native-skia@3.7.0 react-native-webgpu@0.17.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.7.1 react-native-webgpu@0.17.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
 npm install --save-exact react-native-skia-webgpu-video@beta
 ```
 
