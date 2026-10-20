@@ -15,8 +15,52 @@ public class NativeRgbaBufferTest {
     assertTrue("GC did not reclaim unreferenced RGBA backing within 5 seconds", condition.getAsBoolean());
   }
 
+  /** Returns the reservations of buffers dropped before, by earlier tests in the
+   * same process, so a baseline counts only the live ones. */
+  private static long[] settledStats() {
+    // The reaper thread returns a reservation some time after the collection:
+    // settled once three collections in a row changed nothing.
+    long end = SystemClock.uptimeMillis() + 5000;
+    long[] stats = NativeRgbaBuffer.budgetStats();
+    for (int unchanged = 0; unchanged < 3 && SystemClock.uptimeMillis() < end; ) {
+      long previous = stats[0];
+      System.gc(); System.runFinalization(); SystemClock.sleep(50);
+      stats = NativeRgbaBuffer.budgetStats();
+      unchanged = stats[0] == previous ? unchanged + 1 : 0;
+    }
+    return stats;
+  }
+
+  // A decode drops a frame per vsync: the budget must take its reservation back
+  // rather than refuse the next frame while the dead ones await a collection.
+  @Test public void droppedBuffersDoNotExhaustTheBudget() {
+    long[] baseline = settledStats();
+    int size = 1024 * 1024;
+    NativeRgbaBuffer.configureBudget(baseline[0] + 4L * (size + 7));
+    try {
+      for (int i = 0; i < 32; i++) {
+        ByteBuffer dropped = NativeRgbaBuffer.allocate(size);
+        dropped.put(0, (byte) i);
+      }
+    } finally { NativeRgbaBuffer.configureBudget(baseline[3]); }
+  }
+
+  @Test public void liveBuffersStillExhaustTheBudget() {
+    long[] baseline = settledStats();
+    int size = 1024 * 1024;
+    java.util.List<ByteBuffer> live = new java.util.ArrayList<>();
+    NativeRgbaBuffer.configureBudget(baseline[0] + 4L * (size + 7));
+    try {
+      for (int i = 0; i < 4; i++) live.add(NativeRgbaBuffer.allocate(size));
+      try { NativeRgbaBuffer.allocate(size); fail("Expected memory budget rejection"); }
+      catch (RuntimeException expected) { assertTrue(expected.getMessage().contains("budget")); }
+      assertEquals(baseline[0] + 4L * (size + 7), NativeRgbaBuffer.budgetStats()[0]);
+    } finally { NativeRgbaBuffer.configureBudget(baseline[3]); }
+    assertEquals(4, live.size());
+  }
+
   @Test public void readOnlySliceKeepsBudgetAndBytesAfterFrameIsDropped() {
-    long baseline = NativeRgbaBuffer.budgetStats()[0];
+    long baseline = settledStats()[0];
     ByteBuffer owned = NativeRgbaBuffer.allocate(64);
     owned.put(8, (byte) 91);
     VideoFrame frame = new VideoFrame(owned, 4, 4, 0, 0, 1);
@@ -34,7 +78,7 @@ public class NativeRgbaBufferTest {
   }
 
   @Test public void rejectedAllocationDoesNotLeaveReservation() {
-    long[] baseline = NativeRgbaBuffer.budgetStats();
+    long[] baseline = settledStats();
     NativeRgbaBuffer.configureBudget(baseline[0] + 8);
     try {
       try { NativeRgbaBuffer.allocate(64); fail("Expected memory budget rejection"); }
@@ -56,7 +100,7 @@ public class NativeRgbaBufferTest {
     catch (java.nio.ReadOnlyBufferException expected) { }
   }
   @Test public void artHeapRefusalDoesNotReserveOrAllocateTheHugeBacking() {
-    long[] baseline = NativeRgbaBuffer.budgetStats();
+    long[] baseline = settledStats();
     int impossibleSize = (int) Math.min(Integer.MAX_VALUE, Runtime.getRuntime().maxMemory());
     try { NativeRgbaBuffer.allocate(impossibleSize); fail("Expected ART heap refusal"); }
     catch (IllegalStateException expected) {
@@ -74,7 +118,7 @@ public class NativeRgbaBufferTest {
       new Compositions.Clip("a", 0, 0, 1));
     Export export = new Export(composition);
     VideoCompositionDecoder decoder = export.decoder();
-    long[] baseline = NativeRgbaBuffer.budgetStats();
+    long[] baseline = settledStats();
     NativeRgbaBuffer.configureBudget(baseline[0] + 8);
     try {
       try { export.frames(0.2); fail("Expected decode memory budget refusal"); }

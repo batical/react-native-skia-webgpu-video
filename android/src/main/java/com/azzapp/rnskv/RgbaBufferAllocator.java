@@ -14,14 +14,23 @@ final class RgbaBufferAllocator {
   private final IntFunction<ByteBuffer> allocateBacking;
   private final Function<ByteBuffer, ByteBuffer> alias;
   private final IntConsumer checkHeap;
+  private final Runnable reclaim;
+  /** Collections asked for when the native budget refuses a reservation. */
+  static final int RECLAIM_ATTEMPTS = 3;
   RgbaBufferAllocator(BufferLifetime lifetimes, IntToLongFunction reserve, LongConsumer release,
       IntFunction<ByteBuffer> allocateBacking, Function<ByteBuffer, ByteBuffer> alias) {
     this(lifetimes, reserve, release, allocateBacking, alias, size -> {});
   }
   RgbaBufferAllocator(BufferLifetime lifetimes, IntToLongFunction reserve, LongConsumer release,
       IntFunction<ByteBuffer> allocateBacking, Function<ByteBuffer, ByteBuffer> alias, IntConsumer checkHeap) {
+    this(lifetimes, reserve, release, allocateBacking, alias, checkHeap, () -> {});
+  }
+  RgbaBufferAllocator(BufferLifetime lifetimes, IntToLongFunction reserve, LongConsumer release,
+      IntFunction<ByteBuffer> allocateBacking, Function<ByteBuffer, ByteBuffer> alias, IntConsumer checkHeap,
+      Runnable reclaim) {
     this.lifetimes = lifetimes; this.reserve = reserve; this.release = release;
     this.allocateBacking = allocateBacking; this.alias = alias; this.checkHeap = checkHeap;
+    this.reclaim = reclaim;
   }
 
   /** Refuse a single backing too large for ART's heap and cleanup headroom.
@@ -44,7 +53,7 @@ final class RgbaBufferAllocator {
   ByteBuffer allocate(int size) {
     lifetimes.drain();
     checkHeap.accept(size);
-    long token = reserve.applyAsLong(size);
+    long token = reserveReclaiming(size);
     Allocation owner;
     try {
       owner = new Allocation();
@@ -78,6 +87,28 @@ final class RgbaBufferAllocator {
     ByteBuffer exposed = alias.apply(owner.backing);
     lifetimes.track(exposed, owner, 0);
     return exposed;
+  }
+  /** A buffer holds its reservation until the GC finds it unreachable. A fast
+   * decode drops a frame per vsync, 8 MB each in 1080p, and those dead buffers
+   * filled the native budget before the Java heap asked for a collection: the
+   * budget refused frames nobody held. Refused while buffers are tracked, the
+   * reservation is retried after a collection has returned theirs. */
+  private long reserveReclaiming(int size) {
+    try {
+      return reserve.applyAsLong(size);
+    } catch (RuntimeException refused) {
+      RuntimeException last = refused;
+      for (int attempt = 0; attempt < RECLAIM_ATTEMPTS && lifetimes.trackedCount() > 0; attempt++) {
+        reclaim.run();
+        lifetimes.drain();
+        try {
+          return reserve.applyAsLong(size);
+        } catch (RuntimeException again) {
+          last = again;
+        }
+      }
+      throw last;
+    }
   }
   private static final class Allocation { ByteBuffer backing; }
 }

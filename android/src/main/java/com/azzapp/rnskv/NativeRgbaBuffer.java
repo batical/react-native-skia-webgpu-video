@@ -21,7 +21,15 @@ final class NativeRgbaBuffer {
     ByteBuffer::allocateDirect, NativeRgbaBuffer::nativeAlias, size -> {
       Runtime runtime = Runtime.getRuntime();
       RgbaBufferAllocator.checkAllocationCapacity(size, runtime.maxMemory());
-    });
+    }, NativeRgbaBuffer::collect);
+
+  /** Collects, then waits for the references it cleared to be enqueued. */
+  private static void collect() {
+    Runtime.getRuntime().gc();
+    // On ART this waits for the reference queue daemon, which enqueues the
+    // buffers' phantom references ahead of the finalizers it waits on.
+    System.runFinalization();
+  }
 
   static ByteBuffer allocate(int size) { return allocator.allocate(size); }
 
