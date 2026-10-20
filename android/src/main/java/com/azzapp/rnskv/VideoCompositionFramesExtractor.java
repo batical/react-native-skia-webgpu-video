@@ -32,6 +32,7 @@ public class VideoCompositionFramesExtractor {
   private static final int PLAYBACK_LOOP = 4;
   private static final int PLAYBACK_SEEK = 5;
   private static final int PLAYBACK_RELEASE = 6;
+  private static final int PLAYBACK_VSYNC_RELEASE = 7;
 
   private final VideoComposition composition;
 
@@ -86,11 +87,10 @@ public class VideoCompositionFramesExtractor {
   // wait on them (measured: 65 ms frames when it did).
   private volatile long vsyncReleasePosition = 0;
   private final AtomicBoolean vsyncReleasePosted = new AtomicBoolean(false);
-  private final Runnable vsyncRelease = this::runVsyncRelease;
 
-  private void runVsyncRelease() {
+  private void vsyncReleaseInternal() {
     vsyncReleasePosted.set(false);
-    if (!releasing) decoder.render(vsyncReleasePosition);
+    decoder.render(vsyncReleasePosition);
   }
   private static final long VSYNC_RELEASE_TIMEOUT_NANOS = 100_000_000L;
 
@@ -201,7 +201,9 @@ public class VideoCompositionFramesExtractor {
     lastVsyncReleaseNanos = System.nanoTime();
     vsyncReleasePosition = position;
     if (vsyncReleasePosted.compareAndSet(false, true)) {
-      handler.post(vsyncRelease);
+      // A message, not a posted runnable: it goes through handleMessage's
+      // releasing check and turns a throw into an error event.
+      handler.sendEmptyMessage(PLAYBACK_VSYNC_RELEASE);
     }
   }
 
@@ -436,6 +438,10 @@ public class VideoCompositionFramesExtractor {
           }
           case PLAYBACK_RELEASE -> {
             releaseInternal();
+            return true;
+          }
+          case PLAYBACK_VSYNC_RELEASE -> {
+            vsyncReleaseInternal();
             return true;
           }
           default -> {

@@ -80,7 +80,8 @@ type UseVideoCompositionPlayerOptions<T = undefined> = {
    * video only changes at its own frame rate. A drawer whose picture depends on
    * time only through the frames (or only at known moments, a transition say)
    * returns false elsewhere, and the player then redraws when a new frame is
-   * decoded instead. Must be a worklet.
+   * decoded instead. Ignored when `drawWhenPaused` is `true`, which redraws at
+   * every vsync. Must be a worklet.
    */
   redrawOnTime?: (previousTime: number, currentTime: number) => boolean;
   /**
@@ -88,8 +89,9 @@ type UseVideoCompositionPlayerOptions<T = undefined> = {
    * of both in the same one. On Android the import (YUV blit and its checked
    * GPU wait) and the draw (snapshot and its checked GPU wait) cost about as
    * much as each other, and together they overrun a 90–120 Hz frame budget on
-   * the UI thread. The picture then trails the clock by one vsync.
-   * The first frame of a session is still drawn as soon as it is imported.
+   * the UI thread. The option applies on iOS too. The picture then trails the
+   * clock by one vsync. The first frame of a session is still drawn as soon
+   * as it is imported.
    * @default false
    */
   splitImportAndDraw?: boolean;
