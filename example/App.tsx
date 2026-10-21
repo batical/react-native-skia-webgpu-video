@@ -11,6 +11,7 @@ import webgpuPackage from 'react-native-webgpu/package.json';
 import videoPackage from 'react-native-skia-webgpu-video/package.json';
 import { runAndroidInteropSmoke } from './android-interop-smoke';
 import { runExportPixelCheck } from './export-pixel-check';
+import { FrameSyncScreen } from './frame-sync-check';
 
 const isAndroid = native.Platform.OS === 'android';
 const helper = native.NativeModules.VideoBenchmarkHarness;
@@ -29,9 +30,49 @@ const files = {
     console.log(`Benchmark result: ${path}`);
   },
 };
-const Screen = createBenchmarkScreen({ React, native, skia, reanimated, video,
+// The frame pixel format a run imposes on every composition (the launchers'
+// --frame-pixel-format), or each composition's own. The copies are cached: a
+// player recreates its decoders when its composition object changes.
+const framePixelFormat = ['auto', 'yuv', 'rgba'].includes(details.framePixelFormat)
+  ? details.framePixelFormat as video.VideoFramePixelFormat : undefined;
+const formatted = new WeakMap<object, object>();
+const withFormat = <T extends object | null | undefined>(composition: T): T => {
+  if (!framePixelFormat || !composition) return composition;
+  let copy = formatted.get(composition);
+  if (!copy) {
+    copy = { ...composition, framePixelFormat };
+    formatted.set(composition, copy);
+  }
+  return copy as T;
+};
+const harnessVideo = framePixelFormat ? {
+  ...video,
+  useVideoComposition: (options: Parameters<typeof video.useVideoComposition>[0]) =>
+    video.useVideoComposition({ ...options, composition: withFormat(options.composition) }),
+  exportVideoComposition: (options: Parameters<typeof video.exportVideoComposition>[0]) =>
+    video.exportVideoComposition({ ...options, videoComposition: withFormat(options.videoComposition) }),
+} : video;
+
+const Screen = createBenchmarkScreen({ React, native, skia, reanimated, video: harnessVideo,
   files, validation: undefined, memory: { sample: () => helper.sampleMemory(),
     operatingConditions: () => helper.sampleOperatingConditions() } });
+
+const syncHelpers = {
+  fixtureDirectory: details.fixtureDirectory,
+  outputDirectory: () => helper.prepareOutputDirectory(),
+  probe: files.probe,
+  remove: files.remove,
+  writeResult: files.writeResult,
+  environment: { benchmarkRunId: details.benchmarkRunId, platform: native.Platform.OS,
+    deviceModel: details.deviceModel, osVersion: details.osVersion,
+    displayRefreshRate: details.displayRefreshRate, buildMode: __DEV__ ? 'debug' : 'release',
+    skiaVersion: skiaPackage.version, webgpuVersion: webgpuPackage.version, version: videoPackage.version },
+  caseIds: details.benchmarkCaseIds ?? undefined,
+  framePixelFormat,
+  sampleConditions: () => helper.sampleOperatingConditions(),
+  frameRateVote: details.frameRateVote ? { mode: details.frameRateVote as string,
+    vote: (mode: string, fps: number) => helper.voteFrameRate(mode, fps) } : undefined,
+};
 
 function AndroidInteropScreen() {
   const [status, setStatus] = useState('Vérification des pixels CPU / GPU…');
@@ -85,10 +126,12 @@ export default function App() {
       buildMode: __DEV__ ? 'debug' : 'release', displayRefreshRate: details.displayRefreshRate,
       thermalState: details.thermalState, powerMode: details.powerMode },
     backend: { name: videoPackage.name, version: videoPackage.version,
-      skiaVersion: skiaPackage.version, webgpuVersion: webgpuPackage.version, paths: video.getVideoResourceStats().backend },
+      skiaVersion: skiaPackage.version, webgpuVersion: webgpuPackage.version,
+      paths: { ...video.getVideoResourceStats().backend, framePixelFormat: framePixelFormat ?? 'auto' } },
   }), [profile]);
   if (!helper) return <native.Text>Recompilez l’application de test : le module de mesure manque.</native.Text>;
   if (isAndroid && profile === 'interop') return <AndroidInteropScreen />;
+  if (profile === 'sync') return <FrameSyncScreen helpers={syncHelpers} />;
   if (!profile) return <native.SafeAreaView style={{ flex: 1, padding: 20, gap: 16 }}>
     <native.Text style={{ fontSize: 24 }}>Skia WebGPU Tests</native.Text>
     <native.Text>Lecture, export, mémoire et fermeture des ressources sur cet appareil.</native.Text>

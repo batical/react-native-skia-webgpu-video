@@ -8,12 +8,13 @@ import { randomUUID } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { formatFrameSyncReport } from '../benchmark/frame-sync.mjs';
 
 const exec = promisify(execFile);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = 'com.skiawebgpuvideo.tests';
 const remote = `/sdcard/Android/data/${pkg}/files/benchmark-results`;
-const usage = `node scripts/test-android-device-run.mjs --serial SERIAL --apk app.apk --label NAME [--case ID ...] [--profile full|smoke|soak|interop] [--repetitions 3] [--timeout-minutes 30]`;
+const usage = `node scripts/test-android-device-run.mjs --serial SERIAL --apk app.apk --label NAME [--case ID ...] [--profile full|smoke|soak|interop|sync] [--frame-rate-vote none|content|high|window|decor] [--frame-pixel-format auto|yuv|rgba] [--repetitions 3] [--timeout-minutes 30]`;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const options = { cases: [], profile: 'full', repetitions: 3, timeoutMinutes: 30 };
@@ -29,12 +30,15 @@ for (let i = 2; i < process.argv.length; i++) {
   else if (flag === '--profile') options.profile = value;
   else if (flag === '--repetitions') options.repetitions = Number(value);
   else if (flag === '--timeout-minutes') options.timeoutMinutes = Number(value);
+  else if (flag === '--frame-rate-vote') options.frameRateVote = value;
+  else if (flag === '--frame-pixel-format') options.framePixelFormat = value;
   else throw new Error(`Unknown argument: ${flag}\n${usage}`);
 }
 if (!/^[\w.:-]+$/.test(options.serial ?? '') || !options.apk || !/^[a-z0-9-]+$/.test(options.label ?? '') ||
-    !['full', 'smoke', 'soak', 'interop'].includes(options.profile) ||
+    !['full', 'smoke', 'soak', 'interop', 'sync'].includes(options.profile) ||
     !Number.isInteger(options.repetitions) || options.repetitions < 1 || options.repetitions > 10 ||
-    !(options.timeoutMinutes > 0) || options.cases.some((id) => !/^[a-zA-Z0-9_.-]+$/.test(id))) {
+    !(options.timeoutMinutes > 0) || !['none', 'content', 'high', 'window', 'decor', undefined].includes(options.frameRateVote) ||
+    !['auto', 'yuv', 'rgba', undefined].includes(options.framePixelFormat) || options.cases.some((id) => !/^[a-zA-Z0-9_.-]+$/.test(id))) {
   throw new Error(`Invalid arguments\n${usage}`);
 }
 await access(options.apk);
@@ -67,6 +71,8 @@ const extras = ['--es', 'RNSKV_BENCHMARK_PROFILE', options.profile,
   '--ei', 'RNSKV_BENCHMARK_REPETITIONS', String(options.repetitions),
   '--es', 'RNSKV_BENCHMARK_RUN_ID', randomUUID()];
 // The device shell re-parses this argument: quote the JSON list once.
+if (options.frameRateVote) extras.push('--es', 'RNSKV_FRAME_RATE_VOTE', options.frameRateVote);
+if (options.framePixelFormat) extras.push('--es', 'RNSKV_FRAME_PIXEL_FORMAT', options.framePixelFormat);
 if (options.cases.length) extras.push('--es', 'RNSKV_BENCHMARK_CASE_IDS', `'${JSON.stringify(options.cases)}'`);
 // The harness reads its profile once, at a cold start: an intent delivered to
 // an already open activity (e.g. reopened from the launcher) is ignored.
@@ -88,6 +94,11 @@ for (;;) {
   break;
 }
 const result = JSON.parse(await readFile(output, 'utf8'));
+if (result.kind === 'frame-sync-check') {
+  for (const line of formatFrameSyncReport(result)) console.log(line);
+  console.log(`${options.label}: ${output}`);
+  process.exit(0);
+}
 if (!result.cases) {
   // The interop profile writes its pixel diagnostics instead of cases.
   console.log(`${options.label}: ${result.kind} ${result.status}${result.failure ? ` · ${result.failure}` : ''} · ${output}`);

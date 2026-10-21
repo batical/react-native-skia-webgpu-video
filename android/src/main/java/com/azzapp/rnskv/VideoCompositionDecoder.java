@@ -687,10 +687,12 @@ public class VideoCompositionDecoder {
   /**
    * Hardware frames at the encoded size from an 8-bit SDR track skip the GL
    * render pass: the codec writes into ImageReader buffers WebGPU samples.
-   * A capped or explicit size keeps the GL path, which scales while drawing.
+   * A capped or explicit size keeps the GL path, which scales while drawing,
+   * as does `framePixelFormat: 'rgba'`.
    */
   private boolean wantsNativeImages(VideoComposition.Item item, VideoCompositionItemDecoder decoder) {
-    if (!composition.isHardwareBufferEnabled() || !decoder.isEightBitSdr()) return false;
+    if (composition.isRgbaFrames() || !composition.isHardwareBufferEnabled() || !decoder.isEightBitSdr())
+      return false;
     int[] size = FrameSize.of(item.getWidth(), item.getHeight(), item.getMaxLongSide(),
       decoder.getVideoWidth(), decoder.getVideoHeight(), 0);
     return size[0] == decoder.getVideoWidth() && size[1] == decoder.getVideoHeight();

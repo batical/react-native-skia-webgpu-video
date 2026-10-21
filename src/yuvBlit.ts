@@ -30,6 +30,8 @@ type YuvBlit = {
   sampler: GPUSampler;
   module: GPUShaderModule;
   pipelines: Map<GPUTextureFormat, GPURenderPipeline>;
+  /** The whole frame, as is: the uniforms of blitNv12Frame, written once. */
+  wholeFrame?: GPUBuffer;
 };
 
 // An ImageReader holds four buffers (GLFrameExtractor.READER_IMAGES); the
@@ -327,5 +329,69 @@ export const blitYuvFrame = (
     // The caller's checked flush covers the draw; the release fence is not
     // needed to hand the buffer back.
     entry.wrapper.endAccess()?.fence.destroy();
+  }
+};
+
+/**
+ * iOS: draws a whole NV12 decoder buffer into `target`, converting YUV to RGB
+ * with the buffer's YCbCr matrix and range, in its decoded orientation (the
+ * frame's rotation applies when it is drawn, as for BGRA frames). Submits the
+ * draw. AVAssetReader hands out buffers from a pool rather than a fixed few,
+ * so each frame is imported for this draw alone, unlike Android's: the import
+ * ends right after the submit (Dawn keeps the surface for the in-flight
+ * draw), while the caller holds the frame's lease until the draw completed.
+ */
+export const blitNv12Frame = (
+  device: GPUDevice,
+  source: NativeVideoFrame,
+  target: GPUTexture,
+): void => {
+  "worklet";
+  const blit = getYuvBlit(device);
+  const pipeline = getPipeline(device, blit, target.format);
+  if (!blit.wholeFrame) {
+    blit.wholeFrame = device.createBuffer({
+      label: "video NV12 blit uniforms",
+      size: 16,
+      usage: videoUniformBufferUsage,
+    });
+    device.queue.writeBuffer(blit.wholeFrame, 0, new Float32Array([1, 1, 0, 0]));
+  }
+  const external = device.importExternalTexture({
+    label: "video decoder buffer",
+    source,
+    sourceColorSpace,
+  });
+  try {
+    const encoder = device.createCommandEncoder({ label: "video NV12 blit" });
+    const pass = encoder.beginRenderPass({
+      label: "video NV12 blit",
+      colorAttachments: [
+        {
+          view: target.createView(),
+          loadOp: "clear",
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          storeOp: "store",
+        },
+      ],
+    });
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(
+      0,
+      device.createBindGroup({
+        label: "video NV12 blit",
+        layout: blit.layout,
+        entries: [
+          { binding: 0, resource: external },
+          { binding: 1, resource: blit.sampler },
+          { binding: 2, resource: { buffer: blit.wholeFrame } },
+        ],
+      }),
+    );
+    pass.draw(3);
+    pass.end();
+    device.queue.submit([encoder.finish()]);
+  } finally {
+    (external as GPUExternalTexture & { destroy?: () => void }).destroy?.();
   }
 };

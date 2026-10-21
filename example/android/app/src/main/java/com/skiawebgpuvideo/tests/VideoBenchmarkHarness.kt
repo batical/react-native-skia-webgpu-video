@@ -9,6 +9,10 @@ import android.os.PowerManager
 import android.os.Process
 import android.os.SystemClock
 import android.provider.Settings
+import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import com.facebook.react.bridge.*
 import org.json.JSONObject
@@ -46,7 +50,7 @@ class VideoBenchmarkHarness(private val context: ReactApplicationContext) : Reac
     val emulator = Build.FINGERPRINT.startsWith("generic") || Build.MODEL.contains("sdk_gphone") || Build.MODEL.contains("Emulator")
     val refresh = (context.getSystemService(android.content.Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.refreshRate
     val intent = MainActivity.benchmarkIntent ?: context.currentActivity?.intent
-    val profile = intent?.getStringExtra("RNSKV_BENCHMARK_PROFILE")?.takeIf { it in listOf("smoke", "full", "soak", "interop") }
+    val profile = intent?.getStringExtra("RNSKV_BENCHMARK_PROFILE")?.takeIf { it in listOf("smoke", "full", "soak", "interop", "sync") }
     val repetitions = intent?.getIntExtra("RNSKV_BENCHMARK_REPETITIONS", 3)?.coerceIn(1, 10) ?: 3
     val caseIds = intent?.getStringExtra("RNSKV_BENCHMARK_CASE_IDS")?.let { encoded ->
       val values = JSONArray(encoded)
@@ -54,7 +58,8 @@ class VideoBenchmarkHarness(private val context: ReactApplicationContext) : Reac
       (0 until values.length()).map { values.getString(it) }
     }
     return mutableMapOf("benchmarkCaseIds" to caseIds, "benchmarkProfile" to profile, "benchmarkRunId" to intent?.getStringExtra("RNSKV_BENCHMARK_RUN_ID"),
-      "fixtureDirectory" to fixtures.absolutePath, "resultDirectory" to outputs.absolutePath,
+      "frameRateVote" to intent?.getStringExtra("RNSKV_FRAME_RATE_VOTE"),
+      "framePixelFormat" to intent?.getStringExtra("RNSKV_FRAME_PIXEL_FORMAT")?.takeIf { it in listOf("auto", "yuv", "rgba") }, "fixtureDirectory" to fixtures.absolutePath, "resultDirectory" to outputs.absolutePath,
       "deviceId" to Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID),
       "deviceModel" to "${Build.MANUFACTURER} ${Build.MODEL}", "executionTarget" to if (emulator) "emulator" else "device",
       "osVersion" to Build.VERSION.RELEASE, "displayRefreshRate" to refresh.toDouble(),
@@ -119,6 +124,45 @@ class VideoBenchmarkHarness(private val context: ReactApplicationContext) : Reac
       "pssBytes" to reading(memory.totalPss.toLong() * 1024, "Android Debug.MemoryInfo TOTAL PSS"),
       "nativeHeapBytes" to reading(memory.nativePss.toLong() * 1024, "Android Debug.MemoryInfo native heap PSS"),
       "gpuBytes" to mapOf("value" to null, "reason" to "Android exposes no complete process GPU allocation collector"))
+  }
+
+  /** Experiment: cast a refresh rate vote while a preview plays. none | content | high | window. */
+  @ReactMethod fun voteFrameRate(mode: String, fps: Double, promise: Promise) {
+    val activity = context.currentActivity ?: return promise.reject("NO_ACTIVITY", "No activity")
+    activity.runOnUiThread {
+      try {
+        if (mode == "window") {
+          val attributes = activity.window.attributes
+          attributes.preferredRefreshRate = fps.toFloat()
+          activity.window.attributes = attributes
+          promise.resolve(1)
+          return@runOnUiThread
+        }
+        if (mode == "decor") {
+          if (Build.VERSION.SDK_INT >= 35) activity.window.decorView.setRequestedFrameRate(
+            if (fps > 0) fps.toFloat() else View.REQUESTED_FRAME_RATE_CATEGORY_DEFAULT)
+          promise.resolve(1)
+          return@runOnUiThread
+        }
+        // fps 0 takes the vote back.
+        val rate = when {
+          fps <= 0 -> View.REQUESTED_FRAME_RATE_CATEGORY_DEFAULT
+          mode == "content" -> fps.toFloat()
+          mode == "high" -> View.REQUESTED_FRAME_RATE_CATEGORY_HIGH
+          else -> View.REQUESTED_FRAME_RATE_CATEGORY_DEFAULT
+        }
+        var views = 0
+        fun walk(view: View) {
+          if (view is TextureView || view is SurfaceView) {
+            if (Build.VERSION.SDK_INT >= 35) view.setRequestedFrameRate(rate)
+            views++
+          }
+          if (view is ViewGroup) for (i in 0 until view.childCount) walk(view.getChildAt(i))
+        }
+        walk(activity.window.decorView)
+        promise.resolve(views)
+      } catch (error: Exception) { promise.reject("FRAME_RATE_VOTE", error.message, error) }
+    }
   }
 
   @ReactMethod fun probe(path: String, promise: Promise) = execute(promise) { probeOutput(output(path)) }

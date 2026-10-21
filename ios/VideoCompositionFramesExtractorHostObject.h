@@ -71,6 +71,10 @@ private:
   RNSVDisplayLinkWrapper* displayLink;
   NSDate* startDate;
   CMTime pausePosition = kCMTimeZero;
+  // The clock decodeCompositionFrames last picked the frames at, and when
+  // (CACurrentMediaTime); invalid once play, pause or a seek moves the clock.
+  CMTime framesTime = kCMTimeInvalid;
+  CFTimeInterval framesTimeHost = 0;
   bool playWhenReady = false;
   bool isPlaying = false;
   bool isLooping = false;
@@ -91,6 +95,7 @@ private:
   void pause();
   void seekTo(CMTime time);
   CMTime getCurrentTime();
+  CMTime getPresentedTime();
   void release();
   bool opensAt(const std::shared_ptr<VideoCompositionItem>& item,
                double position) const;

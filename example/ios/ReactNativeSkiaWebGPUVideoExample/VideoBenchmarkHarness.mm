@@ -32,7 +32,7 @@ RCT_EXPORT_MODULE(VideoBenchmarkHarness)
     // Benchmark apps only: preserve the user's setting and keep the display
     // awake during an explicitly launched measurement, without a debugger.
     NSString *profile = NSProcessInfo.processInfo.environment[@"RNSKV_BENCHMARK_PROFILE"];
-    if ([@[@"smoke", @"full", @"soak"] containsObject:profile]) {
+    if ([@[@"smoke", @"full", @"soak", @"sync"] containsObject:profile]) {
       self.previousIdleTimerDisabled = UIApplication.sharedApplication.idleTimerDisabled;
       self.ownsIdleTimerOverride = YES;
       UIApplication.sharedApplication.idleTimerDisabled = YES;
@@ -101,7 +101,7 @@ RCT_EXPORT_MODULE(VideoBenchmarkHarness)
   struct utsname system;
   uname(&system);
   NSString *profile = NSProcessInfo.processInfo.environment[@"RNSKV_BENCHMARK_PROFILE"];
-  if (![@[@"smoke", @"full", @"soak"] containsObject:profile]) profile = nil;
+  if (![@[@"smoke", @"full", @"soak", @"sync"] containsObject:profile]) profile = nil;
   NSData *caseData = [NSProcessInfo.processInfo.environment[@"RNSKV_BENCHMARK_CASE_IDS"] dataUsingEncoding:NSUTF8StringEncoding];
   id caseIds = caseData ? [NSJSONSerialization JSONObjectWithData:caseData options:0 error:nil] : nil;
   if (![caseIds isKindOfClass:NSArray.class] || ![caseIds count]) caseIds = nil;
@@ -118,7 +118,10 @@ RCT_EXPORT_MODULE(VideoBenchmarkHarness)
   deviceModel = NSProcessInfo.processInfo.environment[@"SIMULATOR_MODEL_IDENTIFIER"] ?: deviceModel;
   deviceId = NSProcessInfo.processInfo.environment[@"SIMULATOR_UDID"] ?: @"unavailable";
 #endif
+  NSString *framePixelFormat = NSProcessInfo.processInfo.environment[@"RNSKV_FRAME_PIXEL_FORMAT"];
+  if (![@[@"auto", @"yuv", @"rgba"] containsObject:framePixelFormat]) framePixelFormat = nil;
   return @{
+    @"framePixelFormat": framePixelFormat ?: (id)NSNull.null,
     @"fixtureDirectory": [NSBundle.mainBundle.resourcePath stringByAppendingPathComponent:@"fixtures"],
     @"resultDirectory": [self resultDirectory],
     @"deviceModel": deviceModel,

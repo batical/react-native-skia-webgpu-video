@@ -14,6 +14,10 @@ public class VideoComposition {
   private boolean lazyDecoders = false;
   private boolean hardwareBufferEnabled = false;
   public boolean isHardwareBufferEnabled() { return hardwareBufferEnabled; }
+  // framePixelFormat: 'rgba': every frame through the GL path, none through
+  // ImageReader's YUV buffers. Set from the C++ side.
+  private boolean rgbaFrames = false;
+  public boolean isRgbaFrames() { return rgbaFrames; }
 
   public VideoComposition(
     double duration,

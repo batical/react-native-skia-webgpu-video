@@ -1,6 +1,7 @@
 #include "VideoCompositionFramesExtractorHostObject.h"
 
 #import "AVAssetTrackUtils.h"
+#import "NativeResourceStats.h"
 #import "AudioCompositionUtils.h"
 #import "RNSVJSIUtils.h"
 #include "RNSVCheckedSizes.h"
@@ -117,6 +118,8 @@ jsi::Value VideoCompositionFramesExtractorHostObject::get(
             }
             if (initialized && lastAppliedSeekGeneration == seekGeneration) {
               auto currentTime = getCurrentTime();
+              framesTime = currentTime;
+              framesTimeHost = CACurrentMediaTime();
               bool changed = false;
               for (const auto& entry : itemDecoders) {
                 auto itemId = entry.first;
@@ -189,7 +192,7 @@ jsi::Value VideoCompositionFramesExtractorHostObject::get(
           return jsi::Value::undefined();
         });
   } else if (propName == "currentTime") {
-    return jsi::Value(released.test() ? 0 : CMTimeGetSeconds(getCurrentTime()));
+    return jsi::Value(released.test() ? 0 : CMTimeGetSeconds(getPresentedTime()));
   } else if (propName == "framesVersion") {
     return jsi::Value(released.test() ? 0 : (double)framesVersion);
   } else if (propName == "isLooping") {
@@ -218,8 +221,12 @@ void VideoCompositionFramesExtractorHostObject::set(
 void VideoCompositionFramesExtractorHostObject::prepare() {
   @synchronized(lock) {
     if (released.test() || decoderQueue) return;
+  // User-interactive: the queue feeds the display at every vsync. At utility,
+  // a warm iPhone parked it on the efficiency cores: 60 fps clips froze for
+  // 300-500 ms at a time while the decoder caught up, and a 4K 60 fps preview
+  // showed one frame in six.
   dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(
-      DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0);
+      DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INTERACTIVE, 0);
   decoderQueue = dispatch_queue_create("ReactNativeVideoCompositionItemDecoder", attr);
   dispatch_queue_set_specific(decoderQueue, this, this, NULL);
   std::weak_ptr<VideoCompositionFramesExtractorHostObject> weak =
@@ -252,7 +259,10 @@ void VideoCompositionFramesExtractorHostObject::scheduleDecode() {
           std::atomic<bool>& flag;
           ~PendingGuard() { flag.store(false); }
         } pendingGuard{owner->decoderTickPending};
+        CFTimeInterval tickStart = CACurrentMediaTime();
         owner->decodeTick();
+        PreviewStats::decodeTicks++;
+        if (CACurrentMediaTime() - tickStart > 0.016) PreviewStats::slowDecodeTicks++;
       }
       // A seek arriving during decoding was coalesced into this task. Queue
       // its latest position after releasing the pending flag, so it cannot
@@ -453,6 +463,7 @@ void VideoCompositionFramesExtractorHostObject::init() {
 void VideoCompositionFramesExtractorHostObject::play() {
   @synchronized(lock) {
   if (released.test() || isPlaying) return;
+  framesTime = kCMTimeInvalid;
   // A completed paused clock stays at the end until play explicitly restarts
   // it. Rewind the readers through the same serial seek generation as seekTo.
   if (CMTimeGetSeconds(pausePosition) >= composition->duration) {
@@ -480,6 +491,7 @@ void VideoCompositionFramesExtractorHostObject::pause() {
   }
   pausePosition = getCurrentTime();
   isPlaying = false;
+  framesTime = kCMTimeInvalid;
   if (audioPlayer) {
     [audioPlayer pause];
   }
@@ -490,6 +502,7 @@ void VideoCompositionFramesExtractorHostObject::seekTo(CMTime time) {
   @synchronized(lock) {
   if (released.test()) return;
   seekPending = true;
+  framesTime = kCMTimeInvalid;
   if (isPlaying) {
     startDate = [NSDate dateWithTimeIntervalSinceNow:-CMTimeGetSeconds(time)];
   } else {
@@ -591,6 +604,22 @@ void VideoCompositionFramesExtractorHostObject::openDecoders(
       }
       itemDecoders[item->id] = decoder;
     }
+  }
+}
+
+// The time drawFrame draws at: the clock the frames it gets were picked at,
+// rather than the clock when it reads the time, after the frames' import (a
+// few milliseconds of GPU work). Read later, the time ran ahead of the frames,
+// and at 60 fps a frame's start could fall in between on every frame: the
+// time said frame n while the frames held n - 1. The live clock once play,
+// pause or a seek has moved it, or without a recent pick (no preview).
+CMTime VideoCompositionFramesExtractorHostObject::getPresentedTime() {
+  @synchronized(lock) {
+    if (isPlaying && CMTIME_IS_VALID(framesTime) &&
+        CACurrentMediaTime() - framesTimeHost < 0.1) {
+      return framesTime;
+    }
+    return getCurrentTime();
   }
 }
 

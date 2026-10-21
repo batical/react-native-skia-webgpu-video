@@ -16,8 +16,12 @@
 #import <AVFoundation/AVFoundation.h>
 #import <QuartzCore/QuartzCore.h>
 #import <XCTest/XCTest.h>
+#import "NativeResourceStats.h"
+#import "RNSVColorSpace.h"
+#include <sys/resource.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <functional>
 #include <future>
@@ -388,10 +392,27 @@ private:
   if ((self = [super init])) {
     _width = CVPixelBufferGetWidth(buffer);
     _height = CVPixelBufferGetHeight(buffer);
-    _bytesPerRow = CVPixelBufferGetBytesPerRow(buffer);
-    bytes.resize(_bytesPerRow * _height);
     if (CVPixelBufferLockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly) != kCVReturnSuccess) return nil;
-    memcpy(bytes.data(), CVPixelBufferGetBaseAddress(buffer), bytes.size());
+    if (CVPixelBufferGetPixelFormatType(buffer) == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange) {
+      // NV12: the luma plane as gray BGRA, video range expanded. The patterns
+      // are black and white, which is all readPattern looks at.
+      _bytesPerRow = _width * 4;
+      bytes.resize(_bytesPerRow * _height);
+      auto luma = static_cast<const uint8_t*>(CVPixelBufferGetBaseAddressOfPlane(buffer, 0));
+      size_t lumaRow = CVPixelBufferGetBytesPerRowOfPlane(buffer, 0);
+      for (size_t y = 0; y < _height; y++) {
+        for (size_t x = 0; x < _width; x++) {
+          int gray = std::clamp((luma[y * lumaRow + x] - 16) * 255 / 219, 0, 255);
+          uint8_t* pixel = bytes.data() + y * _bytesPerRow + x * 4;
+          pixel[0] = pixel[1] = pixel[2] = (uint8_t)gray;
+          pixel[3] = 255;
+        }
+      }
+    } else {
+      _bytesPerRow = CVPixelBufferGetBytesPerRow(buffer);
+      bytes.resize(_bytesPerRow * _height);
+      memcpy(bytes.data(), CVPixelBufferGetBaseAddress(buffer), bytes.size());
+    }
     CVPixelBufferUnlockBaseAddress(buffer, kCVPixelBufferLock_ReadOnly);
   }
   return self;
@@ -586,9 +607,14 @@ struct FrameView {
 
 /** Every frame of the clip, asked for as the export extractor asks. */
 - (void)walkClip:(const Clip&)clip spec:(const VideoSpec&)spec {
+  [self walkClip:clip spec:spec yuv:false];
+}
+
+- (void)walkClip:(const Clip&)clip spec:(const VideoSpec&)spec yuv:(bool)yuv {
   NSString* path = [self video:spec];
-  auto decoder =
-      std::make_shared<VideoCompositionItemDecoder>(makeItem(path, clip), false);
+  auto item = makeItem(path, clip);
+  item->yuvFrames = yuv;
+  auto decoder = std::make_shared<VideoCompositionItemDecoder>(item, false);
   bool hasFrame = false;
   int shown = -1;
   int frames = (int)llround(clip.duration * spec.fps);
@@ -614,6 +640,39 @@ struct FrameView {
 - (void)testEveryFrameOfAMontage {
   for (const auto& clip : kMontage) {
     [self walkClip:clip spec:VideoSpec()];
+  }
+}
+
+// framePixelFormat: 'yuv': the same frames, handed over in the decoder's NV12.
+- (void)testEveryFrameOfASingleItemInNV12 {
+  [self walkClip:{"a", 0, 0, 6} spec:VideoSpec() yuv:true];
+}
+
+- (void)testEveryFrameOfAMontageInNV12 {
+  for (const auto& clip : kMontage) {
+    [self walkClip:clip spec:VideoSpec() yuv:true];
+  }
+}
+
+- (void)testFramesSayTheirPixelFormat {
+  NSString* path = [self video:VideoSpec()];
+  for (bool yuv : {false, true}) {
+    auto item = makeItem(path, {"a", 0, 0, 2});
+    item->yuvFrames = yuv;
+    auto decoder = std::make_shared<VideoCompositionItemDecoder>(item, false);
+    decoder->advanceDecoder(seconds(0.5));
+    auto frame = decoder->acquireFrameForTime(seconds(0.5), true);
+    XCTAssertTrue(frame != nullptr);
+    jsi::Runtime& rt = *runtime;
+    auto texture = jsi::Object::createFromHostObject(rt, frame).getProperty(rt, "texture").asObject(rt);
+    auto format = texture.getProperty(rt, "format").asString(rt).utf8(rt);
+    XCTAssertTrue(format == (yuv ? "nv12" : "bgra8"), @"%s", format.c_str());
+    auto buffer = reinterpret_cast<CVPixelBufferRef>(
+        texture.getProperty(rt, "nativeBuffer").asBigInt(rt).asUint64(rt));
+    XCTAssertEqual(CVPixelBufferGetPixelFormatType(buffer),
+                   yuv ? kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange : kCVPixelFormatType_32BGRA);
+    frame->releaseBuffer();
+    decoder->release();
   }
 }
 
@@ -1858,6 +1917,217 @@ struct ReadBack {
       XCTAssertEqual(back.indices[i], clipAt(kMontage, t)->frameAt(t, 30),
                      @"lazy %d, exported frame %zu", lazy, i);
     }
+  }
+}
+
+@end
+
+#pragma mark - Decode throughput
+
+// Measures how fast AVAssetReader hands out frames of the frame-sync fixtures
+// in BGRA (what the preview asks for) and in NV12 (the decoder's own format),
+// alone on the device: no React Native, no GPU import. Skipped unless the run
+// sets RNSKV_DECODE_BENCHMARK (xcodebuild: TEST_RUNNER_RNSKV_DECODE_BENCHMARK=1).
+@interface DecodeThroughputTests : XCTestCase
+@end
+
+@implementation DecodeThroughputTests
+
+static NSDictionary* DecodeOutputSettings(NSString* mode) {
+  NSMutableDictionary* settings = [@{
+    (id)kCVPixelBufferIOSurfacePropertiesKey : @{},
+    (id)kCVPixelBufferMetalCompatibilityKey : @YES,
+  } mutableCopy];
+  bool bgra = [mode isEqualToString:@"bgra-709"];
+  settings[(id)kCVPixelBufferPixelFormatTypeKey] =
+      @(bgra ? kCVPixelFormatType_32BGRA : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange);
+  if (![mode isEqualToString:@"nv12"]) {
+    settings[AVVideoColorPropertiesKey] = RNSkiaVideo::SDRColorProperties();
+  }
+  return settings;
+}
+
+static NSString* ThermalName() {
+  switch (NSProcessInfo.processInfo.thermalState) {
+    case NSProcessInfoThermalStateNominal: return @"nominal";
+    case NSProcessInfoThermalStateFair: return @"fair";
+    case NSProcessInfoThermalStateSerious: return @"serious";
+    case NSProcessInfoThermalStateCritical: return @"critical";
+  }
+  return @"unknown";
+}
+
+static double CpuSeconds() {
+  struct rusage usage;
+  getrusage(RUSAGE_SELF, &usage);
+  return usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6 +
+         usage.ru_stime.tv_sec + usage.ru_stime.tv_usec / 1e6;
+}
+
+- (void)measure:(NSString*)file mode:(NSString*)mode frames:(int)expected {
+  NSString* path = [[NSBundle.mainBundle.resourcePath stringByAppendingPathComponent:@"fixtures"]
+      stringByAppendingPathComponent:file];
+  AVURLAsset* asset = [AVURLAsset URLAssetWithURL:[NSURL fileURLWithPath:path] options:nil];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  AVAssetTrack* track = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+#pragma clang diagnostic pop
+  XCTAssertNotNil(track, @"%@", file);
+  NSError* error = nil;
+  AVAssetReader* reader = [AVAssetReader assetReaderWithAsset:asset error:&error];
+  XCTAssertNil(error);
+  AVAssetReaderTrackOutput* output =
+      [[AVAssetReaderTrackOutput alloc] initWithTrack:track outputSettings:DecodeOutputSettings(mode)];
+  output.alwaysCopiesSampleData = NO;
+  [reader addOutput:output];
+  XCTAssertTrue([reader startReading]);
+  NSString* thermal = ThermalName();
+  double cpu = CpuSeconds();
+  CFTimeInterval start = CACurrentMediaTime();
+  std::vector<double> waits;
+  int frames = 0;
+  size_t bytes = 0;
+  for (;;) {
+    CFTimeInterval before = CACurrentMediaTime();
+    CMSampleBufferRef sample = [output copyNextSampleBuffer];
+    double wait = CACurrentMediaTime() - before;
+    if (!sample) break;
+    CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sample);
+    if (buffer) {
+      frames++;
+      waits.push_back(wait);
+      bytes = RNSkiaVideo::pixelBufferBytes(buffer);
+    }
+    CFRelease(sample);
+  }
+  double wall = CACurrentMediaTime() - start;
+  double cpuSeconds = CpuSeconds() - cpu;
+  // The first frame waits for the reader to start; the others for decoding.
+  double first = waits.empty() ? 0 : waits.front();
+  std::vector<double> steady(waits.begin() + std::min<size_t>(1, waits.size()), waits.end());
+  std::sort(steady.begin(), steady.end());
+  double p99 = steady.empty() ? 0 : steady[std::min(steady.size() - 1, steady.size() * 99 / 100)];
+  double worst = steady.empty() ? 0 : steady.back();
+  printf("DECODE %s %s frames %d fps %.1f cpu-ms/frame %.2f first-ms %.1f p99-wait-ms %.1f worst-wait-ms %.1f frame-bytes %zu thermal %s\n",
+         file.UTF8String, mode.UTF8String, frames, frames / wall, cpuSeconds * 1000 / std::max(frames, 1),
+         first * 1000, p99 * 1000, worst * 1000, bytes, thermal.UTF8String);
+  XCTAssertEqual(frames, expected, @"%@ %@", file, mode);
+}
+
+- (void)testDecodeThroughput {
+  if (!NSProcessInfo.processInfo.environment[@"RNSKV_DECODE_BENCHMARK"]) {
+    XCTSkip(@"Set RNSKV_DECODE_BENCHMARK to measure decode throughput");
+  }
+  NSArray* modes = @[ @"bgra-709", @"nv12-709", @"nv12" ];
+  // Alternated: the device warms up over the run, every mode gets each turn.
+  for (int round = 0; round < 3; round++) {
+    for (NSString* mode in modes) {
+      [self measure:@"sync-hevc-3840x2160-60.mp4" mode:mode frames:360];
+    }
+  }
+  for (NSString* mode in modes) {
+    [self measure:@"sync-hevc-1920x1080-60.mp4" mode:mode frames:360];
+    [self measure:@"sync-h264-3840x2160-30.mp4" mode:mode frames:180];
+  }
+}
+
+@end
+
+#pragma mark - Color matrix diagnostics
+
+// What VideoToolbox hands over for an untagged clip, BGRA against NV12, at
+// the same pixels: the NV12 buffer's color attachments, and its YCbCr turned
+// to RGB with the BT.601 and BT.709 matrices, next to the BGRA it decodes
+// to. Skipped unless the run sets RNSKV_COLOR_DIAGNOSTICS.
+@interface ColorMatrixDiagnosticsTests : XCTestCase
+@end
+
+@implementation ColorMatrixDiagnosticsTests
+
+static CVPixelBufferRef FirstFrame(NSString* file, OSType format, bool sdrProperties, CMSampleBufferRef* keep) {
+  NSString* path = [[NSBundle.mainBundle.resourcePath stringByAppendingPathComponent:@"fixtures"]
+      stringByAppendingPathComponent:file];
+  AVURLAsset* asset = [AVURLAsset URLAssetWithURL:[NSURL fileURLWithPath:path] options:nil];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  AVAssetTrack* track = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+#pragma clang diagnostic pop
+  NSMutableDictionary* settings = [@{
+    (id)kCVPixelBufferPixelFormatTypeKey : @(format),
+    (id)kCVPixelBufferIOSurfacePropertiesKey : @{},
+  } mutableCopy];
+  if (sdrProperties) settings[AVVideoColorPropertiesKey] = RNSkiaVideo::SDRColorProperties();
+  AVAssetReader* reader = [AVAssetReader assetReaderWithAsset:asset error:nil];
+  AVAssetReaderTrackOutput* output = [[AVAssetReaderTrackOutput alloc] initWithTrack:track outputSettings:settings];
+  [reader addOutput:output];
+  [reader startReading];
+  *keep = [output copyNextSampleBuffer];
+  return *keep ? CMSampleBufferGetImageBuffer(*keep) : nullptr;
+}
+
+static NSString* Attachment(CVPixelBufferRef buffer, CFStringRef key) {
+  CFTypeRef value = CVBufferCopyAttachment(buffer, key, nullptr);
+  NSString* text = value ? [NSString stringWithFormat:@"%@", (__bridge id)value] : @"none";
+  if (value) CFRelease(value);
+  return text;
+}
+
+- (void)report:(NSString*)file sdrProperties:(bool)sdrProperties {
+  CMSampleBufferRef bgraSample = nullptr, nv12Sample = nullptr;
+  CVPixelBufferRef bgra = FirstFrame(file, kCVPixelFormatType_32BGRA, true, &bgraSample);
+  CVPixelBufferRef nv12 = FirstFrame(file, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, sdrProperties, &nv12Sample);
+  XCTAssertTrue(bgra && nv12);
+  if (!bgra || !nv12) return;
+  printf("COLOR %s nv12 %s matrix %s primaries %s transfer %s\n", file.UTF8String,
+         sdrProperties ? "with-709-properties" : "as-decoded",
+         Attachment(nv12, kCVImageBufferYCbCrMatrixKey).UTF8String,
+         Attachment(nv12, kCVImageBufferColorPrimariesKey).UTF8String,
+         Attachment(nv12, kCVImageBufferTransferFunctionKey).UTF8String);
+  CVPixelBufferLockBaseAddress(bgra, kCVPixelBufferLock_ReadOnly);
+  CVPixelBufferLockBaseAddress(nv12, kCVPixelBufferLock_ReadOnly);
+  size_t width = CVPixelBufferGetWidth(nv12), height = CVPixelBufferGetHeight(nv12);
+  auto bgraBase = static_cast<const uint8_t*>(CVPixelBufferGetBaseAddress(bgra));
+  size_t bgraRow = CVPixelBufferGetBytesPerRow(bgra);
+  auto luma = static_cast<const uint8_t*>(CVPixelBufferGetBaseAddressOfPlane(nv12, 0));
+  auto chroma = static_cast<const uint8_t*>(CVPixelBufferGetBaseAddressOfPlane(nv12, 1));
+  size_t lumaRow = CVPixelBufferGetBytesPerRowOfPlane(nv12, 0), chromaRow = CVPixelBufferGetBytesPerRowOfPlane(nv12, 1);
+  double worst601 = 0, worst709 = 0;
+  for (double v : {0.3, 0.5, 0.7}) {
+    for (double u : {0.3, 0.5, 0.7}) {
+      size_t x = (size_t)(u * width) & ~1UL, y = (size_t)(v * height) & ~1UL;
+      double Y = luma[y * lumaRow + x], Cb = chroma[(y / 2) * chromaRow + x], Cr = chroma[(y / 2) * chromaRow + x + 1];
+      double yy = (Y - 16) * 255 / 219, cb = (Cb - 128) * 255 / 224, cr = (Cr - 128) * 255 / 224;
+      auto rgb = [&](double kr, double kb) {
+        double kg = 1 - kr - kb;
+        double r = yy + 2 * (1 - kr) * cr, b = yy + 2 * (1 - kb) * cb;
+        double g = (yy - kr * r - kb * b) / kg;
+        return std::array<double, 3>{r, g, b};
+      };
+      auto m601 = rgb(0.299, 0.114), m709 = rgb(0.2126, 0.0722);
+      const uint8_t* p = bgraBase + y * bgraRow + x * 4;
+      double actual[3] = {(double)p[2], (double)p[1], (double)p[0]};
+      for (int c = 0; c < 3; c++) {
+        worst601 = std::max(worst601, std::abs(std::clamp(m601[c], 0.0, 255.0) - actual[c]));
+        worst709 = std::max(worst709, std::abs(std::clamp(m709[c], 0.0, 255.0) - actual[c]));
+      }
+    }
+  }
+  printf("COLOR %s bgra vs nv12 (%s): max difference with BT.601 %.1f, with BT.709 %.1f\n", file.UTF8String,
+         sdrProperties ? "with-709-properties" : "as-decoded", worst601, worst709);
+  CVPixelBufferUnlockBaseAddress(bgra, kCVPixelBufferLock_ReadOnly);
+  CVPixelBufferUnlockBaseAddress(nv12, kCVPixelBufferLock_ReadOnly);
+  CFRelease(bgraSample);
+  CFRelease(nv12Sample);
+}
+
+- (void)testUntaggedClips {
+  if (!NSProcessInfo.processInfo.environment[@"RNSKV_COLOR_DIAGNOSTICS"]) {
+    XCTSkip(@"Set RNSKV_COLOR_DIAGNOSTICS to print the color attachments");
+  }
+  for (NSString* file in @[ @"h264-638x358.mp4", @"h264-slow-motion.mov", @"h264-1080p30-audio.mp4",
+                             @"color-bars-h264-1920x1080-30.mp4" ]) {
+    [self report:file sdrProperties:true];
+    [self report:file sdrProperties:false];
   }
 }
 

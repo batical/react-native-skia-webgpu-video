@@ -123,13 +123,24 @@ void VideoCompositionItemDecoder::setupReader(CMTime initialTime) {
   // AVAssetReaderTrackOutput takes pixel buffer attributes and video settings
   // in the same dictionary, so the color properties travel with them: an HDR
   // track is tone-mapped to Rec.709 by AVFoundation before we ever see it
-  // (see RNSVColorSpace.h).
-  NSDictionary* pixBuffAttributes = @{
-    (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA),
+  // (see RNSVColorSpace.h), in either format.
+  //
+  // NV12 is the decoder's own format, 1.5 bytes a pixel against BGRA's 4: the
+  // queue's byte budget then holds five 4K frames ahead rather than one or
+  // two. The GPU converts it to RGB when the frame is drawn (yuvBlit.ts),
+  // with the matrix each buffer carries; only HDR needs AVFoundation's
+  // conversion first (see TrackNeedsSDRConversion). BGRA is converted by
+  // VideoToolbox, and a GPU export samples it in place.
+  NSMutableDictionary* pixBuffAttributes = [@{
+    (id)kCVPixelBufferPixelFormatTypeKey :
+        @(item->yuvFrames ? kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+                          : kCVPixelFormatType_32BGRA),
     (id)kCVPixelBufferIOSurfacePropertiesKey : @{},
     (id)kCVPixelBufferMetalCompatibilityKey : @YES,
-    AVVideoColorPropertiesKey : SDRColorProperties(),
-  };
+  } mutableCopy];
+  if (!item->yuvFrames || TrackNeedsSDRConversion(videoTrack)) {
+    pixBuffAttributes[AVVideoColorPropertiesKey] = SDRColorProperties();
+  }
   CGSize resolution = item->resolution;
   /*
    * No explicit size asked for, but a cap on the longest side: scale the
@@ -156,8 +167,6 @@ void VideoCompositionItemDecoder::setupReader(CMTime initialTime) {
     }
   }
   if (resolution.width > 0 && resolution.height > 0) {
-    pixBuffAttributes =
-        [NSMutableDictionary dictionaryWithDictionary:pixBuffAttributes];
     [pixBuffAttributes setValue:@(resolution.width)
                          forKey:(id)kCVPixelBufferWidthKey];
     [pixBuffAttributes setValue:@(resolution.height)
@@ -333,7 +342,10 @@ void VideoCompositionItemDecoder::advanceDecoder(CMTime currentTime) {
 std::shared_ptr<VideoFrame>
 VideoCompositionItemDecoder::acquireFrameForTime(CMTime currentTime,
                                                  bool force) {
-  if (!frameRing.canAcquire()) return nullptr;
+  if (!frameRing.canAcquire()) {
+    PreviewStats::ringRefusals++;
+    return nullptr;
+  }
   CMSampleBufferRef nextFrame = nil;
   // advanceDecoder appends to the frame lists from a decoding thread while
   // this runs on the UI thread: every access to the lists goes through the
@@ -377,6 +389,7 @@ VideoCompositionItemDecoder::acquireFrameForTime(CMTime currentTime,
         break;
       }
     }
+    if (!nextFrame && decodedFrames.empty()) PreviewStats::emptyQueues++;
   }
   if (nextFrame) {
     CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(nextFrame);

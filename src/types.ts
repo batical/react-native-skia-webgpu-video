@@ -150,6 +150,26 @@ export type VideoPlayer = {
 };
 
 /**
+ * The pixel format decoded frames are handed over in, before they are drawn.
+ *
+ * - `yuv`: the decoder's own YUV 4:2:0 buffers, converted to RGB on the GPU
+ *   when a frame is drawn. A frame takes 1.5 bytes a pixel rather than 4
+ *   (12.4 MB rather than 33.2 MB in 4K), so the decoder holds more frames
+ *   ahead for the same memory. On Android only 8-bit SDR tracks decoded at
+ *   their own size; other tracks stay `rgba`.
+ * - `rgba`: frames converted to RGB as they are decoded (iOS: by VideoToolbox,
+ *   Android: by an OpenGL pass), which a GPU export samples in place.
+ * - `auto`: `yuv`, on both platforms.
+ *
+ * Camera footage (Rec.709, or HLG tone mapped to Rec.709) renders the same
+ * either way: both convert with the frame's YCbCr matrix and range. On iOS,
+ * `rgba` also converts a file tagged with other primaries or another SDR
+ * transfer function (Display P3, sRGB) to Rec.709; `yuv` takes its samples as
+ * Rec.709, as Android does in both formats.
+ */
+export type VideoFramePixelFormat = "auto" | "yuv" | "rgba";
+
+/**
  * Represents a video composition.
  */
 export type VideoComposition = {
@@ -171,6 +191,13 @@ export type VideoComposition = {
    * until its decoder has opened. The export always waits for it.
    */
   lazyDecoders?: boolean;
+  /**
+   * The pixel format the video items' frames are decoded into, for the
+   * preview and the export, see {@link VideoFramePixelFormat}.
+   *
+   * @default 'auto'
+   */
+  framePixelFormat?: VideoFramePixelFormat;
 };
 
 type VideoCompositionItemBase = {

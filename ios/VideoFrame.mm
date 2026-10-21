@@ -101,6 +101,12 @@ jsi::Value VideoFrame::get(jsi::Runtime& runtime,
     descriptor.setProperty(runtime, "kind",
                            jsi::String::createFromAscii(runtime, "native-buffer"));
     descriptor.setProperty(runtime, "nativeBuffer", pointer);
+    // Read without importing the buffer: NV12 frames are converted to RGB on
+    // the GPU, BGRA ones sampled as they are.
+    bool nv12 = CVPixelBufferGetPixelFormatType(pixelBuffer) ==
+                kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
+    descriptor.setProperty(runtime, "format",
+                           jsi::String::createFromAscii(runtime, nv12 ? "nv12" : "bgra8"));
     return descriptor;
   }
   return jsi::Value::undefined();

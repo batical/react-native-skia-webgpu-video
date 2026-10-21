@@ -58,6 +58,8 @@ public class VideoCompositionFramesExtractor {
   private volatile boolean isPlaying = false;
 
   private volatile long startTime = 0;
+  // The position playback last started or was sought to while playing.
+  private volatile long playStartPosition = 0;
   private volatile long pausePosition = 0;
   private boolean isEOS = false;
   private boolean completeDispatched = false;
@@ -72,6 +74,7 @@ public class VideoCompositionFramesExtractor {
     public void doFrame(long frameTimeNanos) {
       if (releasing) {
         unwatchDisplay();
+        frameRateVote.withdraw();
         return;
       }
       recordedVsyncNanos = frameTimeNanos;
@@ -80,8 +83,12 @@ public class VideoCompositionFramesExtractor {
   };
   // The display the preview is on; null until the first collection, or when unknown.
   private DisplayVsyncPeriod vsyncPeriod;
+  // The display's highest refresh rate while playing.
+  private final PreviewFrameRateVote frameRateVote = new PreviewFrameRateVote();
   // When that thread last released frames; the playback loop stands back meanwhile.
   private volatile long lastVsyncReleaseNanos = 0;
+  // The vsync the frames collected last are shown at; 0 until the first.
+  private volatile long collectedVsyncNanos = 0;
   // The release itself runs on the playback thread: the decoder's locks are held
   // there for whole codec flushes on a seek, and the UI thread must never
   // wait on them (measured: 65 ms frames when it did).
@@ -187,11 +194,13 @@ public class VideoCompositionFramesExtractor {
       watchDisplay();
       return;
     }
+    frameRateVote.update(isPlaying);
     long period = vsyncPeriod != null ? vsyncPeriod.getPeriodNanos() : 0;
     if (period == 0 || recordedVsyncNanos == 0) return;
     // This frame's vsync, whether the recorder has run in this frame yet or not.
     long since = Math.max(0, System.nanoTime() - recordedVsyncNanos);
     long vsyncNanos = recordedVsyncNanos + (since / period) * period;
+    collectedVsyncNanos = vsyncNanos;
     if (vsyncNanos == lastVsyncNanos) return;
     lastVsyncNanos = vsyncNanos;
     long vsyncPeriodNanos = period;
@@ -241,6 +250,27 @@ public class VideoCompositionFramesExtractor {
    */
   public long getCurrentPosition() {
     return isPlaying ? microTime() - startTime : pausePosition;
+  }
+
+  /**
+   * The position the frames collected in this vsync were released for: the
+   * clock at the vsync rather than at the call, a few milliseconds later.
+   * drawFrame gets it as its time, so that the time it draws at and the frames
+   * it draws agree: read at the call, the time ran up to a frame ahead of the
+   * frames, at 60 fps on most vsyncs. Without vsync release (no display, or
+   * a stalled collector), the clock at the call.
+   *
+   * @return the position in microseconds
+   */
+  public long getPresentedPosition() {
+    long vsyncNanos = collectedVsyncNanos;
+    if (!isPlaying || vsyncNanos == 0
+      || System.nanoTime() - lastVsyncReleaseNanos > VSYNC_RELEASE_TIMEOUT_NANOS) {
+      return getCurrentPosition();
+    }
+    // Never before the play or seek that started this run: the vsync can
+    // precede it by up to a period.
+    return Math.max(vsyncNanos / 1000 - startTime, playStartPosition);
   }
 
   /**
@@ -314,6 +344,7 @@ public class VideoCompositionFramesExtractor {
       pausePosition = 0;
       seekInternal(0);
     }
+    playStartPosition = pausePosition;
     startTime = microTime() - pausePosition;
     isPlaying = true;
     pausePosition = 0;
@@ -381,6 +412,7 @@ public class VideoCompositionFramesExtractor {
       audioPlayer.seekTo(position);
     }
     if (isPlaying) {
+      playStartPosition = position;
       startTime = microTime() - position;
     } else {
       pausePosition = position;
