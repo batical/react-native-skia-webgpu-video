@@ -2132,3 +2132,46 @@ static NSString* Attachment(CVPixelBufferRef buffer, CFStringRef key) {
 }
 
 @end
+
+#pragma mark - Frame pixel format option
+
+@interface FramePixelFormatOptionTests : NativeVideoTestCase
+@end
+
+@implementation FramePixelFormatOptionTests
+
+- (std::shared_ptr<VideoComposition>)parse:(const std::string&)format {
+  jsi::Runtime& rt = *runtime;
+  auto source = "({ duration: 2, items: [{ id: 'a', path: '/tmp/a.mp4', compositionStartTime: 0, "
+                "startTime: 0, duration: 2 }]" + format + " })";
+  auto object = rt.evaluateJavaScript(std::make_shared<jsi::StringBuffer>(source), "composition")
+                    .asObject(rt);
+  return VideoComposition::fromJS(rt, object);
+}
+
+// 'auto', the default, decodes to NV12 on iOS, as on Android.
+- (void)testAutoAndYuvDecodeToNV12 {
+  XCTAssertTrue([self parse:""]->items[0]->yuvFrames);
+  XCTAssertTrue([self parse:", framePixelFormat: 'auto'"]->items[0]->yuvFrames);
+  XCTAssertTrue([self parse:", framePixelFormat: 'yuv'"]->items[0]->yuvFrames);
+}
+
+- (void)testRgbaDecodesToBGRA {
+  XCTAssertFalse([self parse:", framePixelFormat: 'rgba'"]->items[0]->yuvFrames);
+}
+
+- (bool)rejects:(const std::string&)format {
+  try {
+    [self parse:format];
+  } catch (const std::exception&) {
+    return true;
+  }
+  return false;
+}
+
+- (void)testAnUnknownFormatIsRejected {
+  XCTAssertTrue([self rejects:", framePixelFormat: 'bgra'"]);
+  XCTAssertTrue([self rejects:", framePixelFormat: 1"]);
+}
+
+@end
