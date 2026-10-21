@@ -1,0 +1,31 @@
+title: "[Showcase] "
+body:
+  - type: markdown
+    attributes:
+      value: Share an app or an open-source project that uses React Native Skia WebGPU Video. Projects shared here may be featured in the README.
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: GitHub repository, App Store / Google Play page, or website.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What it does
+      description: One or two sentences, and which parts of the library you use (playback, composition, export, audio, frame processor…).
+    validations:
+      required: true
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: Platforms
+      options:
+        - label: iOS
+        - label: Android
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshot or video
+      description: Optional. Drag and drop images or a short video here.

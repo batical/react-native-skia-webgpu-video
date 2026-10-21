@@ -273,6 +273,10 @@ The eight-clip 4K lifecycle case remained memory intensive: sampled peaks reache
 
 A subsequent export-worklet fix reduces repeated-session allocation overhead. In matched two-montage Release runs, memory after 60 seconds idle fell from **426 to 258 MiB physical footprint on iPhone 15 Pro**, and from **738 to 577 MiB PSS on Pixel 8a**. These are different platform metrics, not a cross-device comparison. Six consecutive iPhone workloads and four Android workloads passed with flatter or decreasing late-run readings; bounded tests do not prove zero leaks. See the [native memory investigation](docs/NATIVE_MEMORY_INVESTIGATION_306.md) for checkpoints and limits.
 
+## Built with it
+
+No projects listed yet. Using this library in an app or an open-source project? [Share it in Show and tell](https://github.com/batical/react-native-skia-webgpu-video/discussions/22) and it may be featured here.
+
 ## Development
 
 ```sh
