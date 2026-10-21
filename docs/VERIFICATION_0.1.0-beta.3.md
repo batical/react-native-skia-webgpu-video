@@ -127,7 +127,7 @@ Le quatrième échec en `rgba`, `4k-x8-eager`, dépasse le budget mémoire ; il 
 ## Tests natifs
 
 - **iPhone, XCTest** : **56/58**, les deux autres étant des diagnostics qui ne tournent qu'à la demande. Six nouveaux tests : chaque frame d'un clip et d'un montage lues en NV12, le format annoncé par chaque frame, et la lecture de `framePixelFormat` (`auto` et `yuv` en NV12, `rgba` en BGRA, valeur inconnue refusée). Les deux diagnostics ont été lancés à part (débit du décodeur par format, étiquettes de couleur des clips sans étiquette).
-- **Pixel, tests instrumentés** : **126/127** dans la suite complète. L'échec, `BigMontageTest.aLazyPreviewOfEight4KClipsPlaysThrough`, figure dans la référence connue (il échouait déjà sur `main` dans la suite complète). Lancée seule juste après, sur un Pixel aux cœurs à 85 °C après des heures de 4K, la classe échoue 2 fois sur 5 : le seuil de 150 frames à l'heure en 4K, et un `OutOfMemoryError` du tas Java après l'export eager de 8 clips 4K. Ces tests pilotent le décodeur Java sans `Looper`, chemin que cette version ne modifie pas. ⏳ *Relance à froid : à compléter.*
+- **Pixel, tests instrumentés** : **126/127** dans la suite complète. L'échec, `BigMontageTest.aLazyPreviewOfEight4KClipsPlaysThrough`, figure dans la référence connue (il échouait déjà sur `main` dans la suite complète). Lancée seule juste après, sur un Pixel aux cœurs à 85 °C après des heures de 4K, la classe échoue 2 fois sur 5 : le seuil de 150 frames à l'heure en 4K, et un `OutOfMemoryError` du tas Java après l'export eager de 8 clips 4K. Ces tests pilotent le décodeur Java sans `Looper`, chemin que cette version ne modifie pas. Ils n'ont pas été relancés à froid avant la release : l'attribution à la chaleur n'est pas confirmée.
 
 ## Runs écartés
 
