@@ -31,6 +31,11 @@ public:
    * default) does. iOS only.
    */
   bool directTexture = false;
+  /**
+   * The composition's `framePixelFormat: 'yuv'`: frames decoded to NV12, the
+   * decoder's own format, rather than BGRA. See setupReader.
+   */
+  bool yuvFrames = false;
   bool isVideo = true;
   bool audioEnabled = false;
   double audioVolume = 1.0;
@@ -61,6 +66,20 @@ public:
       auto lazyProp = jsComposition.getProperty(runtime, "lazyDecoders");
       composition->lazyDecoders = lazyProp.isBool() && lazyProp.getBool();
     }
+    // 'auto' is NV12 on iOS, as on Android: a third of BGRA's memory, and the
+    // same picture for camera footage (docs/FRAME_PIXEL_FORMAT.md).
+    bool yuvFrames = true;
+    if (jsComposition.hasProperty(runtime, "framePixelFormat")) {
+      auto formatProp = jsComposition.getProperty(runtime, "framePixelFormat");
+      if (formatProp.isString()) {
+        auto format = formatProp.asString(runtime).utf8(runtime);
+        if (format != "auto" && format != "yuv" && format != "rgba")
+          throw jsi::JSError(runtime, "framePixelFormat must be 'auto', 'yuv' or 'rgba'");
+        yuvFrames = format != "rgba";
+      } else if (!formatProp.isUndefined()) {
+        throw jsi::JSError(runtime, "framePixelFormat must be 'auto', 'yuv' or 'rgba'");
+      }
+    }
     auto jsItems = jsComposition.getProperty(runtime, "items")
                        .asObject(runtime)
                        .asArray(runtime);
@@ -81,6 +100,7 @@ public:
       item->duration = checkedMediaSeconds(jsItem.getProperty(runtime, "duration").asNumber());
       checkedMediaSeconds(item->startTime + item->duration);
       checkedMediaSeconds(item->compositionStartTime + item->duration);
+      item->yuvFrames = yuvFrames;
       item->resolution = CGSize();
       if (jsItem.hasProperty(runtime, "resolution")) {
         auto resProp = jsItem.getProperty(runtime, "resolution");

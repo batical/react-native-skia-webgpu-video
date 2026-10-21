@@ -319,6 +319,8 @@ export const useVideoComposition = <T = undefined>({
   const lastImportedVersion = useSharedValue(-1);
   // Whether the previous vsync imported and left its draw to this one.
   const drawDeferred = useSharedValue(false);
+  // Whether the previous vsync brought new frames.
+  const importedLastVsync = useSharedValue(false);
   // A new drawFrame can draw something else from the same time and frames.
   useEffect(() => {
     lastDrawnTime.value = -1;
@@ -384,14 +386,22 @@ export const useVideoComposition = <T = undefined>({
       sourcesGeneration.value = generation;
       const currentTime = framesExtractor.currentTime;
       const framesVersion = framesExtractor.framesVersion;
-      if (splitImportAndDraw && framesVersion !== lastImportedVersion.value) {
+      const imported =
+        splitImportAndDraw && framesVersion !== lastImportedVersion.value;
+      const importedBefore = importedLastVsync.value;
+      // Version 0: no frame decoded yet.
+      importedLastVsync.value = imported && framesVersion > 0;
+      if (imported) {
         // ownVideoFrames above has just imported the new frames: leave the
-        // draw to the next vsync, which finds them in the import cache. Never
-        // twice running: a frame that lands on the vsync owed a draw would
-        // push it again, and the frame before it would never be shown.
+        // draw to the next vsync, which finds them in the import cache. Not
+        // when the previous vsync brought new frames too: frames arriving at
+        // every vsync (60 fps, or a display gone down to 30 Hz) leave no vsync
+        // free for the draw, and the next frame would replace this one before
+        // it is shown. Never twice running either, for the same reason.
         lastImportedVersion.value = framesVersion;
         if (
           !drawDeferred.value &&
+          !importedBefore &&
           currentFrame.value !== null &&
           frameGeneration.value === generation
         ) {

@@ -24,6 +24,15 @@ struct NativeResourceStats {
   inline static ResourceCounter encoderSubmittingBuffers;
   inline static ResourceCounter encoderSubmittingBytes;
 };
+// Composition preview diagnostics, counted since launch: an acquire refused
+// while the frame ring is full, an acquire that found no decoded frame queued
+// (the decoder not ahead), the decode ticks run, and those over 16 ms.
+struct PreviewStats {
+  inline static std::atomic<uint64_t> ringRefusals{0};
+  inline static std::atomic<uint64_t> emptyQueues{0};
+  inline static std::atomic<uint64_t> decodeTicks{0};
+  inline static std::atomic<uint64_t> slowDecodeTicks{0};
+};
 inline size_t pixelBufferBytes(CVPixelBufferRef buffer) {
   size_t bytes = CVPixelBufferGetDataSize(buffer);
   return bytes ? bytes : CVPixelBufferGetBytesPerRow(buffer) *

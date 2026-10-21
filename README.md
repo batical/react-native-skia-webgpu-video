@@ -45,6 +45,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 
 A native rebuild is required. Expo Go cannot load this module. Skia and WebGPU now share Dawn through the `react-native-webgpu-dawn` npm package: `node` must be on the `PATH` during `pod install` and Gradle builds, and both packages must resolve the same version of it. For iOS, use the deployment target required by your React Native and Skia versions; the example targets iOS 16.4 or later.
 
+On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`) to your app's `Info.plist`: without it, iOS holds every frame callback of the app, the preview's included, at 60 Hz. On Android 15 and later, a playing preview asks the display for its highest refresh rate itself.
+
 ### Install
 
 The beta is published on npm under the `beta` tag:
@@ -203,13 +205,27 @@ This budget covers **tracked video resources**, not all memory held by codecs, S
 
 | Step | iOS | Android |
 | --- | --- | --- |
-| Decode | AVFoundation, BGRA IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`) | API 29+, 8-bit SDR H.264/HEVC at the encoded size: `ImageReader` YUV buffers. Otherwise: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
-| Into Skia, preview | WebGPU blit into a reusable texture, then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop and rotation in one pass), then an owned Graphite snapshot |
-| Into Skia, export | Sampled in place through the frame's IOSurface: no copy, no per-clip GPU wait | Same as preview |
+| Decode | AVFoundation, IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`): the decoder's NV12 (`framePixelFormat: 'yuv'`, the default), or BGRA converted by VideoToolbox (`'rgba'`) | API 29+, 8-bit SDR H.264/HEVC at the encoded size: `ImageReader` YUV buffers (the default). Otherwise, or with `'rgba'`: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
+| Into Skia, preview | NV12: a YUV→RGB render pass into a reusable texture. BGRA: a WebGPU blit into it. Then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop and rotation in one pass), then an owned Graphite snapshot |
+| Into Skia, export | NV12: converted into a per-clip texture, as on Android. BGRA: sampled in place through the frame's IOSurface, no copy | Same as preview |
 | Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into an AHardwareBuffer lent by the encoder; EGL samples it into the codec Surface after its sync-fd |
 | Fallback | CPU readback, with a warning | CPU readback, with a warning |
 
 Every path waits for checked GPU completion before releasing source frames or handing a buffer to the encoder. Scaled, HDR and 10-bit Android sources keep the EGL decode path.
+
+### Frame pixel format
+
+`framePixelFormat` chooses how a composition's frames are decoded, for its preview and its export:
+
+```ts
+const composition = { duration, items, framePixelFormat: 'yuv' }; // 'auto' (default) | 'yuv' | 'rgba'
+```
+
+- `yuv`: the decoder's own YUV 4:2:0 buffers, converted to RGB on the GPU when a frame is drawn. A decoded frame takes 1.5 bytes a pixel instead of 4 (12.4 MB instead of 33.2 MB in 4K), so the decoder keeps more frames ahead in the same memory.
+- `rgba`: frames converted to RGB as they are decoded (iOS: by VideoToolbox; Android: by an OpenGL pass), which an iOS GPU export samples in place.
+- `auto`: `yuv`, on both platforms.
+
+Both convert with the frame's own YCbCr matrix and range, HDR tone mapped to Rec.709 by the platform. One difference: on iOS, `rgba` also converts a file tagged with other primaries or another SDR transfer function (Display P3, sRGB) to Rec.709, as AVFoundation does; `yuv`, like Android in both formats, takes its samples as Rec.709. Camera footage (Rec.709 or HLG) renders the same in both. See the [measurements](docs/FRAME_PIXEL_FORMAT.md) before choosing.
 
 For advanced exports, `createFrameProcessor` supports asynchronous preparation at each composition timestamp. The optional `react-native-skia-webgpu-video/gpu` entry point provides a resource scope whose asynchronous disposal waits for tracked work. See the [WebGPU cube example](examples/webgpu-overlay.ts).
 
@@ -251,11 +267,12 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 
 | Area | Current evidence |
 | --- | --- |
-| iOS | iPhone 15 Pro: all export cases above passed in every run (72/72), with output sizes identical to 3.6.1 ([verification](migration/skia-3.7.0/verification.md)). Native XCTests were last run on the simulator with 3.6.1 (50/50); the iOS native sources have not changed since. |
-| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. With Dawn 157 the errors stay within ±1, as with 3.6.1 ([verification](migration/skia-3.7.0/verification.md#pixels)). Instrumented tests were last run on 3.4.4 (97/102; the 5 failures predate it). |
-| JavaScript / types | 217 tests in 10 suites, typecheck, package tests and 112 benchmark-harness tests pass; CI runs them on every pull request. |
+| Frame accuracy | At 60 Hz, the preview draws the frame due at 99–100% of vsyncs in 30, 24 and 60 fps on both phones, and 97–100% in 4K with `yuv` frames on the Pixel 8a. On a warm iPhone at 120 Hz: 73–95% in 1080p, 77–90% in 4K 60 fps. Every exported frame holds the right source frame, in both frame pixel formats ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). |
+| iOS | iPhone 15 Pro: 61/61 benchmark cases pass with `yuv` frames, including the three that stopped on the video memory budget with BGRA; 56/58 native XCTests pass, the other two being opt-in diagnostics ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). |
+| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. With Dawn 157 the errors stay within ±1, as with 3.6.1 ([verification](migration/skia-3.7.0/verification.md#pixels)). Instrumented tests: 126/127 on beta.3 (the failure is a known 4K throughput test, see the [verification](docs/VERIFICATION_0.1.0-beta.3.md#tests-natifs)). |
+| JavaScript / types | 237 tests in 11 suites, typecheck, package tests and 122 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
-| Known issues | A 4K lazy composition seek times out in 1 of 3 runs on Pixel 8a, and three simultaneous 4K clips stop on the video memory budget during iPhone playback; both happen before and after this release. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels; with 3.7.0 they are up to 5.7% smaller than with 3.6.1, cause not confirmed. |
+| Known issues | On Pixel 8a: a seek while playing a 4K sequence leaves the clock stalled, a paused seek into a 120-clip lazy montage does not show its frame, and Android 17 reports a missing file in words the harness does not recognize; all three predate beta.3. An iOS export with `yuv` frames spends 2–4 ms more per frame than with `rgba`. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
 | Long sessions | Not yet re-run since 3.0.6; the 3.0.6 results below are the latest. |
 
 ### Earlier results (Skia 3.0.6)

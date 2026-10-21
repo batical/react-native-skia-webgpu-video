@@ -15,7 +15,12 @@ import {
   releaseVideoMemory,
   reserveVideoMemory,
 } from "./memory";
-import { blitYuvFrame, releaseYuvImports, yuvFrameOrigin } from "./yuvBlit";
+import {
+  blitNv12Frame,
+  blitYuvFrame,
+  releaseYuvImports,
+  yuvFrameOrigin,
+} from "./yuvBlit";
 import type { YuvImport } from "./yuvBlit";
 
 type FrameTexture =
@@ -26,6 +31,8 @@ type FrameTexture =
        * this crop rectangle turned clockwise by `rotation` for display. */
       region?: { x: number; y: number; width: number; height: number };
       rotation?: number;
+      /** iOS: the decoder's NV12 buffer (`framePixelFormat: 'yuv'`), or BGRA. */
+      format?: "nv12" | "bgra8";
     }
   | {
       kind: "rgba";
@@ -441,6 +448,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         nativeSource = createNativeVideoGpuFrame(texture.nativeBuffer);
         const region = texture.region;
         const rotation = texture.rotation ?? 0;
+        const nv12 = !region && texture.format === "nv12";
         let origin = { x: 0, y: 0 };
         if (region) {
           // An Android codec buffer: padded, YUV, in encoded orientation. The
@@ -449,6 +457,12 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           // driver-defined YUV formats "bgra8", yet Dawn imports them as YUV:
           // the native side checked the format, so the label is not read.
           origin = yuvFrameOrigin(region, rotation, nativeSource, frame);
+        } else if (nv12) {
+          if (
+            nativeSource.width !== frame.width ||
+            nativeSource.height !== frame.height
+          )
+            throw new Error("Native video buffer dimensions mismatch");
         } else if (
           // RN WebGPU labels a single-plane Android RGBA AHB "bgra8". Dawn
           // reads the actual AHB format; the string distinguishes RGB from
@@ -478,6 +492,9 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
             frame.height,
             cache.uploadTexture!,
           );
+        } else if (nv12) {
+          // Decoded orientation, as below: drawVideoFrame applies rotation.
+          blitNv12Frame(device, nativeSource, cache.uploadTexture!);
         } else {
           // Keep decoded orientation: drawVideoFrame applies rotation once.
           device.queue.copyExternalImageToTexture(

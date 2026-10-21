@@ -18,13 +18,18 @@ import {
   reserveVideoMemory,
 } from "./memory";
 import type { VideoFrame } from "./types";
-import { blitYuvFrame, releaseYuvImports, yuvFrameOrigin } from "./yuvBlit";
+import {
+  blitNv12Frame,
+  blitYuvFrame,
+  releaseYuvImports,
+  yuvFrameOrigin,
+} from "./yuvBlit";
 import type { YuvImport } from "./yuvBlit";
 
-/** A decoded frame sampled in place, without an owned snapshot: on iOS its
- * IOSurface, on Android its producer's RGBA texture, which the decoder
- * buffer was just converted into. The decoder lease stays open while the
- * image is in use. */
+/** A decoded frame sampled in place, without an owned snapshot: a BGRA
+ * frame's IOSurface on iOS, or for a YUV frame (Android, iOS NV12) its
+ * producer's RGBA texture, which the decoder buffer was just converted into.
+ * The decoder lease stays open while the image is in use. */
 export type ExportFrameImport = {
   id: number;
   frame: VideoFrame;
@@ -37,7 +42,7 @@ export type ExportFrameImport = {
   aliases?: WeakSet<VideoFrame>;
 };
 
-/** Android: the texture a producer's decoded frames are converted into. */
+/** The texture a producer's YUV frames are converted into. */
 type ProducerTexture = { texture: GPUTexture; reservation: number };
 
 /** Per export session, keyed by producer. `enabled` turns off after a first
@@ -48,7 +53,7 @@ export type ExportFrameImports = {
   producers: Set<number>;
   enabled: boolean;
   imported: boolean;
-  /** Android: one RGBA texture per producer, rewritten by each frame. */
+  /** One RGBA texture per producer of YUV frames, rewritten by each frame. */
   textures: Map<number, ProducerTexture>;
   /** Android: decoder buffers imported once (see yuvBlit.ts). */
   yuv: Map<number, YuvImport[]>;
@@ -65,6 +70,8 @@ type NativeBufferTexture = {
   nativeBuffer: bigint;
   region?: { x: number; y: number; width: number; height: number };
   rotation?: number;
+  /** iOS: the decoder's NV12 buffer (`framePixelFormat: 'yuv'`), or BGRA. */
+  format?: "nv12" | "bgra8";
 };
 
 // Captured on the RN runtime. Android samples its ImageReader YUV frames
@@ -117,8 +124,8 @@ export const releaseExportFrame = (entry: ExportFrameImport): void => {
   entry.frame.dispose?.();
 };
 
-/** Android: releases a producer's texture and decoder buffer imports. Call
- * only once its last frame's GPU work has completed. */
+/** Releases a producer's texture and decoder buffer imports. Call only once
+ * its last frame's GPU work has completed. */
 const releaseProducerTexture = (
   imports: ExportFrameImports,
   producer: number,
@@ -133,10 +140,11 @@ const releaseProducerTexture = (
   }
 };
 
-/** Android: converts a decoded ImageReader frame into its producer's RGBA
- * texture, wrapped as a Skia image. The conversion is submitted ahead of the
- * frame's drawing, on the same queue; the export's checked flush waits for
- * both before the lease or the texture is reused. */
+/** Converts a decoded YUV frame (an Android ImageReader buffer, or an iOS
+ * NV12 one) into its producer's RGBA texture, wrapped as a Skia image. The
+ * conversion is submitted ahead of the frame's drawing, on the same queue;
+ * the export's checked flush waits for both before the lease or the texture
+ * is reused. */
 const importYuvExportFrame = (
   imports: ExportFrameImports,
   frame: VideoFrame,
@@ -158,12 +166,17 @@ const importYuvExportFrame = (
   try {
     entry.nativeFrame = createNativeVideoGpuFrame(source.nativeBuffer);
     const rotation = source.rotation ?? 0;
-    const origin = yuvFrameOrigin(
-      source.region!,
-      rotation,
-      entry.nativeFrame,
-      frame,
-    );
+    // iOS NV12: the whole buffer, in decoded orientation.
+    const nv12 = source.format === "nv12";
+    if (
+      nv12 &&
+      (entry.nativeFrame.width !== frame.width ||
+        entry.nativeFrame.height !== frame.height)
+    )
+      throw new Error("Native video buffer dimensions mismatch");
+    const origin = nv12
+      ? { x: 0, y: 0 }
+      : yuvFrameOrigin(source.region!, rotation, entry.nativeFrame, frame);
     const device = getVideoGpuDevice();
     target = imports.textures.get(producer);
     if (
@@ -199,17 +212,19 @@ const importYuvExportFrame = (
     }
     // Can throw after submitting: drain below before giving the lease back.
     submitted = true;
-    blitYuvFrame(
-      device,
-      imports.yuv,
-      producer,
-      entry.nativeFrame,
-      rotation,
-      origin,
-      frame.width,
-      frame.height,
-      target.texture,
-    );
+    if (nv12) blitNv12Frame(device, entry.nativeFrame, target.texture);
+    else
+      blitYuvFrame(
+        device,
+        imports.yuv,
+        producer,
+        entry.nativeFrame,
+        rotation,
+        origin,
+        frame.width,
+        frame.height,
+        target.texture,
+      );
     entry.image = Skia.Image.MakeImageFromGPUTexture(target.texture);
     if (!entry.image) throw new Error("Cannot wrap the decoded frame");
     return entry;
@@ -233,15 +248,18 @@ const importYuvExportFrame = (
 };
 
 /** Wraps a decoded BGRA CVPixelBuffer's IOSurface as a Skia image, read-only.
- * The decoder already finished writing it; no producer fence is needed. On
- * Android, converts the decoded YUV frame instead (see importYuvExportFrame). */
+ * The decoder already finished writing it; no producer fence is needed. A
+ * YUV frame (Android, iOS NV12) is converted instead (see importYuvExportFrame). */
 export const importExportFrame = (
   frame: VideoFrame,
   imports?: ExportFrameImports,
 ): ExportFrameImport => {
   "worklet";
-  if (convertsYuv) {
-    if (!imports) throw new Error("Android in-place frames need their imports");
+  if (
+    convertsYuv ||
+    (frame.texture as NativeBufferTexture).format === "nv12"
+  ) {
+    if (!imports) throw new Error("YUV in-place frames need their imports");
     return importYuvExportFrame(imports, frame);
   }
   const entry: ExportFrameImport = {

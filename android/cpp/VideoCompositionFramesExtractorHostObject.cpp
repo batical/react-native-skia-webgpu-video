@@ -172,7 +172,7 @@ jsi::Value VideoCompositionFramesExtractorHostObject::get(
   } else if (propName == "currentTime") {
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
     return {released.test() ? 0
-                            : (double)player->getCurrentPosition() / 1000000.0};
+                            : (double)player->getPresentedPosition() / 1000000.0};
   } else if (propName == "framesVersion") {
     std::lock_guard<std::recursive_mutex> lock(playerMutex);
     return {released.test() || !prepared.test()

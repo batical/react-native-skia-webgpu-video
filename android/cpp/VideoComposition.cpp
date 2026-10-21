@@ -150,6 +150,18 @@ VideoComposition::fromJSIObject(jsi::Runtime& runtime,
   auto composition = VideoComposition::create(duration, items);
   composition->setFieldValue(VideoComposition::javaClassStatic()->getField<jboolean>(
       "hardwareBufferEnabled"), static_cast<jboolean>(NativeHardwareBuffer::isEnabled()));
+  if (jsComposition.hasProperty(runtime, "framePixelFormat")) {
+    auto formatProp = jsComposition.getProperty(runtime, "framePixelFormat");
+    std::string format = formatProp.isString() ? formatProp.asString(runtime).utf8(runtime) : "";
+    if (!formatProp.isUndefined() && format != "auto" && format != "yuv" && format != "rgba")
+      throw jsi::JSError(runtime, "framePixelFormat must be 'auto', 'yuv' or 'rgba'");
+    // 'auto' and 'yuv' are the same on Android: YUV wherever the track allows.
+    if (format == "rgba") {
+      composition->setFieldValue(
+          VideoComposition::javaClassStatic()->getField<jboolean>("rgbaFrames"),
+          (jboolean)JNI_TRUE);
+    }
+  }
   if (jsComposition.hasProperty(runtime, "lazyDecoders")) {
     auto lazyProp = jsComposition.getProperty(runtime, "lazyDecoders");
     if (lazyProp.isBool() && lazyProp.getBool()) {

@@ -21,7 +21,7 @@ export const OWNED_APPS = {
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const usage = `node scripts/test-ios-device-ab-run.mjs --device UDID --backend baseline|candidate --label NAME --app /path/Release-iphoneos/Example.app [--case ID ...] [--profile full|soak|smoke] [--repetitions 3] [--idle-seconds 180] [--poll-seconds 30] [--unlock-wait-seconds 120]
+const usage = `node scripts/test-ios-device-ab-run.mjs --device UDID --backend baseline|candidate --label NAME --app /path/Release-iphoneos/Example.app [--case ID ...] [--profile full|soak|smoke] [--repetitions 3] [--idle-seconds 180] [--poll-seconds 30] [--unlock-wait-seconds 120] [--frame-pixel-format auto|yuv|rgba]
 Installs the supplied signed app, launches a fresh process, and copies original result JSON.
 Idle RSS/footprint must come from the app's native collector, never host ps.
 Outputs use exclusive names under benchmark/results; no previous run is overwritten.`;
@@ -29,7 +29,8 @@ export function parseOptions(argv) {
   const options = { profile: 'full', repetitions: 3, cases: [], timeoutMinutes: 25, idleSeconds: 0, pollSeconds: 30, unlockWaitSeconds: 120 };
   const flags = { '--device': 'device', '--backend': 'backend', '--label': 'label', '--app': 'app',
     '--profile': 'profile', '--repetitions': 'repetitions', '--timeout-minutes': 'timeoutMinutes',
-    '--idle-seconds': 'idleSeconds', '--poll-seconds': 'pollSeconds', '--unlock-wait-seconds': 'unlockWaitSeconds' };
+    '--idle-seconds': 'idleSeconds', '--poll-seconds': 'pollSeconds', '--unlock-wait-seconds': 'unlockWaitSeconds',
+    '--frame-pixel-format': 'framePixelFormat' };
   for (let index = 0; index < argv.length; index++) {
     const flag = argv[index];
     if (flag === '--help' || flag === '-h') return { help: true };
@@ -45,7 +46,8 @@ export function parseOptions(argv) {
     Number.isInteger(options.idleSeconds) && options.idleSeconds >= 0 && options.idleSeconds <= 600 && options.idleSeconds % 30 === 0 &&
     Number.isInteger(options.pollSeconds) && options.pollSeconds >= 15 && options.pollSeconds <= 60 &&
     Number.isInteger(options.unlockWaitSeconds) && options.unlockWaitSeconds >= 0 && options.unlockWaitSeconds <= 600 &&
-    options.cases.every((id) => /^[a-zA-Z0-9_.-]+$/.test(id)) && new Set(options.cases).size === options.cases.length,
+    options.cases.every((id) => /^[a-zA-Z0-9_.-]+$/.test(id)) && new Set(options.cases).size === options.cases.length &&
+    ['auto', 'yuv', 'rgba', undefined].includes(options.framePixelFormat),
     'Invalid arguments; use --help');
   const catalog = buildCases({ profile: options.profile });
   assert(options.cases.every((id) => catalog.some((scenario) => scenario.id === id)), 'Unknown case ID for the selected workload/profile');
@@ -240,7 +242,8 @@ export async function main(argv) {
       return deviceCommand(['device', 'process', 'launch', '--terminate-existing', '--activate',
       '--environment-variables', JSON.stringify({ RNSKV_BENCHMARK_PROFILE: options.profile,
         RNSKV_BENCHMARK_REPETITIONS: String(options.repetitions), RNSKV_BENCHMARK_CASE_IDS: JSON.stringify(options.cases),
-        RNSKV_BENCHMARK_RUN_ID: evidence.runId, RNSKV_BENCHMARK_IDLE_SECONDS: String(options.idleSeconds) }), owned.bundle]);
+        RNSKV_BENCHMARK_RUN_ID: evidence.runId, RNSKV_BENCHMARK_IDLE_SECONDS: String(options.idleSeconds),
+        ...(options.framePixelFormat ? { RNSKV_FRAME_PIXEL_FORMAT: options.framePixelFormat } : {}) }), owned.bundle]);
     }, { waitMs: options.unlockWaitSeconds * 1000, onLocked: async () => {
       evidence.status = 'waiting-for-device-unlock';
       await save();

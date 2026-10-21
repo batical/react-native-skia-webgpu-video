@@ -1011,7 +1011,26 @@ describe("useVideoComposition", () => {
       expect(drawFrame).toHaveBeenLastCalledWith(
         expect.objectContaining({ currentTime: 0 }),
       );
-      // A third frame on the following tick is deferred again.
+      // Frames arriving at every tick leave no tick free for the draw:
+      // deferring the third would let the fourth replace it unseen.
+      extractor.framesVersion = 3;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(3);
+      extractor.framesVersion = 4;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(4);
+    });
+
+    it("splits again once a tick brings no new frame", () => {
+      const { extractor, drawFrame } = setup({ splitImportAndDraw: true });
+      tick();
+      extractor.framesVersion = 1;
+      tick();
+      extractor.framesVersion = 2;
+      tick();
+      expect(drawFrame).toHaveBeenCalledTimes(2);
+      // A tick without a new frame: the next one is deferred again.
+      tick();
       extractor.framesVersion = 3;
       tick();
       expect(drawFrame).toHaveBeenCalledTimes(2);

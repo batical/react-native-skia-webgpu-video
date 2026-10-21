@@ -15,7 +15,7 @@ class MainActivity : ReactActivity() {
     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
   override fun onCreate(savedInstanceState: Bundle?) {
     benchmarkIntent = intent
-    if (intent.getStringExtra("RNSKV_BENCHMARK_PROFILE") in listOf("smoke", "full", "soak", "interop")) {
+    if (intent.getStringExtra("RNSKV_BENCHMARK_PROFILE") in listOf("smoke", "full", "soak", "interop", "sync")) {
       window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
     super.onCreate(null)

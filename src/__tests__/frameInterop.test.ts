@@ -57,6 +57,13 @@ const mockImportYuv = jest.fn((_source: unknown, _descriptor: unknown) => {
   mockYuvImports.push(wrapper);
   return wrapper;
 });
+// One external texture per iOS NV12 frame, in import order.
+const mockExternals: { destroy: jest.Mock }[] = [];
+const mockImportExternal = jest.fn((_descriptor: unknown) => {
+  const external = { destroy: jest.fn() };
+  mockExternals.push(external);
+  return external;
+});
 const mockWriteBuffer = jest.fn();
 const mockSubmit = jest.fn();
 const mockPass = {
@@ -75,6 +82,7 @@ jest.mock("../gpuDevice", () => ({
     createShaderModule: jest.fn(() => ({})),
     createRenderPipeline: jest.fn(() => ({})),
     createNativeBufferExternalTexture: mockImportYuv,
+    importExternalTexture: mockImportExternal,
     createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
     createBindGroup: jest.fn(() => ({})),
     createCommandEncoder: jest.fn(() => ({
@@ -197,6 +205,60 @@ const withAndroidInterop = (
     }
   });
 };
+
+describe("iOS NV12 frames", () => {
+  const nv12Frame = (): VideoFrame => ({
+    id: 1,
+    producerId: 1,
+    width: 4,
+    height: 2,
+    rotation: 90,
+    texture: { kind: "native-buffer", nativeBuffer: 123n, format: "nv12" },
+    dispose: jest.fn(),
+  });
+  const nv12Source = (width = 4, height = 2) => ({
+    handle: 123n,
+    width,
+    height,
+    pixelFormat: "nv12",
+    release: jest.fn(),
+  });
+
+  afterEach(() => {
+    mockExternals.length = 0;
+    clearVideoFrameImages(true);
+  });
+
+  it("converts the decoder buffer on the GPU, in decoded orientation, and ends its import once submitted", () => {
+    const source = nv12Source();
+    mockWrapNative.mockReturnValueOnce(source);
+    const frame = nv12Frame();
+    expect(imageFromVideoFrame(frame)).not.toBeNull();
+    expect(mockCopy).not.toHaveBeenCalled();
+    // Only the matrix and range: the transfer function and primaries stay.
+    expect(mockImportExternal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source,
+        sourceColorSpace: { primaries: "srgb", transfer: "srgb" },
+      }),
+    );
+    expect(mockImportExternal.mock.calls[0]![0]).not.toHaveProperty("rotation");
+    expect(mockPass.draw).toHaveBeenCalledWith(3);
+    expect(mockSubmit).toHaveBeenCalled();
+    expect(mockExternals[0]!.destroy).toHaveBeenCalled();
+    // The lease goes back once the checked flush covered the draw.
+    expect(source.release).toHaveBeenCalled();
+    expect(frame.dispose).toHaveBeenCalled();
+  });
+
+  it("rejects a buffer whose size disagrees with the frame", () => {
+    mockWrapNative.mockReturnValueOnce(nv12Source(8, 2));
+    expect(() => imageFromVideoFrame(nv12Frame())).toThrow(
+      "Native video buffer dimensions mismatch",
+    );
+    expect(mockImportExternal).not.toHaveBeenCalled();
+  });
+});
 
 describe("Android ImageReader YUV frames", () => {
   // An 8×6 codec buffer whose 6×4 picture has right/bottom padding.

@@ -33,6 +33,7 @@ public:
   jboolean getIsPlaying() const;
 
   jlong getCurrentPosition() const;
+  jlong getPresentedPosition() const;
 
   jlong getFramesVersion() const;
 

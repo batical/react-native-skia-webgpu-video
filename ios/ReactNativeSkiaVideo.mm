@@ -276,6 +276,10 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
             add("encoders", NativeResourceStats::encoders);
             add("encoderSubmittingBuffers", NativeResourceStats::encoderSubmittingBuffers);
             add("encoderSubmittingBytes", NativeResourceStats::encoderSubmittingBytes);
+            result.setProperty(rt, "previewRingRefusals", static_cast<double>(PreviewStats::ringRefusals.load()));
+            result.setProperty(rt, "previewEmptyQueues", static_cast<double>(PreviewStats::emptyQueues.load()));
+            result.setProperty(rt, "previewDecodeTicks", static_cast<double>(PreviewStats::decodeTicks.load()));
+            result.setProperty(rt, "previewSlowDecodeTicks", static_cast<double>(PreviewStats::slowDecodeTicks.load()));
             return jsi::Value(std::move(result));
           }));
   RNSVModule.setProperty(runtime, "getBackendInfo",
