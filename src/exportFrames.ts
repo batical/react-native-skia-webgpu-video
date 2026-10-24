@@ -22,7 +22,7 @@ import {
   blitNv12Frame,
   blitYuvFrame,
   releaseYuvImports,
-  yuvFrameOrigin,
+  yuvFrameRegion,
 } from "./yuvBlit";
 import type { YuvImport } from "./yuvBlit";
 
@@ -174,9 +174,9 @@ const importYuvExportFrame = (
         entry.nativeFrame.height !== frame.height)
     )
       throw new Error("Native video buffer dimensions mismatch");
-    const origin = nv12
-      ? { x: 0, y: 0 }
-      : yuvFrameOrigin(source.region!, rotation, entry.nativeFrame, frame);
+    const region = nv12
+      ? null
+      : yuvFrameRegion(source.region!, rotation, entry.nativeFrame);
     const device = getVideoGpuDevice();
     target = imports.textures.get(producer);
     if (
@@ -220,9 +220,7 @@ const importYuvExportFrame = (
         producer,
         entry.nativeFrame,
         rotation,
-        origin,
-        frame.width,
-        frame.height,
+        region!,
         target.texture,
       );
     entry.image = Skia.Image.MakeImageFromGPUTexture(target.texture);
@@ -329,8 +327,9 @@ export const releaseExportFrames = (imports: ExportFrameImports): void => {
 
 /** The export counterpart of ownVideoFrames on iOS: decoded frames are drawn
  * in place, and a producer's previous frame is released once its next one is
- * imported, since every exported frame ends with a checked GPU wait. Other
- * frames, or every frame after a first failed import, use `fallback`. */
+ * imported, since the export waits for the GPU to complete a frame before it
+ * imports the next one. Other frames, or every frame after a first failed
+ * import, use `fallback`. */
 export const ownExportFrames = (
   imports: ExportFrameImports,
   decoded: Record<string, VideoFrame>,

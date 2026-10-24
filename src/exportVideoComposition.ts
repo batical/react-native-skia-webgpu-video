@@ -88,7 +88,8 @@ export type ExportProfile = {
   targetMs: number;
   /** drawFrame, before/afterDrawFrame and progress scheduling. */
   drawMs: number;
-  /** The checked flush(true): waiting for the GPU to complete the frame. */
+  /** The checked flush(true): waiting for the GPU to complete the frame,
+   * which Android's window export does once it decoded the next frame. */
   gpuMs: number;
   /** Readback when used, submission to the encoder including its
    * backpressure, and the final file write. */
@@ -149,6 +150,9 @@ type ExportState = {
   frames: Record<string, VideoFrame>;
   processor: VideoFrameProcessor | null;
   pendingAfterDraw: (() => void) | null;
+  /** Android window: the last frame was submitted without its checked GPU
+   * wait, which comes before anything it sampled is released. */
+  unchecked?: boolean;
   reservations: number[];
   index: number;
   setupError?: unknown;
@@ -298,6 +302,16 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         if (clock.last >= 0) profile[stage] += now - clock.last;
         clock.last = now;
       };
+      /** Android window: the checked GPU wait the last frame left for later,
+       * so that the GPU converted and drew it while the CPU presented it and
+       * decoded the next one. An empty recording: Graphite still waits for
+       * every command submitted so far. */
+      const checkWindowFrame = () => {
+        "worklet";
+        if (!state.unchecked) return;
+        state.window!.slots[state.window!.next]!.surface!.flush(true);
+        state.unchecked = false;
+      };
       const finish = async (
         error: unknown,
         aborted = false,
@@ -321,6 +335,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         };
         // Submit any recording left by a drawing exception before an
         // adapter is allowed to destroy textures referenced by that canvas.
+        clean(checkWindowFrame);
         clean(() => state.surface?.flush(true));
         clean(() => state.target?.surface?.flush(true));
         if (cleanup.safeToRelease && state.pendingAfterDraw) {
@@ -416,6 +431,8 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           const owned = runWithVideoAutoreleasePool(() => {
             const decoded = state.extractor!.decodeCompositionFrames(time);
             lap("decodeMs");
+            checkWindowFrame();
+            lap("gpuMs");
             const imports = state.imports;
             // In place, a producer's frame is released by its next import.
             const imported = imports
@@ -478,7 +495,15 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 height: options.height,
               });
               lap("drawMs");
-              surface.flush(true);
+              // Android window, no context to release: the next frame waits
+              // for this one (see checkWindowFrame).
+              const unchecked =
+                !!state.window &&
+                !!target &&
+                !afterDrawFrame &&
+                !state.processor;
+              surface.flush(!unchecked);
+              state.unchecked = unchecked;
               drawn.drained = true;
               lap("gpuMs");
               if (target && state.window) {

@@ -197,15 +197,16 @@ const windowTexture = (
 };
 
 /** Android: the slot the next frame draws into. Its previous copy completed:
- * every frame ends with a checked wait, which covers the queue before it. */
+ * the checked wait the export makes before each frame's import covers the
+ * queue before it. */
 export const acquireWindowTarget = (window: EncoderWindow): EncoderTarget => {
   "worklet";
   return window.slots[window.next]!;
 };
 
 /** Android: copies the slot Skia drew into to the window's next texture and
- * hands it to the encoder, with its time. Call only after a checked
- * flush(true) of the slot's surface. */
+ * hands it to the encoder, with its time. Call once the slot's surface was
+ * flushed: the copy follows the drawing on the same queue. */
 export const presentWindowTarget = (
   encoder: VideoEncoder,
   window: EncoderWindow,

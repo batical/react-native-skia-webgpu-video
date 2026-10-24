@@ -68,40 +68,52 @@ struct VsOut { @builtin(position) position: vec4f, @location(0) uv: vec2f };
 // primaries to sRGB, and every export brightens the midtones again.
 const sourceColorSpace = { primaries: "srgb", transfer: "srgb" } as const;
 
-/** The corner of a decoder buffer's crop rectangle once the buffer is turned
- * clockwise for display: the blit takes its source origin in that turned
- * space. Throws unless the rectangle lies in the buffer and turns into the
- * frame's display size. */
-export const yuvFrameOrigin = (
+/** A decoder buffer's crop rectangle once the buffer is turned clockwise for
+ * display: the blit samples that upright region, and draws it at the size of
+ * its target, which a capped or explicit frame size makes smaller. Throws
+ * unless the rectangle lies in the buffer. */
+export const yuvFrameRegion = (
   region: { x: number; y: number; width: number; height: number },
   rotation: number,
   buffer: { width: number; height: number },
-  frame: { width: number; height: number },
-): { x: number; y: number } => {
+): { x: number; y: number; width: number; height: number } => {
   "worklet";
   const turned = rotation === 90 || rotation === 270;
   if (
     (rotation !== 0 && !turned && rotation !== 180) ||
     region.x < 0 ||
     region.y < 0 ||
+    region.width <= 0 ||
+    region.height <= 0 ||
     region.x + region.width > buffer.width ||
-    region.y + region.height > buffer.height ||
-    (turned ? region.height : region.width) !== frame.width ||
-    (turned ? region.width : region.height) !== frame.height
+    region.y + region.height > buffer.height
   ) {
     throw new Error("Native video buffer region or YUV layout mismatch");
   }
-  const { width, height } = buffer;
+  const width = turned ? region.height : region.width;
+  const height = turned ? region.width : region.height;
   if (rotation === 90)
-    return { x: height - region.y - region.height, y: region.x };
+    return {
+      x: buffer.height - region.y - region.height,
+      y: region.x,
+      width,
+      height,
+    };
   if (rotation === 180)
     return {
-      x: width - region.x - region.width,
-      y: height - region.y - region.height,
+      x: buffer.width - region.x - region.width,
+      y: buffer.height - region.y - region.height,
+      width,
+      height,
     };
   if (rotation === 270)
-    return { x: region.y, y: width - region.x - region.width };
-  return { x: region.x, y: region.y };
+    return {
+      x: region.y,
+      y: buffer.width - region.x - region.width,
+      width,
+      height,
+    };
+  return { x: region.x, y: region.y, width, height };
 };
 
 const getYuvBlit = (device: GPUDevice): YuvBlit => {
@@ -251,10 +263,11 @@ const importYuvBuffer = (
 };
 
 /**
- * Draws the upright `width`×`height` region at `origin` of a decoder buffer
- * into `target`, converting YUV to RGB; the buffer is imported on its first
- * frame. Submits the draw: the caller waits for it before releasing the
- * frame's lease or `source`, as after copyExternalImageToTexture.
+ * Draws the upright `region` of a decoder buffer (see yuvFrameRegion) into
+ * the whole of `target`, converting YUV to RGB and scaling it to the target's
+ * size; the buffer is imported on its first frame. Submits the draw: the
+ * caller waits for it before releasing the frame's lease or `source`, as
+ * after copyExternalImageToTexture.
  */
 export const blitYuvFrame = (
   device: GPUDevice,
@@ -262,9 +275,7 @@ export const blitYuvFrame = (
   producer: number,
   source: NativeVideoFrame,
   rotation: number,
-  origin: { x: number; y: number },
-  width: number,
-  height: number,
+  region: { x: number; y: number; width: number; height: number },
   target: GPUTexture,
 ): void => {
   "worklet";
@@ -297,10 +308,10 @@ export const blitYuvFrame = (
   const frameWidth = turned ? source.height : source.width;
   const frameHeight = turned ? source.width : source.height;
   const mapping = [
-    width / frameWidth,
-    height / frameHeight,
-    origin.x / frameWidth,
-    origin.y / frameHeight,
+    region.width / frameWidth,
+    region.height / frameHeight,
+    region.x / frameWidth,
+    region.y / frameHeight,
   ];
   if (mapping.some((value, i) => value !== entry.mapping[i])) {
     device.queue.writeBuffer(entry.uniforms, 0, new Float32Array(mapping));
@@ -355,7 +366,11 @@ export const blitNv12Frame = (
       size: 16,
       usage: videoUniformBufferUsage,
     });
-    device.queue.writeBuffer(blit.wholeFrame, 0, new Float32Array([1, 1, 0, 0]));
+    device.queue.writeBuffer(
+      blit.wholeFrame,
+      0,
+      new Float32Array([1, 1, 0, 0]),
+    );
   }
   const external = device.importExternalTexture({
     label: "video decoder buffer",

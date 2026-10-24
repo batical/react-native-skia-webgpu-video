@@ -144,8 +144,62 @@ Lecture :
   Ce qui distingue `4k-x8-lazy` : des clips 4K successifs en pleine résolution, réduits vers une sortie 1080, en contenu synthétique. La cause n'est toujours pas établie.
 - **Lecture de `4k-x8-lazy` :** 2 répétitions sur 3 ont échoué au premier run `374c` (« no valid settled frames », l'export a réussi). Les 6 répétitions suivantes de `374c` et les 6 de `371` ont réussi.
 
+## Cause de la régression 8×4K (Perfetto, Pixel 8a)
+
+Traces des deux builds sur `4k-x8-lazy`, avec les événements d'ordonnancement, les compteurs `gpufreq` et les tranches atrace `gfx` et `video` :
+- **L'encodeur n'est pas en cause.** À chaque acquisition de la swapchain, le buffer qu'il rend est déjà libre (`HWC release fence … has signaled`).
+- **Le travail GPU par image est le même** dans les deux builds : la conversion YUV 4K et le dessin, environ 16 ms à 160 MHz.
+- **La boucle d'export était entièrement sérialisée.** Le CPU attendait le GPU après chaque dessin, puis le GPU s'éteignait pendant que le CPU décodait l'image suivante. Le régulateur Mali, bistable, restait alors à 160 MHz pendant 75 % du temps actif en 3.7.4. En 3.7.1, le blit EGL ajoutait assez de travail pour qu'il monte à 386–531 MHz.
+- **Le mode « performance fixe » d'Android** (`cmd power set-fixed-performance-mode-enabled`) fige le CPU mais pas le GPU : l'écart d'attente GPU reste le même, et la fréquence GPU aussi.
+
+## Améliorations du 24 octobre
+
+Trois changements, non commités, mesurés chacun sur le Pixel :
+1. **Attente GPU différée.** Sur le chemin fenêtre, le dessin est soumis sans attente (`flush(false)`). L'attente vérifiée se fait une fois l'image suivante décodée, avant toute libération, et au début de `finish()`. Le GPU dessine l'image N pendant que le CPU décode l'image N+1. Les baux du décodeur ne sont toujours rendus qu'après cette attente.
+2. **`ImageReader` pour les tailles plafonnées ou explicites.** `maxLongSide` et `resolution` ne repassent plus par le rendu EGL : le codec garde ses buffers YUV, et la conversion WebGPU les met à la taille de la frame (`yuvFrameRegion`). Les octets de ces exports changent, puisque la réduction bilinéaire se fait maintenant en WebGPU ; le contrôle de pixels passe.
+3. **Indices de performance Android (ADPF).** Le thread d'export ouvre une session `APerformanceHint` (cible : un quart du budget d'une image) et rapporte la durée de chaque image, avec sa part GPU depuis Android 15 ([ExportHintSession](../../android/cpp/ExportHintSession.cpp)). `dumpsys performance_hint` montre la session pendant l'export.
+
+Médianes en ms : 3.7.1 sur 9 répétitions (3 runs), 3.7.4 commité sur 9, version finale sur 6 (2 runs, `374g` et `374i`). État thermique *nominal* partout.
+
+| Cas | 3.7.1 | 3.7.4 commité | Final | vs 3.7.1 |
+| --- | --- | --- | --- | --- |
+| `4k-x8-lazy` (8 clips 4K → 1080) | 9 775 | 12 255 | **6 969** | **−29 %** |
+| `4k-x8-lazy-maxLongSide1280` | 12 677 | 12 062 | **6 953** | **−45 %** |
+| `4k-x3-simultaneous` | 5 636 | 5 808 | **3 452** | **−39 %** |
+| `native-h264-720p-rot180` | 3 074 | 2 672 | **1 816** | **−41 %** |
+| `native-hevc-1080p-rot270` | 3 120 | 2 751 | **2 080** | **−33 %** |
+| `encode-h264-copy` | 1 251 | 1 120 | **854** | **−32 %** |
+| `encode-hevc-copy` | 1 272 | 1 109 | **849** | **−33 %** |
+| `export-4k-h264` (1 clip 4K → 4K) | 25 280 | 24 709 | **23 014** | −9 % |
+| `export-4k-hevc` | 25 754 | 24 300 | **22 339** | −13 % |
+
+Contribution de chaque étape (un run de chaque, mêmes cas) :
+
+| Cas | 3.7.4 commité | + attente différée | + `ImageReader` plafonné | + ADPF |
+| --- | --- | --- | --- | --- |
+| `4k-x8-lazy` | 12 255 | 8 345 | 8 378 | 6 948 |
+| `4k-x8-lazy-maxLongSide1280` | 12 076 | 11 942 | 7 424 | 6 904 |
+| `native-h264-720p-rot180` | 2 646 | 2 447 | 2 614 | 1 851 |
+| `export-4k-hevc` | 24 090 | 22 737 | 22 715 | 22 016 |
+
+Lecture :
+- **L'export 4K → 4K reste limité par l'encodeur 4K** : l'étape d'encodage passe à 14–16 ms par image.
+- **Contrôles de correction :**
+  - mêmes octets que le 3.7.4 commité pour tous les cas non plafonnés ;
+  - nombre d'images et horodatages exacts ;
+  - contrôle de pixels (`interop`) réussi sur chaque variante ;
+  - Jest 238/238, tests benchmark 122/122, tests natifs et JVM réussis.
+- **Tests instrumentés Android : 126/127.** Le seul échec, `BigMontageTest.aLazyPreviewOfEight4KClipsPlaysThrough` (33 images à l'heure sur 150 attendues), se reproduit sur `main` (37) : il dépend de l'état du téléphone, pas de la migration.
+- **Octets variables d'une répétition à l'autre.** Certaines répétitions produisent un fichier un peu différent : 166 751 au lieu de 161 131 octets pour `encode-h264-copy`, deux fois sur dix. Les fichiers capturés montrent une image clé de plus (image 54), puis 6 images décodées très proches (PSNR ≥ 64,7 dB) ; aucune image n'est décalée ni fausse. C'est une décision de l'encodeur, qui touche aussi 3.7.1 (`4k-x3-simultaneous`, `4k-x8-lazy`).
+- **Piste écartée : la lecture YUV directe par Graphite.** Elle supprime la passe de conversion (attente GPU 2,7 → 1,2 ms par image en 8×4K) sans changer la durée des exports, le codec limitant désormais le débit, et elle change les pixels. Voir [UPSTREAM_NOTES](../../docs/UPSTREAM_NOTES.md#piste-testée--graphite-échantillonne-le-yuv-du-décodeur--24-octobre-2026).
+
 ## Reste à faire
 
-- Tests instrumentés Android.
-- Choisir la variante de l'export Android.
-- Trace Perfetto du cas 8×4K natif, si le ralentissement doit être expliqué avant la publication.
+- Committer les trois améliorations ci-dessus.
+- **iPhone 15 Pro, profil `smoke` de la version finale : 5/5** (`ios-374i-smoke-4`, état *nominal*). Exports : `4k-x8-lazy-maxLongSide1280` en 2 710 ms et `encode-h264-copy` en 134 ms, horodatages exacts.
+  - Le run précédent, sur la même build, avait échoué une fois. Pendant la lecture, `importExternalTexture()` a refusé une image NV12 (IOSurface) après environ 6 s, et les 3 cas suivants ont été ignorés.
+  - Ce chemin iOS n'est pas modifié par ces changements, et l'échec ne s'est pas reproduit. Il est survenu juste après un essai interrompu par un iPhone verrouillé.
+  - Six runs `smoke` ont suivi, alternés entre la version finale et `6f2e2f9` (`ios-final-smoke-r1..3`, `ios-head-smoke-r1..3`) : tous 5/5, état *nominal*.
+  - Sans reproduction, l'échec est le plus probablement lié au verrouillage du téléphone (iOS refuse le travail GPU d'une app qui n'est pas au premier plan). À surveiller lors des prochains passages iPhone.
+- L'app iOS pèse maintenant 342 Mo, dont 166 Mo pour la fixture 4K longue. Sur un iPhone joint en Wi-Fi, son installation dépasse parfois le délai de 30 s que le runner impose à `devicectl` ; une deuxième tentative passe.
+- Le module de benchmark lit la mémoire de l'app toutes les 100 ms (`Debug.getMemoryInfo`), ce qui occupe environ la moitié d'un cœur pendant toutes les mesures : à réduire pendant les exports chronométrés.

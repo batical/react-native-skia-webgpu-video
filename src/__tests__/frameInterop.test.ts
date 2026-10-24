@@ -413,14 +413,22 @@ describe("Android ImageReader YUV frames", () => {
     }
   });
 
-  it("rejects a region that disagrees with the frame or overflows the buffer", () => {
+  it("scales the region to a capped frame size", () => {
     withAndroidInterop(({ interop }) => {
       mockWrapNative.mockReturnValueOnce(yuvSource());
-      const frame = { ...yuvFrame(0), width: 5 };
-      expect(() => interop.imageFromVideoFrame(frame)).toThrow(
-        "Native video buffer region or YUV layout mismatch",
+      // A 6×4 region wanted at 3×2: the scratch has the frame's size, and the
+      // blit samples the same region of the 8×6 buffer.
+      const frame = { ...yuvFrame(0), width: 3, height: 2 };
+      expect(interop.imageFromVideoFrame(frame)).not.toBeNull();
+      expect(mockCreateTexture).toHaveBeenCalledWith(
+        expect.objectContaining({ size: { width: 3, height: 2 } }),
       );
-      mockWrapNative.mockReturnValueOnce(yuvSource());
+      expect(lastMapping()).toEqual(fround([6 / 8, 4 / 6, 0, 0]));
+    });
+  });
+
+  it("rejects a region that overflows the buffer", () => {
+    withAndroidInterop(({ interop }) => {
       expect(() =>
         interop.imageFromVideoFrame(
           yuvFrame(0, { x: 3, y: 0, width: 6, height: 4 }),

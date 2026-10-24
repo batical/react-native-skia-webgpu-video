@@ -126,8 +126,8 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
   /**
    * The Surface the codec renders into. With {@code nativeImages}, on API 29+
    * with hardware buffers, it is an ImageReader's: frames then keep the codec's
-   * YUV buffer, cropped and turned by {@code rotation} when WebGPU samples it,
-   * so they must be wanted at the encoded size.
+   * YUV buffer, cropped, turned by {@code rotation} and scaled to the frame's
+   * size when WebGPU converts it.
    */
   @android.annotation.TargetApi(Build.VERSION_CODES.Q)
   public Surface surfaceFor(int videoWidth, int videoHeight, int rotation, boolean nativeImages) {
@@ -163,13 +163,7 @@ public class GLFrameExtractor implements SurfaceTexture.OnFrameAvailableListener
     try {
       if (Build.VERSION.SDK_INT >= 33) awaitProducer(image);
       Rect crop = image.getCropRect();
-      boolean swapped = imageRotation == 90 || imageRotation == 270;
-      int pictureWidth = swapped ? crop.height() : crop.width();
-      int pictureHeight = swapped ? crop.width() : crop.height();
-      if (pictureWidth != width || pictureHeight != height) {
-        throw new IllegalStateException("Decoded image " + pictureWidth + "x" + pictureHeight
-          + " does not match the requested " + width + "x" + height);
-      }
+      if (crop.isEmpty()) throw new IllegalStateException("Decoded image has an empty crop");
       HardwareBuffer buffer = image.getHardwareBuffer();
       if (buffer == null) throw new IllegalStateException("Decoded image has no hardware buffer");
       long lease;

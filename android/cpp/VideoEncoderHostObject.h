@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ExportHintSession.h"
 #include "RNSVHostObject.h"
 #include "VideoComposition.h"
 #include <android/native_window.h>
@@ -68,6 +69,8 @@ private:
   global_ref<VideoEncoder> framesExtractor;
   // GPU export: the codec's input Surface, which WebGPU presents to.
   ANativeWindow* window = nullptr;
+  // GPU export: the system's hints, per presented frame.
+  std::unique_ptr<ExportHintSession> hints;
   std::recursive_mutex encoderMutex;
   bool prepared = false;
   bool finished = false;

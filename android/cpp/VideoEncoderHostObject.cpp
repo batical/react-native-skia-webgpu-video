@@ -109,6 +109,7 @@ VideoEncoderHostObject::VideoEncoderHostObject(
   framesExtractor = make_global(VideoEncoder::create(
       outPath, width, height, frameRate, bitRate, encoderName, codec,
       composition, audioSampleRate, audioChannelCount, audioBitRate));
+  hints = std::make_unique<ExportHintSession>(frameRate);
 }
 
 VideoEncoderHostObject::~VideoEncoderHostObject() {
@@ -166,6 +167,7 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
               throw jsi::JSError(runtime, "Cannot set the encoder frame time");
             present.asObject(runtime).asFunction(runtime).call(runtime);
             framesExtractor->endWindowFrame(timeUs);
+            hints->frameDone();
             return jsi::Value::undefined();
           }
           if (kind != "rgba") {
@@ -282,6 +284,7 @@ void VideoEncoderHostObject::release() {
       ANativeWindow_release(window);
       window = nullptr;
     }
+    hints.reset();
     framesExtractor->release();
     framesExtractor = nullptr;
   }

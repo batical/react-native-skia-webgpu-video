@@ -17,7 +17,7 @@ const composition = { duration, items, framePixelFormat: 'yuv' }; // 'auto' | 'y
 
 | | iOS | Android |
 | --- | --- | --- |
-| `yuv` | AVAssetReader sort le NV12 du décodeur. La preview l'importe comme texture externe à chaque frame et le convertit en RGB dans une passe de rendu ; l'export le convertit dans une texture par clip | `ImageReader` (pistes 8 bits SDR à leur taille encodée ; les autres restent en `rgba`), converti en RGB par la même passe |
+| `yuv` | AVAssetReader sort le NV12 du décodeur. La preview l'importe comme texture externe à chaque frame et le convertit en RGB dans une passe de rendu ; l'export le convertit dans une texture par clip | `ImageReader` (pistes 8 bits SDR, à toute taille de frame, plafonnée ou explicite comprise ; les autres restent en `rgba`), converti en RGB et mis à la taille de la frame par la même passe |
 | `rgba` | VideoToolbox convertit en BGRA ; l'export GPU échantillonne l'IOSurface en place, sans copie | Passe OpenGL vers un `AHardwareBuffer` RGBA |
 | `auto` (défaut) | `yuv` | `yuv` |
 

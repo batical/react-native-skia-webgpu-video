@@ -131,7 +131,10 @@ const mockSurface = (label: string) => {
     canvas,
     enableCheckedSubmissions: jest.fn(),
     getCanvas: jest.fn(() => canvas),
-    flush: jest.fn(() => mockCalls.push(`${label}.flush`)),
+    // A checked flush waits for the GPU; otherwise the recording is submitted.
+    flush: jest.fn((sync?: boolean) =>
+      mockCalls.push(`${label}.${sync ? "flush" : "submit"}`),
+    ),
     dispose: jest.fn(() => mockCalls.push(`${label}.dispose`)),
   };
 };
@@ -252,26 +255,30 @@ describe("Android GPU export", () => {
       [{ kind: "window", present: expect.any(Function) }, 1 / 3],
       [{ kind: "window", present: expect.any(Function) }, 2 / 3],
     ]);
-    // The window texture is acquired once the frame is drawn and waited for;
-    // the copy into it is submitted without a wait, then presented.
+    // A frame's drawing is submitted without a wait; the window texture is
+    // acquired, the copy into it submitted, then presented.
     const present = ["copy", "encode", "present"];
     // The first frame draws into the slot the probe cleared, and copies into
-    // the window texture the probe acquired.
+    // the window texture the probe acquired. The GPU work of each frame is
+    // waited for once the next frame is decoded, or before the export ends.
     expect(mockCalls).toEqual([
       "configure",
       "acquire",
       "target.flush",
       "draw",
-      "target.flush",
+      "target.submit",
       ...present,
-      "draw",
       "target.flush",
+      "draw",
+      "target.submit",
       "acquire",
       ...present,
-      "draw",
       "target.flush",
+      "draw",
+      "target.submit",
       "acquire",
       ...present,
+      "target.flush",
       // The codec gets its buffers back before the encoder goes; the slots
       // go once everything is released.
       "unconfigure",
@@ -281,9 +288,13 @@ describe("Android GPU export", () => {
       "target.dispose",
       "slot.destroy",
     ]);
-    // Frames alternate between the two slots.
+    // Frames alternate between the two slots; each wait goes through the
+    // slot the next frame draws into.
     const slots = makeFromTexture.mock.results.map((result) => result.value);
-    expect(slots.map((slot) => slot.flush.mock.calls.length)).toEqual([3, 1]);
+    expect(slots.map((slot) => slot.flush.mock.calls)).toEqual([
+      [[true], [false], [true], [false]],
+      [[true], [false], [true]],
+    ]);
     expect(console.warn).not.toHaveBeenCalled();
   });
 
@@ -396,11 +407,19 @@ describe("Android GPU export", () => {
     );
     // After the probe's flush.
     const exported = mockCalls.slice(mockCalls.indexOf("target.flush") + 1);
-    // The conversion precedes the drawing; a lease is given back after the
-    // next frame's conversion, once its own frame's checked flush returned.
-    expect(exported.slice(0, 2)).toEqual(["convert", "draw"]);
+    // The conversion precedes the drawing, submitted without a wait; a lease
+    // is given back after the next frame's conversion, once the checked wait
+    // made when that frame was decoded returned.
+    expect(exported.slice(0, 3)).toEqual(["convert", "draw", "target.submit"]);
+    const waited = exported.indexOf("target.flush");
     const second = exported.indexOf("convert", 3);
+    expect(waited).toBeGreaterThan(exported.indexOf("draw"));
+    expect(waited).toBeLessThan(second);
     expect(exported.indexOf("lease1.dispose")).toBeGreaterThan(second);
+    // The last frame is waited for before the export releases it.
+    expect(exported.lastIndexOf("target.flush")).toBeGreaterThan(
+      exported.lastIndexOf("draw"),
+    );
     expect(exported.lastIndexOf("target.flush")).toBeLessThan(
       exported.indexOf("lease3.dispose"),
     );
