@@ -193,7 +193,6 @@ describe("managed shared GPU scope", () => {
     expect(release).not.toHaveBeenCalled();
     fence.resolve();
     await disposal;
-    expect(mockCanvas.dispose).toHaveBeenCalledTimes(1);
     expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
     expect(target.texture.destroy).toHaveBeenCalledTimes(1);
     expect(mockSurface.flush.mock.invocationCallOrder[0]!).toBeLessThan(

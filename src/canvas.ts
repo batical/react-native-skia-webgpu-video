@@ -12,11 +12,7 @@ export const getVideoCanvas = (surface: SkSurface): SkCanvas => {
     );
   }
   checked.enableCheckedSubmissions();
-  const canvas = surface.getCanvas();
-  if (typeof canvas.dispose !== "function") {
-    throw new Error(
-      "Skia canvas lifecycle patch is missing from the native binary. Apply the patch and rebuild the native app.",
-    );
-  }
-  return canvas;
+  // Owned by the surface: its dispose() detaches the canvas, and drawing on
+  // it throws from then on.
+  return surface.getCanvas();
 };

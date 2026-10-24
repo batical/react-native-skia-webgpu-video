@@ -676,7 +676,7 @@ public class VideoCompositionDecoder {
     try {
       decoder.prepare();
       decoder.setSurface(slot.extractor.surfaceFor(decoder.getVideoWidth(),
-        decoder.getVideoHeight(), decoder.getRotation(), wantsNativeImages(item, decoder)));
+        decoder.getVideoHeight(), decoder.getRotation(), wantsNativeImages(decoder)));
     } catch (IOException | RuntimeException e) {
       decoder.release();
       throw e;
@@ -685,17 +685,14 @@ public class VideoCompositionDecoder {
   }
 
   /**
-   * Hardware frames at the encoded size from an 8-bit SDR track skip the GL
-   * render pass: the codec writes into ImageReader buffers WebGPU samples.
-   * A capped or explicit size keeps the GL path, which scales while drawing,
-   * as does `framePixelFormat: 'rgba'`.
+   * Hardware frames from an 8-bit SDR track skip the GL render pass: the
+   * codec writes into ImageReader buffers, which WebGPU converts at the
+   * frame's size, a capped or explicit one included. `framePixelFormat:
+   * 'rgba'` keeps the GL path.
    */
-  private boolean wantsNativeImages(VideoComposition.Item item, VideoCompositionItemDecoder decoder) {
-    if (composition.isRgbaFrames() || !composition.isHardwareBufferEnabled() || !decoder.isEightBitSdr())
-      return false;
-    int[] size = FrameSize.of(item.getWidth(), item.getHeight(), item.getMaxLongSide(),
-      decoder.getVideoWidth(), decoder.getVideoHeight(), 0);
-    return size[0] == decoder.getVideoWidth() && size[1] == decoder.getVideoHeight();
+  private boolean wantsNativeImages(VideoCompositionItemDecoder decoder) {
+    return !composition.isRgbaFrames() && composition.isHardwareBufferEnabled()
+      && decoder.isEightBitSdr();
   }
 
   private void reportOpenError(Exception e) {

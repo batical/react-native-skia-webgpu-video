@@ -8,7 +8,7 @@ import {
   importDevice,
   installWebGPU,
 } from "react-native-webgpu";
-import type { NativeVideoFrame } from "react-native-webgpu";
+import type { NativeVideoFrame, RNCanvasContext } from "react-native-webgpu";
 import RNSkiaVideoModule from "./RNSkiaVideoModule";
 
 // Evaluate on the RN runtime. NativeObject serializers carry these objects to
@@ -61,10 +61,35 @@ export const createNativeVideoGpuFrame = (
   return nativeWebGPU.createVideoFrameFromNativeBuffer(pointer);
 };
 
+/** Android: a canvas context presenting to a native window that is not a
+ * view, such as an encoder's input Surface. */
+export const createNativeWindowGpuContext = (
+  window: bigint,
+  width: number,
+  height: number,
+): RNCanvasContext => {
+  "worklet";
+  if (
+    typeof nativeWebGPU?.MakeWebGPUCanvasContextFromNativeWindow !== "function"
+  )
+    throw new Error(
+      "React Native WebGPU cannot present to a native window; 0.19.0 or later is required",
+    );
+  return nativeWebGPU.MakeWebGPUCanvasContextFromNativeWindow(
+    window,
+    width,
+    height,
+  );
+};
+
 export const nativeVideoTextureUsage =
   GPUTextureUsage.RENDER_ATTACHMENT |
   GPUTextureUsage.TEXTURE_BINDING |
   GPUTextureUsage.COPY_SRC;
+
+// An encoder's input window only receives copies of the frames Skia drew.
+export const encoderWindowTextureUsage =
+  GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST;
 
 // CPU RGBA uploads additionally need COPY_DST. Keep the native-buffer blit's
 // descriptor unchanged: that path renders into its destination attachment.

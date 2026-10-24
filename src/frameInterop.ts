@@ -19,7 +19,7 @@ import {
   blitNv12Frame,
   blitYuvFrame,
   releaseYuvImports,
-  yuvFrameOrigin,
+  yuvFrameRegion,
 } from "./yuvBlit";
 import type { YuvImport } from "./yuvBlit";
 
@@ -116,7 +116,6 @@ const clearEntry = (cache: Cache, producer: number) => {
  * The caller has either not submitted a copy or has completed its GPU fence. */
 const clearSurfaceView = (cache: Cache) => {
   "worklet";
-  cache.canvas?.dispose();
   cache.canvas = null;
   cache.stage?.dispose();
   cache.stage = null;
@@ -449,14 +448,15 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         const region = texture.region;
         const rotation = texture.rotation ?? 0;
         const nv12 = !region && texture.format === "nv12";
-        let origin = { x: 0, y: 0 };
+        let upright: ReturnType<typeof yuvFrameRegion> | null = null;
         if (region) {
           // An Android codec buffer: padded, YUV, in encoded orientation. The
-          // blit converts, crops and turns it into the display-sized scratch,
-          // as the GL path's SurfaceTexture transform did. RN WebGPU labels
-          // driver-defined YUV formats "bgra8", yet Dawn imports them as YUV:
-          // the native side checked the format, so the label is not read.
-          origin = yuvFrameOrigin(region, rotation, nativeSource, frame);
+          // blit converts, crops, turns and scales it into the frame-sized
+          // scratch, as the GL path's SurfaceTexture transform did. RN WebGPU
+          // labels driver-defined YUV formats "bgra8", yet Dawn imports them
+          // as YUV: the native side checked the format, so the label is not
+          // read.
+          upright = yuvFrameRegion(region, rotation, nativeSource);
         } else if (nv12) {
           if (
             nativeSource.width !== frame.width ||
@@ -487,9 +487,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
             key,
             nativeSource,
             rotation,
-            origin,
-            frame.width,
-            frame.height,
+            upright!,
             cache.uploadTexture!,
           );
         } else if (nv12) {

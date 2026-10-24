@@ -1,49 +1,36 @@
 #include "RNSVCheckedSizes.h"
 #include "VideoEncoderHostObject.h"
-#include "NativeHardwareBuffer.h"
-#include <EGL/egl.h>
+#include <android/data_space.h>
+#include <android/native_window_jni.h>
+#include <dlfcn.h>
 #include <fbjni/ByteBuffer.h>
 #include <cmath>
 #include <limits>
-#include <unistd.h>
 
 namespace RNSkiaVideo {
 using namespace facebook::jni;
 
 namespace {
-/** Makes the encoder's EGL context current; restores the caller's (or none). */
-class ScopedEncoderContext {
-public:
-  explicit ScopedEncoderContext(const global_ref<VideoEncoder>& encoder)
-      : display(eglGetCurrentDisplay()), context(eglGetCurrentContext()),
-        draw(eglGetCurrentSurface(EGL_DRAW)), read(eglGetCurrentSurface(EGL_READ)) {
-    encoder->makeGLContextCurrent();
-  }
-  ~ScopedEncoderContext() {
-    if (context != EGL_NO_CONTEXT) {
-      eglMakeCurrent(display, draw, read, context);
-    } else if (auto current = eglGetCurrentDisplay(); current != EGL_NO_DISPLAY) {
-      eglMakeCurrent(current, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    }
-  }
-  ScopedEncoderContext(const ScopedEncoderContext&) = delete;
-  ScopedEncoderContext& operator=(const ScopedEncoderContext&) = delete;
-
-private:
-  EGLDisplay display;
-  EGLContext context;
-  EGLSurface draw;
-  EGLSurface read;
+struct JSurface : JavaClass<JSurface> {
+  static constexpr auto kJavaDescriptor = "Landroid/view/Surface;";
 };
 
-/** Sync-fds handed over by JS; each is closed exactly once. */
-struct OwnedFences {
-  std::vector<int> fds;
-  ~OwnedFences() {
-    for (int fd : fds)
-      if (fd >= 0) close(fd);
-  }
-};
+/**
+ * Sets the presentation time of the next buffer queued to a window, as
+ * eglPresentationTimeANDROID does: the codec reads it as the frame's time.
+ * libnativewindow exports it on Android 10 and later, though the NDK does not
+ * declare it (it is in the LL-NDK); null where it is missing.
+ */
+using SetBuffersTimestamp = int32_t (*)(ANativeWindow*, int64_t);
+SetBuffersTimestamp setBuffersTimestamp() {
+  static const auto function = []() -> SetBuffersTimestamp {
+    void* library = dlopen("libnativewindow.so", RTLD_NOW);
+    return library == nullptr ? nullptr
+                              : reinterpret_cast<SetBuffersTimestamp>(dlsym(
+                                    library, "ANativeWindow_setBuffersTimestamp"));
+  }();
+  return function;
+}
 } // namespace
 
 local_ref<VideoEncoder>
@@ -79,12 +66,6 @@ void VideoEncoder::prepare() const {
   prepareMethod(self());
 }
 
-void VideoEncoder::makeGLContextCurrent() const {
-  static const auto makeGLContextCurrentMethod =
-      getClass()->getMethod<void()>("makeGLContextCurrent");
-  makeGLContextCurrentMethod(self());
-}
-
 void VideoEncoder::encodeFrameRgba(alias_ref<JByteBuffer> pixels, jint width,
                                    jint height, jint bytesPerRow, jdouble time) const {
   static const auto method =
@@ -92,9 +73,21 @@ void VideoEncoder::encodeFrameRgba(alias_ref<JByteBuffer> pixels, jint width,
   method(self(), pixels, width, height, bytesPerRow, time);
 }
 
-void VideoEncoder::encodeTexture(jint texture, jdouble time) const {
-  static const auto method = getClass()->getMethod<void(jint, jdouble)>("encodeTexture");
-  method(self(), texture, time);
+local_ref<jobject> VideoEncoder::getInputSurface() const {
+  static const auto method =
+      getClass()->getMethod<JSurface::javaobject()>("getInputSurface");
+  auto surface = method(self());
+  return make_local(static_cast<jobject>(surface.get()));
+}
+
+jlong VideoEncoder::beginWindowFrame(jdouble time) const {
+  static const auto method = getClass()->getMethod<jlong(jdouble)>("beginWindowFrame");
+  return method(self(), time);
+}
+
+void VideoEncoder::endWindowFrame(jlong timeUs) const {
+  static const auto method = getClass()->getMethod<void(jlong)>("endWindowFrame");
+  method(self(), timeUs);
 }
 
 void VideoEncoder::release() const {
@@ -112,11 +105,11 @@ VideoEncoderHostObject::VideoEncoderHostObject(
     std::string& outPath, int width, int height, int frameRate, int bitRate,
     std::optional<std::string> encoderName, std::optional<std::string> codec,
     alias_ref<VideoComposition> composition, int audioSampleRate,
-    int audioChannelCount, int audioBitRate)
-    : width(width), height(height) {
+    int audioChannelCount, int audioBitRate) {
   framesExtractor = make_global(VideoEncoder::create(
       outPath, width, height, frameRate, bitRate, encoderName, codec,
       composition, audioSampleRate, audioChannelCount, audioBitRate));
+  hints = std::make_unique<ExportHintSession>(frameRate);
 }
 
 VideoEncoderHostObject::~VideoEncoderHostObject() {
@@ -128,8 +121,7 @@ VideoEncoderHostObject::getPropertyNames(jsi::Runtime& rt) {
   std::vector<jsi::PropNameID> result;
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("prepare")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("encodeFrame")));
-  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("acquireFrameBuffer")));
-  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("releaseFrameBuffer")));
+  result.push_back(jsi::PropNameID::forUtf8(rt, std::string("acquireInputWindow")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("finishWriting")));
   result.push_back(jsi::PropNameID::forUtf8(rt, std::string("dispose")));
   return result;
@@ -155,39 +147,31 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
           auto frame = arguments[0].asObject(runtime);
           const auto kindValue = frame.getProperty(runtime, "kind");
           const auto kind = kindValue.isString() ? kindValue.asString(runtime).utf8(runtime) : "";
-          if (kind == "native-buffer") {
-            // A lent buffer Skia rendered into; its sync-fds are ours to close.
-            OwnedFences fences;
-            const auto fenceValues = frame.getProperty(runtime, "fences");
-            if (fenceValues.isObject()) {
-              auto array = fenceValues.asObject(runtime).asArray(runtime);
-              for (size_t i = 0; i < array.size(runtime); ++i) {
-                auto value = array.getValueAtIndex(runtime, i);
-                if (!value.isBigInt()) throw jsi::JSError(runtime, "Encoder fences must be sync-fd BigInts");
-                // WebGPU reports an already signaled fence as -1, as a uint32.
-                fences.fds.push_back(static_cast<int>(
-                    static_cast<uint32_t>(value.asBigInt(runtime).getUint64(runtime))));
-              }
-            }
-            const auto pointerValue = frame.getProperty(runtime, "nativeBuffer");
-            if (!pointerValue.isBigInt() || !targets)
-              throw jsi::JSError(runtime, "Encoder frame buffer is not the one lent");
-            const auto* buffer = reinterpret_cast<const AHardwareBuffer*>(
-                static_cast<uintptr_t>(pointerValue.asBigInt(runtime).getUint64(runtime)));
+          if (kind == "window") {
+            // The GPU export rendered the frame into the canvas context of the
+            // input window: `present` queues it, with the time set here.
+            if (window == nullptr)
+              throw jsi::JSError(runtime, "Encoder input window was not acquired");
+            auto present = frame.getProperty(runtime, "present");
+            if (!present.isObject() || !present.asObject(runtime).isFunction(runtime))
+              throw jsi::JSError(runtime, "A window frame needs its present function");
             const auto time = checkedMediaSeconds(arguments[1].asNumber());
-            ScopedEncoderContext scope(framesExtractor);
-            const auto texture = targets->beginEncode(buffer, fences.fds);
-            try {
-              framesExtractor->encodeTexture(static_cast<jint>(texture), time);
-            } catch (...) {
-              targets->finishEncode();
-              throw;
-            }
-            targets->finishEncode();
+            const auto timeUs = framesExtractor->beginWindowFrame(time);
+            // The swapchain tags its buffers sRGB, full range, and the codec
+            // would encode and label the file so. Unknown, as EGL leaves it,
+            // lets the codec use its default: Rec.709, limited range. Set for
+            // every frame, as a recreated swapchain tags the window again.
+            if (ANativeWindow_setBuffersDataSpace(window, ADATASPACE_UNKNOWN) != 0)
+              throw jsi::JSError(runtime, "Cannot set the encoder frame dataspace");
+            if (setBuffersTimestamp()(window, static_cast<int64_t>(timeUs) * 1000) != 0)
+              throw jsi::JSError(runtime, "Cannot set the encoder frame time");
+            present.asObject(runtime).asFunction(runtime).call(runtime);
+            framesExtractor->endWindowFrame(timeUs);
+            hints->frameDone();
             return jsi::Value::undefined();
           }
           if (kind != "rgba") {
-            throw jsi::JSError(runtime, "Android encoder accepts RGBA pixels or a lent hardware buffer");
+            throw jsi::JSError(runtime, "Android encoder accepts RGBA pixels or a window frame");
           }
           const auto checkedInteger = [&](const char* name) -> int {
             const auto value = frame.getProperty(runtime, name).asNumber();
@@ -234,7 +218,7 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
           framesExtractor->encodeFrameRgba(javaPixels, width, height, stride, checkedMediaSeconds(arguments[1].asNumber()));
           return jsi::Value::undefined();
         });
-  } else if (propName == "acquireFrameBuffer") {
+  } else if (propName == "acquireInputWindow") {
     return getFunction(
         runtime, propName, 0,
         [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
@@ -243,22 +227,17 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
           if (released.test() || !prepared || finished) {
             throw jsi::JSError(runtime, "Encoder not prepared");
           }
-          // The buffers are imported by the same Dawn device as decoded AHBs.
-          if (!NativeHardwareBuffer::isEnabled()) {
-            throw jsi::JSError(runtime, "Android GPU export requires AHardwareBuffer interop");
+          // Without it, every frame would carry the time it was queued at.
+          if (setBuffersTimestamp() == nullptr) {
+            throw jsi::JSError(runtime, "Encoder frame times need Android 10 or later");
           }
-          if (!targets) targets = std::make_unique<EncoderTargets>(width, height);
-          auto* buffer = targets->lend();
-          return jsi::BigInt::fromUint64(runtime, reinterpret_cast<uintptr_t>(buffer));
-        });
-  } else if (propName == "releaseFrameBuffer") {
-    return getFunction(
-        runtime, propName, 0,
-        [this](jsi::Runtime& runtime, const jsi::Value& thisValue,
-               const jsi::Value* arguments, size_t count) -> jsi::Value {
-          std::lock_guard<std::recursive_mutex> lock(encoderMutex);
-          if (targets) targets->giveBack();
-          return jsi::Value::undefined();
+          if (window == nullptr) {
+            auto surface = framesExtractor->getInputSurface();
+            window = ANativeWindow_fromSurface(Environment::current(), surface.get());
+            if (window == nullptr)
+              throw jsi::JSError(runtime, "Cannot get the encoder input window");
+          }
+          return jsi::BigInt::fromUint64(runtime, reinterpret_cast<uintptr_t>(window));
         });
   } else if (propName == "prepare") {
     return getFunction(
@@ -300,16 +279,12 @@ jsi::Value VideoEncoderHostObject::get(jsi::Runtime& runtime,
 void VideoEncoderHostObject::release() {
   std::lock_guard<std::recursive_mutex> lock(encoderMutex);
   if (!released.test_and_set()) {
-    if (targets && !targets->empty()) {
-      // GL names belong to the encoder context; free them before it goes.
-      // Otherwise the destructor still releases buffers and reservations.
-      try {
-        ScopedEncoderContext scope(framesExtractor);
-        targets->clear();
-      } catch (...) {
-      }
+    // A canvas context presenting to the window holds its own reference.
+    if (window != nullptr) {
+      ANativeWindow_release(window);
+      window = nullptr;
     }
-    targets.reset();
+    hints.reset();
     framesExtractor->release();
     framesExtractor = nullptr;
   }

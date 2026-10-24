@@ -138,13 +138,11 @@ jsi::Value VideoFrame::toJSInternal(jsi::Runtime& runtime) {
   if (isHardwareBuffer()) {
     auto owner = acquireHardwareFrame(getNativeHardwareBufferHandle());
     // An ImageReader frame is the codec's YUV buffer: its picture is the crop
-    // rectangle, turned for display when WebGPU samples it.
+    // rectangle, turned for display and scaled to the frame's size when
+    // WebGPU converts it.
     const bool decodedImage = owner->image != nullptr;
-    const bool swapped = owner->rotation == 90 || owner->rotation == 270;
     const bool valid = decodedImage
-        ? owner->description.format != AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM &&
-          (swapped ? owner->cropHeight : owner->cropWidth) == width &&
-          (swapped ? owner->cropWidth : owner->cropHeight) == height
+        ? owner->description.format != AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM
         : owner->description.format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM &&
           owner->description.width == static_cast<uint32_t>(width) &&
           owner->description.height == static_cast<uint32_t>(height);

@@ -109,6 +109,9 @@ public class VideoEncoder {
 
   private Surface inputSurface;
 
+  // Only for CPU readback frames, created on the first one: the GPU export
+  // presents to inputSurface through WebGPU instead, and a window has one
+  // producer at a time.
   private EGLResourcesHolder eglResourcesHolder;
 
   private TextureRenderer textureRenderer;
@@ -120,6 +123,7 @@ public class VideoEncoder {
   private long lastPresentationTimeUs = -1;
   private long submittedFrames;
   private long writtenFrames;
+  private long windowFrames;
   private static final int MAX_IN_FLIGHT_FRAMES = 4;
   private static final long MAX_PENDING_SAMPLE_BYTES = 16L * 1024 * 1024;
   private long pendingSampleBytes;
@@ -211,14 +215,6 @@ public class VideoEncoder {
     encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
 
     inputSurface = encoder.createInputSurface();
-    eglResourcesHolder = EGLResourcesHolder.createWithWindowedSurface(EGL10.EGL_NO_CONTEXT, inputSurface);
-    eglResourcesHolder.runWithContextCurrent(() -> {
-      textureRenderer = new TextureRenderer();
-      int[] textures = new int[1];
-      GLES20.glGenTextures(1, textures, 0);
-      uploadTexture = textures[0];
-      EGLUtils.configureTexture(GLES20.GL_TEXTURE_2D, uploadTexture);
-    });
     encoder.start();
 
     try {
@@ -264,8 +260,59 @@ public class VideoEncoder {
     }
   }
 
-  public void makeGLContextCurrent() {
-    eglResourcesHolder.makeCurrent();
+  /** The codec's input Surface, for the GPU export to present to. */
+  public Surface getInputSurface() {
+    if (inputSurface == null) {
+      throw new IllegalStateException("Encoder has not been prepared");
+    }
+    return inputSurface;
+  }
+
+  /**
+   * Before the GPU export presents a frame to the input Surface: waits for
+   * room in the bounded queue and returns the frame's presentation time in
+   * microseconds, which the caller sets on the window for the buffer it
+   * queues next.
+   */
+  public long beginWindowFrame(double time) {
+    if (!Double.isFinite(time) || time < 0) {
+      throw new IllegalArgumentException("Invalid encoder timestamp");
+    }
+    if (encoder == null) {
+      throw new IllegalStateException("Encoder has not been prepared");
+    }
+    if (eglResourcesHolder != null) {
+      throw new IllegalStateException("The encoder's input Surface is already drawn by EGL");
+    }
+    awaitEncoderCapacity();
+    if (audioException != null) {
+      throw new RuntimeException("Could not encode composition audio", audioException);
+    }
+    long timeUS = TimeHelpers.secToUs(time);
+    if (timeUS <= lastPresentationTimeUs) {
+      throw new IllegalArgumentException("Encoder presentation timestamps must increase");
+    }
+    return timeUS;
+  }
+
+  /** Once the frame of beginWindowFrame was presented. */
+  public void endWindowFrame(long timeUS) {
+    lastPresentationTimeUs = timeUS;
+    submittedFrames++;
+    windowFrames++;
+    drainEncoder(false);
+  }
+
+  private void ensureGLContext() {
+    if (eglResourcesHolder != null) return;
+    eglResourcesHolder = EGLResourcesHolder.createWithWindowedSurface(EGL10.EGL_NO_CONTEXT, inputSurface);
+    eglResourcesHolder.runWithContextCurrent(() -> {
+      textureRenderer = new TextureRenderer();
+      int[] textures = new int[1];
+      GLES20.glGenTextures(1, textures, 0);
+      uploadTexture = textures[0];
+      EGLUtils.configureTexture(GLES20.GL_TEXTURE_2D, uploadTexture);
+    });
   }
 
   /** Uploads owned pixels into this encoder's private context, without retaining the input buffer. */
@@ -275,9 +322,13 @@ public class VideoEncoder {
     if (rgba == null || rgba.remaining() < required || !Double.isFinite(time) || time < 0) {
       throw new IllegalArgumentException("Invalid encoder RGBA frame or timestamp");
     }
-    if (encoder == null || eglResourcesHolder == null) {
+    if (encoder == null) {
       throw new IllegalStateException("Encoder has not been prepared");
     }
+    if (windowFrames > 0) {
+      throw new IllegalStateException("The encoder's input Surface is already drawn by WebGPU");
+    }
+    ensureGLContext();
     awaitEncoderCapacity();
     ByteBuffer source = rgba.duplicate();
     if (bytesPerRow != RgbaLayout.bytesPerRow(sourceWidth)) {
@@ -312,23 +363,6 @@ public class VideoEncoder {
       EGLUtils.checkGlError("encoder RGBA upload");
       encodeTextureCurrent(uploadTexture, time);
     });
-  }
-
-  /**
-   * Encodes a GL_TEXTURE_2D of this encoder's context: a hardware buffer the
-   * export rendered into through WebGPU, imported as an EGLImage natively.
-   * The caller waited for the renderer's fence and keeps the buffer until the
-   * reads this draw queues are complete.
-   */
-  public void encodeTexture(int texture, double time) {
-    if (texture <= 0 || !Double.isFinite(time) || time < 0) {
-      throw new IllegalArgumentException("Invalid encoder texture or timestamp");
-    }
-    if (encoder == null || eglResourcesHolder == null) {
-      throw new IllegalStateException("Encoder has not been prepared");
-    }
-    awaitEncoderCapacity();
-    eglResourcesHolder.runWithContextCurrent(() -> encodeTextureCurrent(texture, time));
   }
 
   private void awaitEncoderCapacity() {
@@ -370,6 +404,12 @@ public class VideoEncoder {
 
   public void finishWriting() {
     drainEncoder(true);
+    // A canvas context drops a frame it could not acquire a window buffer
+    // for, without an error: every presented frame must have come out.
+    if (windowFrames > 0 && writtenFrames != submittedFrames) {
+      throw new IllegalStateException("The encoder wrote " + writtenFrames + " of the "
+        + submittedFrames + " frames presented to its input Surface");
+    }
     if (audioThread != null) {
       try {
         audioThread.join(30_000);

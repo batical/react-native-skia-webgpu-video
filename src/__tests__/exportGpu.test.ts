@@ -231,16 +231,15 @@ describe("iOS GPU export", () => {
     expect(encoder.acquireFrameBuffer).toHaveBeenCalledTimes(4);
     expect(encoder.releaseFrameBuffer).toHaveBeenCalledTimes(1);
     expect(encoder.encodeFrame.mock.calls).toEqual([
-      [{ kind: "native-buffer", nativeBuffer: 2n, fences: [] }, 0],
-      [{ kind: "native-buffer", nativeBuffer: 3n, fences: [] }, 1 / 3],
-      [{ kind: "native-buffer", nativeBuffer: 4n, fences: [] }, 2 / 3],
+      [{ kind: "native-buffer", nativeBuffer: 2n }, 0],
+      [{ kind: "native-buffer", nativeBuffer: 3n }, 1 / 3],
+      [{ kind: "native-buffer", nativeBuffer: 4n }, 2 / 3],
     ]);
     expect(mockImport).toHaveBeenCalledWith(
       expect.objectContaining({ handle: 1002n }),
     );
     // Fences and the IOSurface import close as soon as the access ends.
     const close = [
-      "target.canvas.dispose",
       "target.dispose",
       "target.endAccess",
       "target.fence.destroy",

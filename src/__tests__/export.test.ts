@@ -210,11 +210,8 @@ const expectDisposed = (
 ) => {
   expect(result.encoder.dispose).toHaveBeenCalledTimes(1);
   expect(result.extractor.dispose).toHaveBeenCalledTimes(1);
-  const surface = surfaceAt(index);
-  expect(
-    surface.getCanvas.mock.results[0]?.value.dispose,
-  ).toHaveBeenCalledTimes(1);
-  expect(surface.dispose).toHaveBeenCalledTimes(1);
+  // Disposing the surface detaches its canvas.
+  expect(surfaceAt(index).dispose).toHaveBeenCalledTimes(1);
 };
 beforeEach(() => {
   delete (globalThis as { __rnskwgpuExport?: unknown }).__rnskwgpuExport;
@@ -1184,7 +1181,6 @@ describe("export native autorelease lifetimes", () => {
       "extractor:dispose",
       "encoder:dispose",
       "image:dispose",
-      "canvas:dispose",
       "surface:dispose",
       "memory:release",
     ])
@@ -1304,11 +1300,7 @@ describe("export native autorelease lifetimes", () => {
 describe("dedicated export recorder cleanup", () => {
   it("trims once after consumers close and before memory reservations are released", async () => {
     trimRecorderCache.mockImplementation(() => {
-      const surface = surfaceAt();
-      expect(surface.dispose).toHaveBeenCalledTimes(1);
-      expect(
-        surface.getCanvas.mock.results[0]?.value.dispose,
-      ).toHaveBeenCalledTimes(1);
+      expect(surfaceAt().dispose).toHaveBeenCalledTimes(1);
       expect(releaseMemory).not.toHaveBeenCalled();
     });
     const result = await runExport();

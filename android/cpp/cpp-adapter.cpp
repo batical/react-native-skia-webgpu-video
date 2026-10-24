@@ -38,12 +38,16 @@ void install(jsi::Runtime& jsiRuntime) {
         const bool hardware = NativeHardwareBuffer::isEnabled();
         info.setProperty(runtime, "decodeTransport", jsi::String::createFromAscii(runtime,
             hardware ? "ahardwarebuffer-rgba-egl" : "cpu-rgba-readback"));
-        // Export renders into encoder-lent AHardwareBuffers, sampled by the
-        // encoder's EGL context; CPU readback stays the fallback.
+        // Export renders straight into the codec's input Surface through a
+        // WebGPU canvas context; the JS export probes it at setup, and CPU
+        // readback stays the fallback. Offered with AHardwareBuffer interop,
+        // which also samples decoded frames in place: turning interop off
+        // selects the readback export, the reference of the pixel checks.
         info.setProperty(runtime, "encodeTransport", jsi::String::createFromAscii(runtime,
-            hardware ? "ahardwarebuffer-egl-sample" : "cpu-rgba-upload"));
+            hardware ? "webgpu-native-window" : "cpu-rgba-upload"));
         info.setProperty(runtime, "exportFallback", jsi::String::createFromAscii(runtime, "cpu-rgba-upload"));
         info.setProperty(runtime, "gpuDirectExport", hardware);
+        info.setProperty(runtime, "zeroCopyEncode", hardware);
         info.setProperty(runtime, "decodeCpuCopiesBeforeSkia", hardware ? 0 : 1);
         info.setProperty(runtime, "cpuReadbackDecode", !hardware);
         info.setProperty(runtime, "ownedFrameTransport", jsi::String::createFromAscii(runtime,
@@ -51,7 +55,6 @@ void install(jsi::Runtime& jsiRuntime) {
         info.setProperty(runtime, "skiaImportTransport", jsi::String::createFromAscii(runtime,
             hardware ? "native-buffer-webgpu-blit-snapshot" : "cpu-rgba-scoped-copy-webgpu-upload-snapshot"));
         info.setProperty(runtime, "zeroCopyDecode", false);
-        info.setProperty(runtime, "zeroCopyEncode", false);
         return info;
       }));
   auto createVideoPlayer = jsi::Function::createFromHostFunction(

@@ -2,16 +2,38 @@ const mockRuntimeTasks: Array<() => void> = [];
 const mockCalls: string[] = [];
 const mockImport = jest.fn();
 const mockNativeFrame = jest.fn();
+// The canvas context presenting to the encoder's input window.
+const mockWindowFormat = { value: "rgba8unorm" };
+const mockWindowContext = {
+  configure: jest.fn(() => mockCalls.push("configure")),
+  getCurrentTexture: jest.fn(() => {
+    mockCalls.push("acquire");
+    return {
+      width: 640,
+      height: 360,
+      format: mockWindowFormat.value,
+      destroy: jest.fn(() => mockCalls.push("window.texture.destroy")),
+    };
+  }),
+  present: jest.fn(() => mockCalls.push("present")),
+  unconfigure: jest.fn(() => mockCalls.push("unconfigure")),
+};
+const mockMakeWindowContext = jest.fn();
 // The YUV conversion of decoded ImageReader frames (see yuvBlit.ts).
 const mockYuvWrappers: { destroy: jest.Mock }[] = [];
 const mockDevice = {
   importSharedTextureMemory: mockImport,
-  createTexture: jest.fn((descriptor: { size: object }) => ({
-    ...descriptor.size,
-    format: "rgba8unorm",
-    createView: jest.fn(() => ({})),
-    destroy: jest.fn(() => mockCalls.push("source.destroy")),
-  })),
+  createTexture: jest.fn((descriptor: { size: object; label?: string }) => {
+    // The window's own frames, or a producer's converted YUV frames.
+    const name =
+      descriptor.label === "video export window slot" ? "slot" : "source";
+    return {
+      ...descriptor.size,
+      format: "rgba8unorm",
+      createView: jest.fn(() => ({})),
+      destroy: jest.fn(() => mockCalls.push(`${name}.destroy`)),
+    };
+  }),
   createBindGroupLayout: jest.fn(() => ({})),
   createPipelineLayout: jest.fn(() => ({})),
   createSampler: jest.fn(() => ({})),
@@ -29,24 +51,36 @@ const mockDevice = {
   }),
   createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
   createBindGroup: jest.fn(() => ({})),
-  createCommandEncoder: jest.fn(() => ({
+  createCommandEncoder: jest.fn((descriptor?: { label?: string }) => ({
     beginRenderPass: jest.fn(() => ({
       setPipeline: jest.fn(),
       setBindGroup: jest.fn(),
       draw: jest.fn(),
       end: jest.fn(),
     })),
-    finish: jest.fn(() => ({})),
+    copyTextureToTexture: jest.fn(),
+    finish: jest.fn(() => ({ label: descriptor?.label })),
   })),
   queue: {
     writeBuffer: jest.fn(),
-    submit: jest.fn(() => mockCalls.push("convert")),
+    // A YUV conversion, or the copy of a frame into the window.
+    submit: jest.fn(([buffer]: { label?: string }[]) =>
+      mockCalls.push(
+        buffer?.label === "video export window copy" ? "copy" : "convert",
+      ),
+    ),
   },
 };
 jest.mock("../gpuDevice", () => ({
   getVideoGpuDevice: jest.fn(() => mockDevice),
   createNativeVideoGpuFrame: (handle: bigint) => mockNativeFrame(handle),
+  createNativeWindowGpuContext: (
+    window: bigint,
+    width: number,
+    height: number,
+  ) => mockMakeWindowContext(window, width, height),
   nativeVideoTextureUsage: 20,
+  encoderWindowTextureUsage: 24,
   videoShaderStages: { vertex: 1, fragment: 2 },
   videoUniformBufferUsage: 72,
 }));
@@ -92,13 +126,15 @@ const mockSurface = (label: string) => {
       (_x: number, _y: number, _info: unknown, destination: Uint8Array) =>
         destination,
     ),
-    dispose: jest.fn(() => mockCalls.push(`${label}.canvas.dispose`)),
   };
   return {
     canvas,
     enableCheckedSubmissions: jest.fn(),
     getCanvas: jest.fn(() => canvas),
-    flush: jest.fn(() => mockCalls.push(`${label}.flush`)),
+    // A checked flush waits for the GPU; otherwise the recording is submitted.
+    flush: jest.fn((sync?: boolean) =>
+      mockCalls.push(`${label}.${sync ? "flush" : "submit"}`),
+    ),
     dispose: jest.fn(() => mockCalls.push(`${label}.dispose`)),
   };
 };
@@ -141,50 +177,19 @@ const makeFromTexture = (
   Skia.Surface as unknown as { MakeFromGPUTexture: jest.Mock }
 ).MakeFromGPUTexture;
 
-let nextFence = 70n;
-const sharedMemory = ({
-  format = "rgba8unorm",
-  fenceType = "sync-fd",
-}: { format?: string; fenceType?: string } = {}) => ({
-  createTexture: jest.fn(() => ({
-    width: 640,
-    height: 360,
-    format,
-    destroy: jest.fn(() => mockCalls.push("texture.destroy")),
-  })),
-  beginAccess: jest.fn(() => mockCalls.push("beginAccess")),
-  endAccess: jest.fn(() => {
-    mockCalls.push("endAccess");
-    return {
-      initialized: true,
-      fences: [
-        {
-          fence: {
-            export: jest.fn(() => {
-              mockCalls.push("fence.export");
-              return { type: fenceType, handle: nextFence++ };
-            }),
-            destroy: jest.fn(() => mockCalls.push("fence.destroy")),
-          },
-          signaledValue: 1n,
-        },
-      ],
-    };
-  }),
-  destroy: jest.fn(() => mockCalls.push("memory.destroy")),
-});
-
 const prepare = (decode: () => Record<string, unknown> = () => ({})) => {
-  let next = 1n;
   const encoder = {
     prepare: jest.fn(),
-    acquireFrameBuffer: jest.fn(() => next++),
-    releaseFrameBuffer: jest.fn(() => mockCalls.push("releaseFrameBuffer")),
-    encodeFrame: jest.fn((_frame: unknown, _time: number) => {
-      mockCalls.push("encode");
-    }),
+    acquireInputWindow: jest.fn(() => 900n),
+    // Natively: sets the frame's time on the window, then presents.
+    encodeFrame: jest.fn(
+      (frame: { kind: string; present?: () => void }, _time: number) => {
+        mockCalls.push("encode");
+        if (frame.kind === "window") frame.present!();
+      },
+    ),
     finishWriting: jest.fn(),
-    dispose: jest.fn(),
+    dispose: jest.fn(() => mockCalls.push("encoder.dispose")),
   };
   createVideoEncoder.mockReturnValueOnce(encoder);
   createExtractor.mockReturnValueOnce({
@@ -220,62 +225,81 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockCalls.length = 0;
   mockRuntimeTasks.length = 0;
-  nextFence = 70n;
   mockYuvWrappers.length = 0;
-  mockImport.mockReset().mockImplementation(() => sharedMemory());
+  mockWindowFormat.value = "rgba8unorm";
+  mockMakeWindowContext.mockReset().mockReturnValue(mockWindowContext);
   jest.spyOn(console, "warn").mockImplementation(() => undefined);
 });
 
 describe("Android GPU export", () => {
-  it("renders into lent AHardwareBuffers and hands their sync-fds to the encoder", async () => {
+  it("draws into its own textures and copies each frame into the encoder's window", async () => {
     const { encoder, promise } = prepare();
     await pumpAll();
     await promise;
-    // The AHardwareBuffer pointer is the import handle: no NativeVideoFrame.
-    expect(mockNativeFrame).not.toHaveBeenCalled();
-    expect(mockImport.mock.calls.map(([d]) => d.handle)).toEqual([
-      1n,
-      2n,
-      3n,
-      4n,
-    ]);
+    expect(encoder.acquireInputWindow).toHaveBeenCalledTimes(1);
+    expect(mockMakeWindowContext).toHaveBeenCalledWith(900n, 640, 360);
+    expect(mockWindowContext.configure).toHaveBeenCalledWith({
+      device: mockDevice,
+      format: "rgba8unorm",
+      usage: 24,
+    });
+    // No readback, no AHardwareBuffer lent or imported for the output. Two
+    // slots, each wrapped once, both accounted.
     expect(makeOffscreen).not.toHaveBeenCalled();
-    // The probe's access ends without a fence to hand over.
+    expect(mockImport).not.toHaveBeenCalled();
+    expect(makeFromTexture).toHaveBeenCalledTimes(2);
+    expect(RNSkiaVideoModule.reserveMemory).toHaveBeenCalledTimes(2);
+    expect(RNSkiaVideoModule.releaseMemory).toHaveBeenCalledTimes(2);
     expect(encoder.encodeFrame.mock.calls).toEqual([
-      [{ kind: "native-buffer", nativeBuffer: 2n, fences: [70n] }, 0],
-      [{ kind: "native-buffer", nativeBuffer: 3n, fences: [71n] }, 1 / 3],
-      [{ kind: "native-buffer", nativeBuffer: 4n, fences: [72n] }, 2 / 3],
+      [{ kind: "window", present: expect.any(Function) }, 0],
+      [{ kind: "window", present: expect.any(Function) }, 1 / 3],
+      [{ kind: "window", present: expect.any(Function) }, 2 / 3],
     ]);
-    const frame = [
-      "beginAccess",
+    // A frame's drawing is submitted without a wait; the window texture is
+    // acquired, the copy into it submitted, then presented.
+    const present = ["copy", "encode", "present"];
+    // The first frame draws into the slot the probe cleared, and copies into
+    // the window texture the probe acquired. The GPU work of each frame is
+    // waited for once the next frame is decoded, or before the export ends.
+    expect(mockCalls).toEqual([
+      "configure",
+      "acquire",
+      "target.flush",
       "draw",
+      "target.submit",
+      ...present,
       "target.flush",
-      "target.canvas.dispose",
-      "target.dispose",
-      "endAccess",
-      "fence.export",
-      "fence.destroy",
-      "texture.destroy",
-      "memory.destroy",
-      "encode",
-    ];
-    const probe = [
-      "beginAccess",
+      "draw",
+      "target.submit",
+      "acquire",
+      ...present,
       "target.flush",
-      "target.canvas.dispose",
+      "draw",
+      "target.submit",
+      "acquire",
+      ...present,
+      "target.flush",
+      // The codec gets its buffers back before the encoder goes; the slots
+      // go once everything is released.
+      "unconfigure",
+      "encoder.dispose",
       "target.dispose",
-      "endAccess",
-      "fence.destroy",
-      "texture.destroy",
-      "memory.destroy",
-      "releaseFrameBuffer",
-    ];
-    expect(mockCalls).toEqual([...probe, ...frame, ...frame, ...frame]);
+      "slot.destroy",
+      "target.dispose",
+      "slot.destroy",
+    ]);
+    // Frames alternate between the two slots; each wait goes through the
+    // slot the next frame draws into.
+    const slots = makeFromTexture.mock.results.map((result) => result.value);
+    expect(slots.map((slot) => slot.flush.mock.calls)).toEqual([
+      [[true], [false], [true], [false]],
+      [[true], [false], [true]],
+    ]);
     expect(console.warn).not.toHaveBeenCalled();
   });
 
-  it("falls back to CPU readback when the lent buffer is not RGBA", async () => {
-    mockImport.mockImplementation(() => sharedMemory({ format: "bgra8unorm" }));
+  it("falls back to CPU readback when the window texture is not RGBA", async () => {
+    mockWindowFormat.value = "bgra8unorm";
     const { encoder, promise } = prepare();
     await pumpAll();
     await promise;
@@ -283,30 +307,49 @@ describe("Android GPU export", () => {
     expect(String(jest.mocked(console.warn).mock.calls[0]![1])).toContain(
       "RGBA layout mismatch",
     );
-    expect(encoder.releaseFrameBuffer).toHaveBeenCalledTimes(1);
+    // Closed before the readback frames, which EGL draws into the window.
+    expect(mockWindowContext.unconfigure).toHaveBeenCalledTimes(1);
+    expect(mockCalls.filter((call) => call === "slot.destroy")).toHaveLength(2);
+    expect(mockWindowContext.present).not.toHaveBeenCalled();
     expect(makeOffscreen).toHaveBeenCalledTimes(1);
+    expect(encoder.encodeFrame).toHaveBeenCalledTimes(3);
     for (const [pixels] of encoder.encodeFrame.mock.calls)
       expect(pixels).toMatchObject({ kind: "rgba", width: 640, height: 360 });
   });
 
-  it("fails the frame on a fence the encoder cannot wait on", async () => {
-    let imports = 0;
-    mockImport.mockImplementation(() =>
-      // The probe passes; the first encoded frame gets an opaque-fd fence.
-      sharedMemory(
-        ++imports > 1 ? { fenceType: "vk-semaphore-opaque-fd" } : {},
-      ),
-    );
+  it("falls back to CPU readback when WebGPU cannot present to a native window", async () => {
+    mockMakeWindowContext.mockImplementation(() => {
+      throw new Error("React Native WebGPU cannot present to a native window");
+    });
     const { encoder, promise } = prepare();
     await pumpAll();
-    await expect(promise).rejects.toThrow("GPU export needs sync-fd fences");
-    expect(encoder.encodeFrame).not.toHaveBeenCalled();
-    const failed = makeFromTexture.mock.results[1]!.value;
-    expect(failed.flush).toHaveBeenCalledWith(true);
-    // The fence wrapper and the import still close.
-    for (const memory of mockImport.mock.results.map((r) => r.value))
-      expect(memory.destroy).toHaveBeenCalledTimes(1);
-    expect(encoder.dispose).toHaveBeenCalledTimes(1);
+    await promise;
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(mockWindowContext.unconfigure).not.toHaveBeenCalled();
+    expect(makeOffscreen).toHaveBeenCalledTimes(1);
+    for (const [pixels] of encoder.encodeFrame.mock.calls)
+      expect(pixels).toMatchObject({ kind: "rgba" });
+  });
+
+  it("closes the window before the encoder when presenting a frame fails", async () => {
+    mockWindowContext.present.mockImplementationOnce(() => {
+      throw new Error("present failed");
+    });
+    const { encoder, promise } = prepare();
+    await pumpAll();
+    await expect(promise).rejects.toThrow("present failed");
+    expect(encoder.encodeFrame).toHaveBeenCalledTimes(1);
+    expect(encoder.finishWriting).not.toHaveBeenCalled();
+    // The window closes before the encoder; then the slots are freed.
+    const closed = mockCalls.indexOf("unconfigure");
+    expect(mockCalls.slice(closed)).toEqual([
+      "unconfigure",
+      "encoder.dispose",
+      "target.dispose",
+      "slot.destroy",
+      "target.dispose",
+      "slot.destroy",
+    ]);
   });
 
   it("samples ImageReader frames in place once converted, without snapshots or waits", async () => {
@@ -348,21 +391,35 @@ describe("Android GPU export", () => {
     expect(jest.mocked(console.warn).mock.calls).toEqual([]);
     // No copy through frameInterop, no snapshot, no wait of its own.
     expect(ownVideoFrames).not.toHaveBeenCalled();
-    expect(mockDevice.createTexture).toHaveBeenCalledTimes(1);
-    const source = mockDevice.createTexture.mock.results[0]!.value;
+    // One producer texture, besides the window's two slots.
+    const sources = mockDevice.createTexture.mock.calls
+      .map(([descriptor], index) => ({ descriptor, index }))
+      .filter(
+        ({ descriptor }) => descriptor.label !== "video export window slot",
+      );
+    expect(sources).toHaveLength(1);
+    const source =
+      mockDevice.createTexture.mock.results[sources[0]!.index]!.value;
     expect(makeImage.mock.calls).toEqual([[source], [source], [source]]);
     // Two buffers, each imported once.
     expect(mockDevice.createNativeBufferExternalTexture).toHaveBeenCalledTimes(
       2,
     );
-    const exported = mockCalls.slice(
-      mockCalls.indexOf("releaseFrameBuffer") + 1,
-    );
-    // The conversion precedes the drawing; a lease is given back after the
-    // next frame's conversion, once its own frame's checked flush returned.
-    expect(exported.slice(0, 3)).toEqual(["convert", "beginAccess", "draw"]);
+    // After the probe's flush.
+    const exported = mockCalls.slice(mockCalls.indexOf("target.flush") + 1);
+    // The conversion precedes the drawing, submitted without a wait; a lease
+    // is given back after the next frame's conversion, once the checked wait
+    // made when that frame was decoded returned.
+    expect(exported.slice(0, 3)).toEqual(["convert", "draw", "target.submit"]);
+    const waited = exported.indexOf("target.flush");
     const second = exported.indexOf("convert", 3);
+    expect(waited).toBeGreaterThan(exported.indexOf("draw"));
+    expect(waited).toBeLessThan(second);
     expect(exported.indexOf("lease1.dispose")).toBeGreaterThan(second);
+    // The last frame is waited for before the export releases it.
+    expect(exported.lastIndexOf("target.flush")).toBeGreaterThan(
+      exported.lastIndexOf("draw"),
+    );
     expect(exported.lastIndexOf("target.flush")).toBeLessThan(
       exported.indexOf("lease3.dispose"),
     );

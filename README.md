@@ -6,8 +6,8 @@
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video/beta" /></a>
   <a href="#status"><img alt="Status: beta" src="https://img.shields.io/badge/status-beta-f59e0b" /></a>
-  <img alt="React Native Skia 3.7.1" src="https://img.shields.io/badge/Skia-3.7.1-38bdf8" />
-  <img alt="React Native WebGPU 0.17.0" src="https://img.shields.io/badge/WebGPU-0.17.0-a78bfa" />
+  <img alt="React Native Skia 3.7.4" src="https://img.shields.io/badge/Skia-3.7.4-38bdf8" />
+  <img alt="React Native WebGPU 0.19.0" src="https://img.shields.io/badge/WebGPU-0.19.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -27,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Beta.** The Skia 3.7.0 / WebGPU 0.17.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks); 3.7.1, which only changes iOS presentation on ProMotion displays, passed the native tests, smoke runs and the Pixel pixel check. Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
+> **Beta.** The Skia 3.7.4 / WebGPU 0.19.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks, native and instrumented tests, smoke runs). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -37,8 +37,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.7.1`** |
-| React Native WebGPU | **`react-native-webgpu@0.17.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
+| React Native Skia | **`react-native-skia@3.7.4`** |
+| React Native WebGPU | **`react-native-webgpu@0.19.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
@@ -52,7 +52,7 @@ On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`
 The beta is published on npm under the `beta` tag:
 
 ```sh
-npm install --save-exact react-native-skia@3.7.1 react-native-webgpu@0.17.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.7.4 react-native-webgpu@0.19.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
 npm install --save-exact react-native-skia-webgpu-video@beta
 ```
 
@@ -205,13 +205,13 @@ This budget covers **tracked video resources**, not all memory held by codecs, S
 
 | Step | iOS | Android |
 | --- | --- | --- |
-| Decode | AVFoundation, IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`): the decoder's NV12 (`framePixelFormat: 'yuv'`, the default), or BGRA converted by VideoToolbox (`'rgba'`) | API 29+, 8-bit SDR H.264/HEVC at the encoded size: `ImageReader` YUV buffers (the default). Otherwise, or with `'rgba'`: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
-| Into Skia, preview | NV12: a YUV→RGB render pass into a reusable texture. BGRA: a WebGPU blit into it. Then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop and rotation in one pass), then an owned Graphite snapshot |
+| Decode | AVFoundation, IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`): the decoder's NV12 (`framePixelFormat: 'yuv'`, the default), or BGRA converted by VideoToolbox (`'rgba'`) | API 29+, 8-bit SDR H.264/HEVC: `ImageReader` YUV buffers (the default), at any frame size, capped or explicit sizes included. Otherwise, or with `'rgba'`: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
+| Into Skia, preview | NV12: a YUV→RGB render pass into a reusable texture. BGRA: a WebGPU blit into it. Then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop, rotation and scaling to the frame's size in one pass), then an owned Graphite snapshot |
 | Into Skia, export | NV12: converted into a per-clip texture, as on Android. BGRA: sampled in place through the frame's IOSurface, no copy | Same as preview |
-| Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into an AHardwareBuffer lent by the encoder; EGL samples it into the codec Surface after its sync-fd |
+| Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into one of two textures of the library's, which a GPU copy puts into the codec's input Surface, through a WebGPU canvas context on it (Vulkan swapchain): no EGL. Before each present, the frame time is set on the window and its dataspace reset, so the codec writes Rec.709 limited range as it did with EGL |
 | Fallback | CPU readback, with a warning | CPU readback, with a warning |
 
-Every path waits for checked GPU completion before releasing source frames or handing a buffer to the encoder. Scaled, HDR and 10-bit Android sources keep the EGL decode path.
+Every path waits for checked GPU completion before releasing source frames. Android's export waits for a frame's GPU work once it has decoded the next frame, so the GPU draws one frame while the CPU decodes the next, and it reports each frame's duration to Android's performance hints (ADPF, Android 13 and later), which raise the CPU and, from Android 15, the GPU capacity the export gets. On Android, OpenGL remains in two places: the CPU readback fallback draws into the codec Surface through EGL, and HDR and 10-bit sources (or `framePixelFormat: 'rgba'`) keep the EGL decode path.
 
 ### Frame pixel format
 
@@ -233,33 +233,40 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 
 ## Benchmarks
 
-Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1`, median export wall time. Raw evidence: [iOS device](benchmark/ios-device-370-ab.json), [Android device](benchmark/android-device-370-ab.json); protocol and limits in the [verification report](migration/skia-3.7.0/verification.md). Earlier campaigns: [3.6.1](migration/skia-3.6.1/verification.md), [3.4.4](migration/skia-3.4.4/verification.md).
+Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1` (plus two 4K → 4K exports added for beta.4), median export wall time. Protocol, raw results and Perfetto analysis in the [3.7.4 verification report](migration/skia-3.7.4/verification.md). Earlier campaigns: [3.7.0](migration/skia-3.7.0/verification.md), [3.6.1](migration/skia-3.6.1/verification.md), [3.4.4](migration/skia-3.4.4/verification.md).
 
-Skia 3.7.0 / WebGPU 0.17.0 move Graphite and Dawn from 154.3.0 to 157.0.0. Export speed is unchanged on both devices; the gains of this release are in on-screen canvases (below).
+Beta.4 (Skia 3.7.4 / WebGPU 0.19.0) exports a third faster on Android, up to 45% on 4K sources, and leaves iOS unchanged.
 
-**iPhone 15 Pro (iOS 27.0.1)**, four alternating series off the charger (a first series on a wireless charger ran hot and is not used). Same per-frame profile and same output bytes in both versions:
+**Pixel 8a (Android 17)**, thermal state nominal, medians of 9 repetitions for beta.3 and 6 for beta.4:
 
-| Export case | 3.6.1 | 3.7.0 |
+| Export case | beta.3 (Skia 3.7.1) | beta.4 (Skia 3.7.4) |
 | --- | --- | --- |
-| HEVC 1080p, rotated, 180 frames | 734 ms | 731 ms |
-| H.264 640×360, 60 frames | 173–211 ms | 168–171 ms |
-| 8 × 4K clips scaled to 1280, 360 frames | 2.74–2.78 s | 2.73–2.79 s |
+| 8 × 4K clips at native size, 1080 output, 360 frames | 9.8 s | **7.0 s** (−29%) |
+| 8 × 4K clips scaled to 1280 | 12.7 s | **7.0 s** (−45%) |
+| 3 simultaneous 4K clips, 150 frames | 5.6 s | **3.5 s** (−39%) |
+| H.264 720p, rotated, 180 frames | 3.07 s | **1.82 s** (−41%) |
+| HEVC 1080p, rotated, 180 frames | 3.12 s | **2.08 s** (−33%) |
+| H.264 / HEVC 640×360, 60 frames | 1.25 / 1.27 s | **0.85 / 0.85 s** (−32 / −33%) |
+| One 4K clip exported at 4K, H.264 / HEVC, 900 frames | 25.3 / 25.8 s | **23.0 / 22.3 s** (−9 / −13%) |
 
-**Pixel 8a (Android 17)**:
+Where the time went:
+- **Export renders straight into the codec's input Surface through WebGPU**: no EGL and no lent buffer. Exports of 1080p and below gain 10–17% on their own.
+- **The GPU draws a frame while the CPU decodes the next one.** The export used to wait for the GPU after every frame, then leave it idle while decoding. Mali's frequency governor then kept the GPU at its lowest clock, which made the first 3.7.4 build 24% *slower* than 3.7.1 on 8 native 4K clips.
+- **The export thread reports its frames to Android's performance hints (ADPF)**: it gets faster cores and, from Android 15, more GPU capacity. 15–29% on most cases.
+- **`maxLongSide` and `resolution` keep the codec's YUV buffers**, scaled by the WebGPU conversion instead of an OpenGL render pass. Decoding 8 × 4K clips capped at 1280 takes 8.7 ms per frame instead of 17.
+- A 4K → 4K export is now limited by the hardware encoder.
 
-| Export case | 3.6.1 | 3.7.0 |
+**iPhone 15 Pro (iOS 27.0.1)**: unchanged, since these changes are Android-only. Three alternating series, Skia 3.7.1 against 3.7.4, off the charger, with the same output bytes:
+
+| Export case | Skia 3.7.1 | Skia 3.7.4 |
 | --- | --- | --- |
-| HEVC 1080p, rotated, 180 frames | 3.02 s | 2.92 s |
-| H.264 640×360, 60 frames | 1.18 s | 1.23 s |
-| 8 × 4K clips at native size, 360 frames | 10.0 s | 9.8 s |
-| 3 simultaneous 4K clips, 150 frames | 5.8 s | 5.6 s |
-| 8 × 4K clips scaled to 1280 (EGL decode) | 12.2 s | 12.5 s |
-
-The native 4K rows compare with the 3.6.1 run of October 16. Files exported from `ImageReader`-decoded clips are up to 5.7% smaller with 3.7.0 while sampled pixels still match CPU decoding within ±1; the cause is not yet confirmed ([verification](migration/skia-3.7.0/verification.md#pixel-8a)).
+| HEVC 1080p, rotated, 180 frames | 730 ms | 737–749 ms |
+| H.264 640×360, 60 frames | 177 ms | 185–217 ms |
+| 8 × 4K clips scaled to 1280, 360 frames | 2.69 s | 2.68–2.74 s |
 
 **Smoother canvases on Android 10.** Dawn 157 asks for three swapchain images instead of two on Android. On Android 10, a canvas no longer makes the main thread wait for the previous frame's buffer: upstream measured 407 → 65 ms of `dequeueBuffer` wait per ~1.9 s trace for one opaque canvas on a Mi MIX 3. Skia 3.6.3 also keeps the render pool one frame ahead of the display: on a 120 Hz Pixel 8, an opaque `SurfaceView` canvas went from 66 to 110 presented frames per second. The swapchain change applies to every Skia and WebGPU canvas and the render pool change to Skia canvases, video previews included, with no code change. We did not measure them ourselves (no Android 10 device); see the [audit](migration/skia-3.7.0/upstream-audit.md#canvas-plus-fluide-sur-android-10).
 
-Pass `onProfile` to an export to see where the time goes on your own compositions. On the Pixel, a native-size HEVC 1080p frame spends about 2.8 ms decoding, 3.3 ms importing, 1.7 ms waiting for the GPU and 3.8 ms encoding; on the iPhone the whole frame takes under 4 ms.
+Pass `onProfile` to an export to see where the time goes on your own compositions. On the Pixel, a native-size HEVC 1080p frame spends about 2.5 ms decoding, 1.9 ms importing, 0.8 ms waiting for the GPU and 3.7 ms encoding (beta.3: 2.8, 3.3, 1.7 and 3.8 ms); on the iPhone the whole frame takes under 4 ms.
 
 Reproduce on your devices with the example app: `node scripts/test-ios-device-ab-run.mjs` (iPhone) and `node scripts/test-android-device-run.mjs` (Android); see the [benchmark guide](docs/BENCHMARKS.md).
 
@@ -268,9 +275,9 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 | Area | Current evidence |
 | --- | --- |
 | Frame accuracy | At 60 Hz, the preview draws the frame due at 99–100% of vsyncs in 30, 24 and 60 fps on both phones, and 97–100% in 4K with `yuv` frames on the Pixel 8a. On a warm iPhone at 120 Hz: 73–95% in 1080p, 77–90% in 4K 60 fps. Every exported frame holds the right source frame, in both frame pixel formats ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). |
-| iOS | iPhone 15 Pro: 61/61 benchmark cases pass with `yuv` frames, including the three that stopped on the video memory budget with BGRA; 56/58 native XCTests pass, the other two being opt-in diagnostics ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). |
-| Android | Pixel 8a: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. With Dawn 157 the errors stay within ±1, as with 3.6.1 ([verification](migration/skia-3.7.0/verification.md#pixels)). Instrumented tests: 126/127 on beta.3 (the failure is a known 4K throughput test, see the [verification](docs/VERIFICATION_0.1.0-beta.3.md#tests-natifs)). |
-| JavaScript / types | 237 tests in 11 suites, typecheck, package tests and 122 benchmark-harness tests pass; CI runs them on every pull request. |
+| iOS | iPhone 15 Pro: 61/61 benchmark cases pass with `yuv` frames, including the three that stopped on the video memory budget with BGRA ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). With Skia 3.7.4: 56/58 native XCTests pass, the other two being opt-in diagnostics, and the smoke profile passes in 8 of 9 runs. The one failure, a preview frame import refused right after a launch on a locked phone, did not come back ([3.7.4 verification](migration/skia-3.7.4/verification.md#reste-à-faire)). |
+| Android | Pixel 8a, beta.4: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. The EGL-free export writes the same bytes as beta.3's (Rec.709, limited range) ([3.7.4 verification](migration/skia-3.7.4/verification.md)). Instrumented tests: 126/127; the failure, a 4K preview throughput test, fails the same way on beta.3. |
+| JavaScript / types | 238 tests in 11 suites, typecheck, package tests and 122 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
 | Known issues | On Pixel 8a: a seek while playing a 4K sequence leaves the clock stalled, a paused seek into a 120-clip lazy montage does not show its frame, and Android 17 reports a missing file in words the harness does not recognize; all three predate beta.3. An iOS export with `yuv` frames spends 2–4 ms more per frame than with `rgba`. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
 | Long sessions | Not yet re-run since 3.0.6; the 3.0.6 results below are the latest. |

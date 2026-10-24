@@ -37,14 +37,4 @@ describe("video surface checked submission contract", () => {
     expect(() => getVideoCanvas(asSurface(surface))).toThrow(failure);
     expect(surface.getCanvas).not.toHaveBeenCalled();
   });
-
-  it("also rejects a canvas whose native deterministic disposal method is absent", () => {
-    const surface = {
-      enableCheckedSubmissions: jest.fn(),
-      getCanvas: jest.fn(() => ({})),
-    };
-    expect(() => getVideoCanvas(asSurface(surface))).toThrow(
-      "Skia canvas lifecycle patch is missing from the native binary",
-    );
-  });
 });

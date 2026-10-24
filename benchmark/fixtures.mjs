@@ -17,6 +17,9 @@ export const FIXTURES = Object.freeze([
   { id: 'hevc-1080p-rot270', file: 'hevc-1080p-rot270.mp4', width: 1920, height: 1080, fps: 30, seconds: 6, codec: 'hevc', rotation: 270 },
   { id: 'h264-slow-motion', file: 'h264-slow-motion.mov', width: 320, height: 240, fps: 30, seconds: 9, codec: 'h264', presentationTimeline: 'native-edit-list', decodedFrames: 180,
     slowMotion: { startSeconds: 1, sourceSeconds: 1, presentationSeconds: 4 } },
+  // real-bridge-h264-3840x2160-30 (make-sync-fixtures.mjs) looped five times
+  // by stream copy: ffmpeg -stream_loop 4 -i <it> -map 0:v:0 -c copy -t 30.
+  { id: 'real-bridge-4k30-long', file: 'real-bridge-h264-3840x2160-30-long.mp4', width: 3840, height: 2160, fps: 30, seconds: 30, codec: 'h264' },
 ]);
 
 export function fixtureById(id) {
