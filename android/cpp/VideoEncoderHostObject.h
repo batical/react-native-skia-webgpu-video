@@ -1,8 +1,8 @@
 #pragma once
 
-#include "EncoderTargets.h"
 #include "RNSVHostObject.h"
 #include "VideoComposition.h"
+#include <android/native_window.h>
 #include <memory>
 #include <mutex>
 #include <fbjni/ByteBuffer.h>
@@ -34,13 +34,17 @@ public:
 
   void prepare() const;
 
-  void makeGLContextCurrent() const;
-
   void encodeFrameRgba(alias_ref<JByteBuffer> pixels, jint width, jint height,
                        jint bytesPerRow, jdouble time) const;
 
-  /** A GL_TEXTURE_2D of the encoder's context, e.g. an imported buffer. */
-  void encodeTexture(jint texture, jdouble time) const;
+  /** The codec's input Surface (an android.view.Surface). */
+  local_ref<jobject> getInputSurface() const;
+
+  /** Before a frame is presented to the input Surface: its time in µs. */
+  jlong beginWindowFrame(jdouble time) const;
+
+  /** Once the frame of beginWindowFrame was presented. */
+  void endWindowFrame(jlong timeUs) const;
 
   void finishWriting() const;
 
@@ -62,10 +66,8 @@ public:
 
 private:
   global_ref<VideoEncoder> framesExtractor;
-  // GPU export: buffers Skia renders into, sampled by the encoder's context.
-  std::unique_ptr<EncoderTargets> targets;
-  int width;
-  int height;
+  // GPU export: the codec's input Surface, which WebGPU presents to.
+  ANativeWindow* window = nullptr;
   std::recursive_mutex encoderMutex;
   bool prepared = false;
   bool finished = false;

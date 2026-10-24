@@ -35,10 +35,16 @@ import {
 import { enqueueExport, exportAbortError } from "./exportQueue";
 import {
   acquireEncoderTarget,
+  acquireWindowTarget,
   closeEncoderTarget,
+  closeEncoderWindow,
+  presentWindowTarget,
   probeEncoderTarget,
+  probeEncoderWindow,
+  releaseEncoderWindow,
   supportsEncoderTargets,
   type EncoderTarget,
+  type EncoderWindow,
 } from "./exportTarget";
 import { yieldToRuntime } from "./runtimeYield";
 import {
@@ -136,6 +142,8 @@ type ExportState = {
   /** Draw into a lent encoder buffer instead of reading pixels back. */
   gpu: boolean;
   target: EncoderTarget | null;
+  /** Android GPU export: the encoder's input window, drawn into directly. */
+  window: EncoderWindow | null;
   /** iOS GPU export: decoded frames sampled in place, by producer. */
   imports: ExportFrameImports | null;
   frames: Record<string, VideoFrame>;
@@ -329,6 +337,10 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           }
         }
         if (clean(() => state.extractor?.dispose())) state.extractor = null;
+        // Android: the window's swapchain lets go of the codec's buffers
+        // before the encoder goes. Its own textures are freed further down.
+        const window = state.window;
+        if (window) clean(() => closeEncoderWindow(window));
         if (clean(() => state.encoder?.dispose())) state.encoder = null;
         if (cleanup.safeToRelease) {
           clean(() => state.surface?.flush(true));
@@ -341,10 +353,20 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
               state.imports = null;
             clean(() => clearVideoFrameImages(true));
           }
-          if (cleanup.safeToRelease && clean(() => state.canvas?.dispose()))
-            state.canvas = null;
-          if (cleanup.safeToRelease && clean(() => state.surface?.dispose()))
+          // Disposing the surface detaches its canvas.
+          if (cleanup.safeToRelease && clean(() => state.surface?.dispose())) {
             state.surface = null;
+            state.canvas = null;
+          }
+          // The target, if any, is one of the window's slots.
+          if (
+            cleanup.safeToRelease &&
+            window &&
+            clean(() => releaseEncoderWindow(window))
+          ) {
+            state.window = null;
+            state.target = null;
+          }
           const target = state.target;
           if (cleanup.safeToRelease && target) {
             if (clean(() => closeEncoderTarget(target))) state.target = null;
@@ -427,11 +449,13 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           const draw = () => {
             "worklet";
             if (state.gpu)
-              state.target = acquireEncoderTarget(
-                state.encoder!,
-                options.width,
-                options.height,
-              );
+              state.target = state.window
+                ? acquireWindowTarget(state.window)
+                : acquireEncoderTarget(
+                    state.encoder!,
+                    options.width,
+                    options.height,
+                  );
             lap("targetMs");
             const target = state.target;
             const surface = target ? target.surface! : state.surface!;
@@ -457,15 +481,14 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
               surface.flush(true);
               drawn.drained = true;
               lap("gpuMs");
-              if (target) {
-                closeEncoderTarget(target, true);
+              if (target && state.window) {
+                state.target = null;
+                presentWindowTarget(state.encoder!, state.window, target, time);
+              } else if (target) {
+                closeEncoderTarget(target);
                 state.target = null;
                 state.encoder!.encodeFrame(
-                  {
-                    kind: "native-buffer",
-                    nativeBuffer: target.pointer,
-                    fences: target.fences,
-                  },
+                  { kind: "native-buffer", nativeBuffer: target.pointer },
                   time,
                 );
               } else {
@@ -615,6 +638,7 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           readback: null,
           gpu: false,
           target: null,
+          window: null,
           imports: null,
           frames: {},
           processor: null,
@@ -666,16 +690,28 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
               );
               state.encoder.prepare();
               if (gpuExport) {
-                // Skia draws straight into the encoder's buffers; the probe
-                // keeps devices without IOSurface interop on the readback path.
+                // Skia draws straight into the encoder's buffers: lent pool
+                // buffers on iOS, the input window on Android. The probe keeps
+                // devices where that fails on the readback path.
                 state.hasRecorder = true;
-                const failure = supportsEncoderTargets(state.encoder)
-                  ? probeEncoderTarget(
-                      state.encoder,
-                      options.width,
-                      options.height,
-                    )
-                  : new Error("Encoder cannot lend frame buffers");
+                let failure: unknown;
+                if (bgra) {
+                  failure = supportsEncoderTargets(state.encoder)
+                    ? probeEncoderTarget(
+                        state.encoder,
+                        options.width,
+                        options.height,
+                      )
+                    : new Error("Encoder cannot lend frame buffers");
+                } else {
+                  const probe = probeEncoderWindow(
+                    state.encoder,
+                    options.width,
+                    options.height,
+                  );
+                  state.window = probe.window;
+                  failure = probe.failure;
+                }
                 state.gpu = failure === null;
                 // Decoded frames are sampled in place too: on iOS through the
                 // same IOSurface import, on Android once converted from YUV.

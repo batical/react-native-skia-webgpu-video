@@ -421,14 +421,19 @@ export type VideoEncoder = {
    */
   encodeFrame(texture: unknown, time: number): void;
   /**
-   * Lends the next pool buffer to draw into on the GPU: a CVPixelBuffer on
-   * iOS, an RGBA AHardwareBuffer on Android. Pass it back as a native-buffer
-   * frame (on Android with the sync-fds ending its GPU access, in `fences`),
-   * or release it. One at a time.
+   * iOS: lends the next pool buffer (a CVPixelBuffer) to draw into on the
+   * GPU. Pass it back as a native-buffer frame, or release it. One at a time.
    */
   acquireFrameBuffer?(): bigint;
-  /** Returns a lent buffer that will not be encoded. */
+  /** iOS: returns a lent buffer that will not be encoded. */
   releaseFrameBuffer?(): void;
+  /**
+   * Android: the codec's input Surface, as an ANativeWindow pointer for a
+   * WebGPU canvas context to present to. Each frame is then encoded as
+   * `{ kind: "window", present }`: the encoder sets the frame's time on the
+   * window and calls `present`, which presents the context.
+   */
+  acquireInputWindow?(): bigint;
   /*
    * Finish writing the video to the output file.
    */

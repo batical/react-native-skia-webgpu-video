@@ -3,16 +3,23 @@
 // this tests factory ownership without requiring a GPU context on the host.
 #include "include/core/SkRefCnt.h"
 
+#include <cstdint>
+#include <functional>
+#include <utility>
+
 class ImageProvider final : public SkRefCnt {
 public:
-  ImageProvider() { ++alive; }
+  using Uploader = std::function<void()>;
+  ImageProvider(Uploader, uint64_t) { ++alive; }
   ~ImageProvider() override { --alive; }
   static inline int alive = 0;
-  static sk_sp<ImageProvider> Make() { /* INSTALLED_FACTORY_BODY */ }
+  static sk_sp<ImageProvider> Make(Uploader uploader, uint64_t generation) {
+    /* INSTALLED_FACTORY_BODY */
+  }
 };
 
 int main() {
-  auto provider = ImageProvider::Make();
+  auto provider = ImageProvider::Make({}, 1);
   if (!provider || !provider->unique() || ImageProvider::alive != 1) return 1;
   auto alias = provider;
   provider.reset();

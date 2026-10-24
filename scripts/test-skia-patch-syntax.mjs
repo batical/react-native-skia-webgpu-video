@@ -11,7 +11,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const skia = join(root, 'node_modules/react-native-skia');
 const metadata = JSON.parse(readFileSync(join(root, 'scripts/skia-canvas-patch.json')));
 const hashes = {};
-for (const file of ['cpp/api/JsiSkCanvas.h', 'cpp/api/JsiSkSurface.h', 'cpp/rnskia/RNDawnContext.h', 'cpp/rnskia/RNImageProvider.h', 'cpp/api/JsiSkApi.h']) {
+for (const file of Object.keys(metadata.files)) {
   const hash = createHash('sha256').update(readFileSync(join(skia, file))).digest('hex');
   if (hash !== metadata.files[file].after) throw new Error(`Installed ${file} does not match the verified patch`);
   hashes[file] = hash;

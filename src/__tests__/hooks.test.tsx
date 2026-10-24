@@ -1382,7 +1382,6 @@ describe("useVideoComposition", () => {
     const image = result.current.currentFrame.value!;
     unmount();
     expect(image.dispose).toHaveBeenCalledTimes(1);
-    expect(mockCanvas.dispose).toHaveBeenCalledTimes(1);
     expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
     expect(mockSurface.flush).toHaveBeenCalledWith(true);
     expect(result.current.currentFrame.value).toBeNull();

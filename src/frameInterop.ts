@@ -116,7 +116,6 @@ const clearEntry = (cache: Cache, producer: number) => {
  * The caller has either not submitted a copy or has completed its GPU fence. */
 const clearSurfaceView = (cache: Cache) => {
   "worklet";
-  cache.canvas?.dispose();
   cache.canvas = null;
   cache.stage?.dispose();
   cache.stage = null;

@@ -33,7 +33,6 @@ export const disposePreviewResources = (resources: PreviewResources) => {
       frame.dispose?.();
       resources.frames.shift();
     }
-    resources.canvas?.dispose();
     resources.canvas = null;
     resources.surface?.dispose();
     resources.surface = null;

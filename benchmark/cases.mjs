@@ -118,6 +118,11 @@ export function buildCases({ seed = DEFAULT_SEED, profile = 'full' } = {}) {
       items: scenario.composition.items.map((item) => ({ ...item, textureMode: 'direct' })) },
   }));
   scenarios.unshift(...steadyCopies, ...steadyDirect);
+  // One 30 s real-footage 4K clip exported at 4K: the 4k-* cases above export
+  // 1080×1080. Added last so every earlier case keeps its random timings.
+  for (const codec of ['h264', 'hevc']) {
+    add(`export-4k-${codec}`, makeSequence([{ fixture: 'real-bridge-4k30-long', duration: 30 }]), ['export'], { output: { width: 3840, height: 2160, frameRate: 30, bitRate: 40_000_000, codec, encoderMode: 'copy' }, validation: ['pixels', 'presentation-timestamps', 'actual-codec'] });
+  }
   const smokeIds = new Set(['single-h264-638x358.mp4', '4k-x8-lazy-maxLongSide1280', 'encode-h264-copy', 'cancel-before-export', 'seek-past-end-resume']);
   return profile === 'smoke' ? scenarios.filter((scenario) => smokeIds.has(scenario.id)) : scenarios;
 }

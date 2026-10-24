@@ -1,19 +1,15 @@
-import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+// Skia 3.7.3 fixed the leak upstream (#4277); this guards the installed
+// factory against a regression rather than checking a local patch.
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const skia = join(root, 'node_modules/react-native-skia');
-const file = 'cpp/rnskia/RNImageProvider.h';
-const source = readFileSync(join(skia, file), 'utf8');
-const definition = JSON.parse(readFileSync(join(root, 'scripts/skia-canvas-patch.json')));
-if (createHash('sha256').update(source).digest('hex') !== definition.files[file].after) {
-  throw new Error('Apply the guarded Skia ownership patch before testing');
-}
-const factory = source.match(/static sk_sp<ImageProvider> Make\(\)\s*\{([^}]+)\}/);
+const source = readFileSync(join(skia, 'cpp/rnskia/RNImageProvider.h'), 'utf8');
+const factory = source.match(/static sk_sp<ImageProvider> Make\(Uploader uploader, uint64_t generation\)\s*\{([^}]+)\}/);
 if (!factory) throw new Error('Review the changed ImageProvider factory before testing');
 const output = mkdtempSync(join(tmpdir(), 'rnskv-provider-ownership-'));
 const asan = process.argv.includes('--asan');

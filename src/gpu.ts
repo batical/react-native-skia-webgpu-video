@@ -178,7 +178,6 @@ export const createVideoGpuScope = (options?: {
     } catch (error) {
       // No texture has been exposed or submitted to any consumer yet.
       try {
-        resource.canvas?.dispose();
         resource.canvas = null;
         resource.surface?.dispose();
         resource.surface = null;
@@ -265,7 +264,6 @@ export const createVideoGpuScope = (options?: {
         try {
           resource.image?.dispose();
           resource.image = null;
-          resource.canvas?.dispose();
           resource.canvas = null;
           resource.surface?.dispose();
           resource.surface = null;

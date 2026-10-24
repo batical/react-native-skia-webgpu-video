@@ -54,8 +54,6 @@ add_library(${PACKAGE_NAME}
         cpp/NativeRgbaBuffer.cpp
         cpp/NativeHardwareBuffer.h
         cpp/NativeHardwareBuffer.cpp
-        cpp/EncoderTargets.h
-        cpp/EncoderTargets.cpp
 )
 
 # Specifies a path to native header files.
@@ -90,6 +88,7 @@ target_link_libraries(
         -lGLESv2
         -lEGL
         -landroid
+        -lnativewindow
 )
 
 

@@ -1273,7 +1273,6 @@ describe("owned video frame transport", () => {
       (frame.dispose as jest.Mock).mock.invocationCallOrder[0]!,
     );
     releaseVideoFrameImage(frame);
-    expect(mockCanvas.dispose).toHaveBeenCalledTimes(1);
     expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
   });
 

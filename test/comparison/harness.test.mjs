@@ -37,7 +37,7 @@ function fakeAdapter() {
 
 test('all legacy stress cases stay in the matrix, independently of missing media', () => {
   const cases = buildCases();
-  assert.equal(cases.length, 65);
+  assert.equal(cases.length, 67);
   assert.equal(new Set(cases.map((entry) => entry.id)).size, cases.length);
   for (const name of ['montage-all-crossfade-eager', 'montage-all-crossfade-lazy', 'montage-all-crossfade-lazy-direct', '4k-x8-lazy', '4k-x8-lazy-maxLongSide1280', '4k-x8-lazy-direct', '4k-x8-eager', '4k-x3-simultaneous', 'shorts-x20-lazy', 'audio-lazy', 'start-past-file-end']) assert.ok(cases.some((entry) => entry.id === name));
   for (const fixture of FIXTURES.slice(0, 10)) for (const suffix of ['', '-direct']) assert.ok(cases.some((entry) => entry.id === `single-${fixture.file}${suffix}`));
@@ -800,7 +800,7 @@ test('steady direct playback differs only by ID and requested texture mode, with
   }
   // Golden content captured before adding direct readings: the original 62
   // scenarios, their ordering and all seeded seek/scrub/churn values survive.
-  const previous = cases.filter((entry) => !directIds.has(entry.id));
+  const previous = cases.filter((entry) => !directIds.has(entry.id) && !entry.id.startsWith('export-4k-'));
   assert.equal(previous.length, 62);
   assert.equal(createHash('sha256').update(JSON.stringify(previous)).digest('hex'),
     '1285e0436fc374da87c3c523508a8d903deffb97d9c4a12548dc04bc61e27563');

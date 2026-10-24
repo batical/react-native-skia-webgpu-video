@@ -6,8 +6,8 @@
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video/beta" /></a>
   <a href="#status"><img alt="Status: beta" src="https://img.shields.io/badge/status-beta-f59e0b" /></a>
-  <img alt="React Native Skia 3.7.1" src="https://img.shields.io/badge/Skia-3.7.1-38bdf8" />
-  <img alt="React Native WebGPU 0.17.0" src="https://img.shields.io/badge/WebGPU-0.17.0-a78bfa" />
+  <img alt="React Native Skia 3.7.4" src="https://img.shields.io/badge/Skia-3.7.4-38bdf8" />
+  <img alt="React Native WebGPU 0.19.0" src="https://img.shields.io/badge/WebGPU-0.19.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -37,8 +37,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.7.1`** |
-| React Native WebGPU | **`react-native-webgpu@0.17.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
+| React Native Skia | **`react-native-skia@3.7.4`** |
+| React Native WebGPU | **`react-native-webgpu@0.19.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
@@ -52,7 +52,7 @@ On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`
 The beta is published on npm under the `beta` tag:
 
 ```sh
-npm install --save-exact react-native-skia@3.7.1 react-native-webgpu@0.17.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.7.4 react-native-webgpu@0.19.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
 npm install --save-exact react-native-skia-webgpu-video@beta
 ```
 
@@ -208,10 +208,10 @@ This budget covers **tracked video resources**, not all memory held by codecs, S
 | Decode | AVFoundation, IOSurface-backed buffers, no extra copy (`alwaysCopiesSampleData = NO`): the decoder's NV12 (`framePixelFormat: 'yuv'`, the default), or BGRA converted by VideoToolbox (`'rgba'`) | API 29+, 8-bit SDR H.264/HEVC at the encoded size: `ImageReader` YUV buffers (the default). Otherwise, or with `'rgba'`: EGL render into an RGBA AHardwareBuffer (or a CPU scoped-copy fallback) |
 | Into Skia, preview | NV12: a YUV→RGB render pass into a reusable texture. BGRA: a WebGPU blit into it. Then an owned Graphite snapshot | WebGPU blit (YUV→RGB, crop and rotation in one pass), then an owned Graphite snapshot |
 | Into Skia, export | NV12: converted into a per-clip texture, as on Android. BGRA: sampled in place through the frame's IOSurface, no copy | Same as preview |
-| Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into an AHardwareBuffer lent by the encoder; EGL samples it into the codec Surface after its sync-fd |
+| Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws straight into the codec's input Surface, through a WebGPU canvas context on it (Vulkan swapchain): no EGL, no copy. Before each present, the frame time is set on the window and its dataspace reset, so the codec writes Rec.709 limited range as it did with EGL |
 | Fallback | CPU readback, with a warning | CPU readback, with a warning |
 
-Every path waits for checked GPU completion before releasing source frames or handing a buffer to the encoder. Scaled, HDR and 10-bit Android sources keep the EGL decode path.
+Every path waits for checked GPU completion before releasing source frames or handing a buffer to the encoder. On Android, OpenGL remains in two places: the CPU readback fallback draws into the codec Surface through EGL, and scaled, HDR and 10-bit sources (or `framePixelFormat: 'rgba'`) keep the EGL decode path.
 
 ### Frame pixel format
 
