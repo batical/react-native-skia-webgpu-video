@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Publish the version in package.json: git tag, GitHub release, then npm.
-// npm receives the archive attached to the GitHub release, so both carry the
-// same bytes. A new tag is only cut from a clean `main` equal to origin/main,
+// The GitHub release starts .github/workflows/release.yml, which publishes the
+// archive attached to it through npm trusted publishing: no npm login or
+// passkey here. A new tag is only cut from a clean `main` equal to origin/main,
 // after the host checks pass. Every step is skipped when already done, so a
-// failed publish (an expired 2FA prompt, say) can simply be run again.
+// failed publish can simply be run again.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -15,14 +16,12 @@ import { buildReleaseNotes } from './release-notes.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // A refusal is an expected outcome here: print its reason, not a stack trace.
 process.on('uncaughtException', (error) => { console.error(`\nrelease: ${error.message}`); process.exit(1); });
-const usage = `npm run release -- [--dry-run] [--tag DIST_TAG] [--summary TEXT] [--notes-file FILE] [--otp CODE]
+const usage = `npm run release -- [--dry-run] [--summary TEXT] [--notes-file FILE]
 
   --dry-run      run every check and build the archive; no tag, release or publish
-  --tag          npm dist-tag; defaults to the prerelease id (0.2.0-beta.1 -> beta), or latest
   --summary      the release title's summary, after "vX.Y.Z — "
   --notes-file   GitHub release notes; defaults to scripts/release-notes.mjs: every PR
-                 since the last tag, install block, status (the archive's SHA-256 is added)
-  --otp          one-time password, if npm asks for one`;
+                 since the last tag, install block, status (the archive's SHA-256 is added)`;
 
 const options = { dryRun: false };
 for (let i = 2; i < process.argv.length; i++) {
@@ -31,10 +30,8 @@ for (let i = 2; i < process.argv.length; i++) {
   if (flag === '--dry-run') { options.dryRun = true; continue; }
   const value = process.argv[++i];
   if (!value || value.startsWith('--')) throw new Error(`Missing value for ${flag}\n${usage}`);
-  if (flag === '--tag') options.distTag = value;
-  else if (flag === '--notes-file') options.notesFile = path.resolve(value);
+  if (flag === '--notes-file') options.notesFile = path.resolve(value);
   else if (flag === '--summary') options.summary = value;
-  else if (flag === '--otp') options.otp = value;
   else throw new Error(`Unknown argument: ${flag}\n${usage}`);
 }
 
@@ -62,14 +59,12 @@ const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
 const { name, version } = pkg;
 const gitTag = `v${version}`;
 const prerelease = /^\d+\.\d+\.\d+-([0-9A-Za-z-]+)/.exec(version)?.[1];
-const distTag = options.distTag ?? (prerelease && !/^\d+$/.test(prerelease) ? prerelease : prerelease ? 'next' : 'latest');
-// `latest` is what a bare `npm install name` gets: never point it at a prerelease.
-if (prerelease && distTag === 'latest') throw new Error(`${version} is a prerelease; publish it under another dist-tag than latest`);
+// The workflow's rule: 0.2.0-beta.1 -> beta, and `latest` too while no stable
+// version exists.
+const distTag = prerelease && !/^\d+$/.test(prerelease) ? prerelease : prerelease ? 'next' : 'latest';
 console.log(`${name}@${version} → npm dist-tag "${distTag}", git tag ${gitTag}${options.dryRun ? ' (dry run)' : ''}`);
 
-// Accounts first, before anything is built or pushed.
-const npmUser = capture('npm', ['whoami']);
-if (npmUser.status !== 0 && !options.dryRun) throw new Error('Not logged in to npm: run `npm login` first.');
+// The GitHub account first, before anything is built or pushed.
 if (capture('gh', ['auth', 'status']).status !== 0) throw new Error('The GitHub CLI is not logged in: run `gh auth login` first.');
 const published = capture('npm', ['view', `${name}@${version}`, 'version', '--prefer-online']);
 if (published.status === 0 && published.stdout === version) {
@@ -86,7 +81,8 @@ const tagExists = capture('git', ['rev-parse', '--verify', '--quiet', `refs/tags
 const releaseExists = capture('gh', ['release', 'view', gitTag]).status === 0;
 
 if (tagExists && releaseExists) {
-  // Already released on GitHub: publish its archive, built from the tag.
+  // Already released on GitHub: check its archive, built from the tag, then
+  // have the workflow publish it.
   console.log(`${gitTag} already has a GitHub release; downloading its archive.`);
   output('gh', ['release', 'download', gitTag, '--pattern', '*.tgz', '--dir', work]);
 } else {
@@ -129,24 +125,35 @@ if (!tagExists) {
     ...(prerelease ? ['--prerelease'] : [])]);
 }
 
-run('npm', ['publish', archive, '--tag', distTag, ...(options.otp ? ['--otp', options.otp] : [])]);
+// A new release starts the workflow by itself; an existing one (whose run
+// failed before the trusted publisher was set up, say) gets a manual run.
+const title = `Publish ${gitTag} to npm`;
+const since = Date.now() - 60_000;
+if (tagExists) run('gh', ['workflow', 'run', 'release.yml', '-f', `tag=${gitTag}`]);
+let runId;
+for (let attempt = 0; attempt < 24 && !runId; attempt++) {
+  if (attempt) await new Promise((resolve) => setTimeout(resolve, 5000));
+  const runs = JSON.parse(output('gh', ['run', 'list', '--workflow', 'release.yml', '--limit', '20', '--json', 'databaseId,displayTitle,createdAt']));
+  runId = runs.find((entry) => entry.displayTitle === title && Date.parse(entry.createdAt) >= since)?.databaseId;
+}
+const actions = 'https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/release.yml';
+if (!runId) throw new Error(`No "${title}" run started within 2 minutes: see ${actions}, then run this again.`);
+console.log(`\n${title}: ${actions.replace(/workflows\/release\.yml$/, `runs/${runId}`)}`);
+if (spawnSync('gh', ['run', 'watch', String(runId), '--exit-status', '--interval', '10'], { cwd: root, stdio: 'inherit', env }).status !== 0) {
+  throw new Error(`"${title}" failed: \`gh run view ${runId} --log-failed\` shows why. A 404 or ENEEDAUTH from npm means the package's\n` +
+    'trusted publisher on npmjs.com is missing or does not match (.github/CONTRIBUTING.md, Releasing). Running this again is safe.');
+}
 
-// The registry can take a while to show a new version, and an account that
-// requires staged publishing holds it until a maintainer approves it (a first
-// publish then only shows the 0.0.0-stage placeholder). Wait, then say which.
+// The run has published; the registry can take a moment to show it.
 let live = false;
 for (let attempt = 0; attempt < 24 && !live; attempt++) {
   if (attempt) await new Promise((resolve) => setTimeout(resolve, 5000));
   live = capture('npm', ['view', `${name}@${version}`, 'version', '--prefer-online']).stdout === version;
 }
-if (!live) {
-  console.log(`\n${name}@${version} is not visible on npm after 2 minutes. If npm staged it, approve it on`);
-  console.log(`https://www.npmjs.com (your packages, Staged Packages tab) or with \`npx npm@latest stage list\` then`);
-  console.log('`npx npm@latest stage approve <stage-id>` (2FA). Running this script again is safe.');
-  process.exit(1);
-}
 const tags = output('npm', ['view', name, 'dist-tags', '--json', '--prefer-online']);
-console.log(`\nPublished ${name}@${version}. dist-tags: ${tags}`);
+console.log(live
+  ? `\nPublished ${name}@${version}. dist-tags: ${tags}`
+  : `\nThe workflow published ${name}@${version}; the registry does not list it yet. dist-tags: ${tags}`);
 console.log(`Install: npm install --save-exact ${name}@${distTag === 'latest' ? version : distTag}`);
 console.log(`Release: https://github.com/batical/react-native-skia-webgpu-video/releases/tag/${gitTag}`);
 try {

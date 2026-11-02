@@ -12,22 +12,21 @@ import { buildReleaseNotes } from './release-notes.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.on('uncaughtException', (error) => { console.error(`\nship: ${error.message}`); process.exit(1); });
-const usage = `npm run ship -- [VERSION] [--summary TEXT] [--dry-run] [--otp CODE]
+const usage = `npm run ship -- [VERSION] [--summary TEXT] [--dry-run]
 
   VERSION     defaults to the next prerelease (0.1.0-beta.1 -> 0.1.0-beta.2) or patch
   --summary   the release title's summary, after "vX.Y.Z — "
-  --dry-run   print the version and the release notes; change nothing
-  --otp       forwarded to npm, if it asks for a one-time password`;
+  --dry-run   print the version and the release notes; change nothing`;
 
 const options = { dryRun: false, release: [] };
 for (let i = 2; i < process.argv.length; i++) {
   const arg = process.argv[i];
   if (arg === '--help' || arg === '-h') { console.log(usage); process.exit(0); }
   if (arg === '--dry-run') { options.dryRun = true; continue; }
-  if (arg === '--summary' || arg === '--otp') {
+  if (arg === '--summary') {
     const value = process.argv[++i];
     if (!value) throw new Error(`Missing value for ${arg}\n${usage}`);
-    if (arg === '--summary') options.summary = value;
+    options.summary = value;
     options.release.push(arg, value);
     continue;
   }
@@ -65,9 +64,8 @@ const isReleased = (v) =>
   capture('git', ['ls-remote', '--exit-code', '--tags', 'origin', `refs/tags/v${v}`]).status === 0 &&
   capture('npm', ['view', `${name}@${v}`, 'version', '--prefer-online']).stdout === v;
 
-// Accounts and a clean main first.
+// The GitHub account and a clean main first.
 if (capture('gh', ['auth', 'status']).status !== 0) throw new Error('The GitHub CLI is not logged in: run `gh auth login` first.');
-if (!options.dryRun && capture('npm', ['whoami']).status !== 0) throw new Error('Not logged in to npm: run `npm login` first.');
 output('git', ['fetch', '--quiet', 'origin', 'main', '--tags']);
 if (!options.dryRun) {
   if (output('git', ['branch', '--show-current']) !== 'main') throw new Error('Run it from main: `git switch main`.');
@@ -124,5 +122,5 @@ if (!resuming) {
   if (version() !== target) throw new Error(`main is not at ${target} after the merge.`);
 }
 
-// Tag, GitHub release and npm. npm asks for the passkey or a code here.
+// Tag and GitHub release; the "Publish to npm" workflow then publishes it.
 run('node', [path.join('scripts', 'release.mjs'), ...options.release]);

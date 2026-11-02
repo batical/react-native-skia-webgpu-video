@@ -4,10 +4,10 @@
 
 <p align="center">
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
-  <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video/beta" /></a>
-  <a href="#status"><img alt="Status: beta" src="https://img.shields.io/badge/status-beta-f59e0b" /></a>
-  <img alt="React Native Skia 3.7.4" src="https://img.shields.io/badge/Skia-3.7.4-38bdf8" />
-  <img alt="React Native WebGPU 0.19.0" src="https://img.shields.io/badge/WebGPU-0.19.0-a78bfa" />
+  <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video" /></a>
+  <a href="#status"><img alt="Status: stable" src="https://img.shields.io/badge/status-stable-22c55e" /></a>
+  <img alt="React Native Skia 3.8.1" src="https://img.shields.io/badge/Skia-3.8.1-38bdf8" />
+  <img alt="React Native WebGPU 0.19.2" src="https://img.shields.io/badge/WebGPU-0.19.2-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -37,8 +37,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.7.4`** |
-| React Native WebGPU | **`react-native-webgpu@0.19.0`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
+| React Native Skia | **`react-native-skia@3.8.1`** |
+| React Native WebGPU | **`react-native-webgpu@0.19.2`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
@@ -49,11 +49,9 @@ On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`
 
 ### Install
 
-The beta is published on npm under the `beta` tag:
-
 ```sh
-npm install --save-exact react-native-skia@3.7.4 react-native-webgpu@0.19.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
-npm install --save-exact react-native-skia-webgpu-video@beta
+npm install --save-exact react-native-skia@3.8.1 react-native-webgpu@0.19.2 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia-webgpu-video
 ```
 
 Each version requires exact Skia and WebGPU versions (its peer dependencies). The [GitHub releases](https://github.com/batical/react-native-skia-webgpu-video/releases) attach the same package archive, installable by URL. To build it from source instead, run `npm ci`, `npm run build` and `npm pack` in a clone, then `npm install` the resulting `.tgz`.
