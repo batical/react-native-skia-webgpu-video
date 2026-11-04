@@ -19,9 +19,17 @@ import RNSkiaVideoModule from "./RNSkiaVideoModule";
 import useEventListener from "./utils/useEventListener";
 import { PixelRatio } from "react-native";
 import { scheduleOnRN } from "react-native-worklets";
-import { ownVideoFrames, releaseVideoFrameImage } from "./frameInterop";
+import {
+  ownVideoFrames,
+  releaseVideoFrameImage,
+  videoFrameImportWaits,
+} from "./frameInterop";
 import { frameByteSize, reserveVideoMemory } from "./memory";
 import { disposePreviewResources } from "./previewLifecycle";
+
+// Draws in a row the preview submits without waiting for the GPU: one frame
+// of a 24 fps video spans five vsyncs at 120 Hz, redrawn as time goes by.
+const maxUncheckedDraws = 6;
 
 type UseVideoCompositionPlayerOptions<T = undefined> = {
   /**
@@ -87,11 +95,10 @@ type UseVideoCompositionPlayerOptions<T = undefined> = {
   /**
    * Import a newly decoded frame in one vsync and draw it in the next, instead
    * of both in the same one. On Android the import (YUV blit and its checked
-   * GPU wait) and the draw (snapshot and its checked GPU wait) cost about as
-   * much as each other, and together they overrun a 90–120 Hz frame budget on
-   * the UI thread. The option applies on iOS too. The picture then trails the
-   * clock by one vsync. The first frame of a session is still drawn as soon
-   * as it is imported.
+   * GPU wait) and the draw cost about as much as each other, and together they
+   * overrun a 90–120 Hz frame budget on the UI thread. The option applies on
+   * iOS too. The picture then trails the clock by one vsync. The first frame
+   * of a session is still drawn as soon as it is imported.
    * @default false
    */
   splitImportAndDraw?: boolean;
@@ -321,6 +328,10 @@ export const useVideoComposition = <T = undefined>({
   const drawDeferred = useSharedValue(false);
   // Whether the previous vsync brought new frames.
   const importedLastVsync = useSharedValue(false);
+  // Draws submitted without waiting for the GPU since the last wait, the
+  // checked wait that ends every import of a new frame included.
+  const uncheckedDraws = useSharedValue(0);
+  const importWaits = useSharedValue(0);
   // A new drawFrame can draw something else from the same time and frames.
   useEffect(() => {
     lastDrawnTime.value = -1;
@@ -386,6 +397,13 @@ export const useVideoComposition = <T = undefined>({
       sourcesGeneration.value = generation;
       const currentTime = framesExtractor.currentTime;
       const framesVersion = framesExtractor.framesVersion;
+      // An import (above, or of another player on this runtime) ends with a
+      // checked wait for all the GPU work submitted before it.
+      const waits = videoFrameImportWaits();
+      if (waits !== importWaits.value) {
+        importWaits.value = waits;
+        uncheckedDraws.value = 0;
+      }
       const imported =
         splitImportAndDraw && framesVersion !== lastImportedVersion.value;
       const importedBefore = importedLastVsync.value;
@@ -529,7 +547,17 @@ export const useVideoComposition = <T = undefined>({
           previous ?? undefined,
         );
         if (next !== previous) pendingSnapshot.value = next;
-        surface.flush(true);
+        // Waiting for the GPU here held the UI thread for the work of every
+        // Skia view on the shared context: a vsync in three with 4K frames on
+        // iOS with Skia 3.9.1, every other one before. The draw samples only
+        // images Skia owns, which the GPU work keeps alive, so it waits only
+        // when afterDrawFrame releases a context of the caller's, and after a
+        // few draws without an import, so that the GPU queue stays bounded.
+        const wait =
+          afterDrawFrame !== undefined ||
+          uncheckedDraws.value >= maxUncheckedDraws;
+        surface.flush(wait);
+        uncheckedDraws.value = wait ? 0 : uncheckedDraws.value + 1;
         drawn.submitted = true;
         frameGeneration.value = generation;
         if (next === previous) currentFrame.modify(undefined, true);

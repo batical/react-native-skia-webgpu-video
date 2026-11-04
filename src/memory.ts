@@ -37,6 +37,12 @@ export const frameByteSize = (width: number, height: number): number => {
   return bytes;
 };
 
+/** The budget's counters, from any runtime; null without them. */
+export const videoMemoryBudget = (): VideoMemoryStats | null => {
+  "worklet";
+  return RNSkiaVideoModule.getMemoryBudgetStats?.() ?? null;
+};
+
 export const reserveVideoMemory = (bytes: number, label: string): number => {
   "worklet";
   return RNSkiaVideoModule.reserveMemory?.(bytes, label) ?? 0;

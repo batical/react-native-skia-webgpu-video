@@ -5,6 +5,7 @@ import {
   releaseVideoFrameImage,
   clearVideoFrameImages,
   ownVideoFrames,
+  videoFrameImportWaits,
 } from "../frameInterop";
 import type { VideoFrame } from "../types";
 
@@ -66,6 +67,14 @@ const mockImportExternal = jest.fn((_descriptor: unknown) => {
 });
 const mockWriteBuffer = jest.fn();
 const mockSubmit = jest.fn();
+// The GPU's report that the queue is done; absent unless a test installs it.
+let mockWorkDone: jest.Mock | undefined;
+const mockBudget = {
+  currentBytes: 0,
+  peakBytes: 0,
+  allocations: 0,
+  maxBytes: 256 * 1024 * 1024,
+};
 const mockPass = {
   setPipeline: jest.fn(),
   setBindGroup: jest.fn(),
@@ -94,6 +103,7 @@ jest.mock("../gpuDevice", () => ({
       writeTexture: mockWriteTexture,
       writeBuffer: mockWriteBuffer,
       submit: mockSubmit,
+      ...(mockWorkDone ? { onSubmittedWorkDone: mockWorkDone } : {}),
     },
   }),
   createNativeVideoGpuFrame: (pointer: bigint) => mockWrapNative(pointer),
@@ -126,6 +136,7 @@ jest.mock("../RNSkiaVideoModule", () => ({
     frameProtocolVersion: 1,
     reserveMemory: jest.fn(() => 17),
     releaseMemory: jest.fn(),
+    getMemoryBudgetStats: jest.fn(() => ({ ...mockBudget })),
   },
 }));
 
@@ -1166,6 +1177,176 @@ describe("Android RGBA Graphite upload", () => {
   });
 });
 
+describe("imports the GPU reports done", () => {
+  const report = () => {
+    const settle = {
+      resolve: () => {},
+      reject: (_error: unknown) => {},
+    };
+    const promise = new Promise<undefined>((resolve, reject) => {
+      settle.resolve = () => resolve(undefined);
+      settle.reject = reject;
+    });
+    return { promise, ...settle };
+  };
+  const settled = async () => {
+    for (let i = 0; i < 3; i++) await Promise.resolve();
+  };
+  const nativeFrame = (id: number): VideoFrame => ({
+    ...rgbaFrame(id),
+    texture: { kind: "native-buffer", nativeBuffer: BigInt(100 + id) },
+  });
+  const sources: { release: jest.Mock }[] = [];
+  beforeEach(() => {
+    sources.length = 0;
+    mockWrapNative.mockImplementation(() => {
+      const source = { ...mockNativeSource, release: jest.fn() };
+      sources.push(source);
+      return source;
+    });
+  });
+  afterEach(() => {
+    clearVideoFrameImages(true);
+    mockWorkDone = undefined;
+    mockWrapNative.mockImplementation(() => mockNativeSource);
+    mockBudget.currentBytes = 0;
+    mockBudget.maxBytes = 256 * 1024 * 1024;
+  });
+
+  it("hands the decoder buffer back once the GPU reports the copy done, without waiting for it", async () => {
+    const done = report();
+    mockWorkDone = jest.fn(() => done.promise);
+    const waits = videoFrameImportWaits();
+    const frame = nativeFrame(1);
+
+    expect(imageFromVideoFrame(frame)).not.toBeNull();
+    expect(mockSurface.flush.mock.calls).toEqual([[false]]);
+    expect(mockWorkDone).toHaveBeenCalledTimes(1);
+    expect(mockWorkDone.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mockSurface.flush.mock.invocationCallOrder[0]!,
+    );
+    expect(frame.dispose).not.toHaveBeenCalled();
+    expect(sources[0]!.release).not.toHaveBeenCalled();
+
+    done.resolve();
+    await settled();
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+    expect(sources[0]!.release).toHaveBeenCalledTimes(1);
+    // A completion covers the GPU work before it, like a wait.
+    expect(videoFrameImportWaits()).toBe(waits + 1);
+  });
+
+  it("waits once two imports are out, and hands all three buffers back", async () => {
+    const reports = [report(), report(), report()];
+    let next = 0;
+    mockWorkDone = jest.fn(() => reports[next++]!.promise);
+    const frames = [nativeFrame(1), nativeFrame(2), nativeFrame(3)];
+
+    imageFromVideoFrame(frames[0]!);
+    imageFromVideoFrame(frames[1]!);
+    expect(mockSurface.flush.mock.calls).toEqual([[false], [false]]);
+    for (const frame of frames) expect(frame.dispose).not.toHaveBeenCalled();
+
+    imageFromVideoFrame(frames[2]!);
+    expect(mockSurface.flush).toHaveBeenLastCalledWith(true);
+    expect(mockWorkDone).toHaveBeenCalledTimes(2);
+    for (const frame of frames) expect(frame.dispose).toHaveBeenCalledTimes(1);
+
+    // The late reports find nothing left to hand back.
+    for (const done of reports) done.resolve();
+    await settled();
+    for (const frame of frames) expect(frame.dispose).toHaveBeenCalledTimes(1);
+    for (const source of sources)
+      expect(source.release).toHaveBeenCalledTimes(1);
+  });
+
+  it("hands back, in order, every buffer up to the import reported done", async () => {
+    const reports = [report(), report()];
+    let next = 0;
+    mockWorkDone = jest.fn(() => reports[next++]!.promise);
+    const first = nativeFrame(1);
+    const second = nativeFrame(2);
+    imageFromVideoFrame(first);
+    imageFromVideoFrame(second);
+
+    // The queue runs in order: the second copy done means the first is too.
+    reports[1]!.resolve();
+    await settled();
+    expect(first.dispose).toHaveBeenCalledTimes(1);
+    expect(second.dispose).toHaveBeenCalledTimes(1);
+    expect(
+      (first.dispose as jest.Mock).mock.invocationCallOrder[0],
+    ).toBeLessThan((second.dispose as jest.Mock).mock.invocationCallOrder[0]!);
+    reports[0]!.resolve();
+    await settled();
+    expect(first.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for the GPU before a cleanup hands an import's buffer back", async () => {
+    const done = report();
+    mockWorkDone = jest.fn(() => done.promise);
+    const frame = nativeFrame(1);
+    imageFromVideoFrame(frame);
+
+    clearVideoFrameImages(true);
+    expect(mockSurface.flush).toHaveBeenLastCalledWith(true);
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+    expect(mockSurface.flush.mock.invocationCallOrder.at(-1)!).toBeLessThan(
+      (frame.dispose as jest.Mock).mock.invocationCallOrder[0]!,
+    );
+
+    done.resolve();
+    await settled();
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a buffer whose report failed to the next wait", async () => {
+    const done = report();
+    mockWorkDone = jest.fn(() => done.promise);
+    const frame = nativeFrame(1);
+    imageFromVideoFrame(frame);
+
+    done.reject(new Error("device lost"));
+    await settled();
+    expect(frame.dispose).not.toHaveBeenCalled();
+
+    clearVideoFrameImages(true);
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits rather than keep out a buffer the memory budget cannot afford", () => {
+    mockWorkDone = jest.fn(() => report().promise);
+    // A 4×2 BGRA frame: 32 bytes. The decoder would keep room for less than
+    // two more frames.
+    mockBudget.currentBytes = mockBudget.maxBytes - 60;
+    const frame = nativeFrame(1);
+    imageFromVideoFrame(frame);
+    expect(mockSurface.flush.mock.calls).toEqual([[true]]);
+    expect(mockWorkDone).not.toHaveBeenCalled();
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+
+    // A buffer beyond a sixteenth of the budget.
+    mockBudget.currentBytes = 0;
+    mockBudget.maxBytes = 16 * 31;
+    const large = nativeFrame(4);
+    imageFromVideoFrame(large);
+    expect(mockSurface.flush).toHaveBeenLastCalledWith(true);
+    expect(large.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits at once where nothing can report the GPU done", () => {
+    mockWorkDone = jest.fn(() => {
+      throw new Error("No runtime to settle on");
+    });
+    const frame = nativeFrame(1);
+    imageFromVideoFrame(frame);
+
+    expect(mockSurface.flush.mock.calls).toEqual([[false], [true]]);
+    expect(frame.dispose).toHaveBeenCalledTimes(1);
+    expect(sources[0]!.release).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("owned video frame transport", () => {
   it("closes a fresh native lease on a paused-image cache hit without another GPU import", () => {
     withAndroidInterop(({ interop }) => {
@@ -1547,8 +1728,8 @@ describe("owned video frame transport", () => {
       throw failure;
     });
     expect(() => imageFromVideoFrame(replacement)).toThrow(failure);
-    const rejectedImage = (Skia.Image.MakeRaster as jest.Mock).mock
-      .results[1]?.value;
+    const rejectedImage = (Skia.Image.MakeRaster as jest.Mock).mock.results[1]
+      ?.value;
     expect(rejectedImage.dispose).toHaveBeenCalledTimes(1);
     expect(previous.dispose).not.toHaveBeenCalled();
     expect(imageFromVideoFrame(first)).toBe(previous);
