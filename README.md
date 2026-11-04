@@ -6,8 +6,8 @@
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video" /></a>
   <a href="#status"><img alt="Status: stable" src="https://img.shields.io/badge/status-stable-22c55e" /></a>
-  <img alt="React Native Skia 3.8.1" src="https://img.shields.io/badge/Skia-3.8.1-38bdf8" />
-  <img alt="React Native WebGPU 0.19.2" src="https://img.shields.io/badge/WebGPU-0.19.2-a78bfa" />
+  <img alt="React Native Skia 3.9.1" src="https://img.shields.io/badge/Skia-3.9.1-38bdf8" />
+  <img alt="React Native WebGPU 0.21.0" src="https://img.shields.io/badge/WebGPU-0.21.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -37,8 +37,8 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
 | React | `19.2.3` tested |
-| React Native Skia | **`react-native-skia@3.8.1`** |
-| React Native WebGPU | **`react-native-webgpu@0.19.2`** (both resolve `react-native-webgpu-dawn@157.0.0`) |
+| React Native Skia | **`react-native-skia@3.9.1`** |
+| React Native WebGPU | **`react-native-webgpu@0.21.0`** (both resolve `react-native-webgpu-dawn@157.1.0`) |
 | Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
@@ -50,7 +50,7 @@ On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`
 ### Install
 
 ```sh
-npm install --save-exact react-native-skia@3.8.1 react-native-webgpu@0.19.2 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.9.1 react-native-webgpu@0.21.0 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
 npm install --save-exact react-native-skia-webgpu-video
 ```
 
@@ -209,21 +209,21 @@ This budget covers **tracked video resources**, not all memory held by codecs, S
 | Export output | Skia draws into the encoder's CVPixelBuffer (IOSurface) | Skia draws into one of two textures of the library's, which a GPU copy puts into the codec's input Surface, through a WebGPU canvas context on it (Vulkan swapchain): no EGL. Before each present, the frame time is set on the window and its dataspace reset, so the codec writes Rec.709 limited range as it did with EGL |
 | Fallback | CPU readback, with a warning | CPU readback, with a warning |
 
-Every path waits for checked GPU completion before releasing source frames. Android's export waits for a frame's GPU work once it has decoded the next frame, so the GPU draws one frame while the CPU decodes the next, and it reports each frame's duration to Android's performance hints (ADPF, Android 13 and later), which raise the CPU and, from Android 15, the GPU capacity the export gets. On Android, OpenGL remains in two places: the CPU readback fallback draws into the codec Surface through EGL, and HDR and 10-bit sources (or `framePixelFormat: 'rgba'`) keep the EGL decode path.
+Every path gives source frames back only once the GPU is done with them: exports wait for checked GPU completion; the preview submits its draws and imports without waiting on the UI thread, and hands decoder buffers back when the GPU reports them done (waiting instead when the memory budget cannot hold them). Android's export waits for a frame's GPU work once it has decoded the next frame, so the GPU draws one frame while the CPU decodes the next, and it reports each frame's duration to Android's performance hints (ADPF, Android 13 and later), which raise the CPU and, from Android 15, the GPU capacity the export gets. On Android, OpenGL remains in two places: the CPU readback fallback draws into the codec Surface through EGL, and HDR and 10-bit sources (or `framePixelFormat: 'rgba'`) keep the EGL decode path.
 
 ### Frame pixel format
 
 `framePixelFormat` chooses how a composition's frames are decoded, for its preview and its export:
 
 ```ts
-const composition = { duration, items, framePixelFormat: 'yuv' }; // 'auto' (default) | 'yuv' | 'rgba'
+const composition = { duration, items, framePixelFormat: 'yuv' }; // 'auto' (default) | 'yuv' | 'rgba' (deprecated)
 ```
 
 - `yuv`: the decoder's own YUV 4:2:0 buffers, converted to RGB on the GPU when a frame is drawn. A decoded frame takes 1.5 bytes a pixel instead of 4 (12.4 MB instead of 33.2 MB in 4K), so the decoder keeps more frames ahead in the same memory.
-- `rgba`: frames converted to RGB as they are decoded (iOS: by VideoToolbox; Android: by an OpenGL pass), which an iOS GPU export samples in place.
-- `auto`: `yuv`, on both platforms.
+- `rgba` (**deprecated**, still supported): frames converted to RGB as they are decoded (iOS: by VideoToolbox; Android: by an OpenGL pass). It no longer has an advantage. Exports run as fast in `yuv` (a 120-clip montage on an iPhone 15 Pro: 7.7 s in `yuv`, 7.8 s in `rgba`), and `yuv` renders the same colors. A 4K60 preview keeps fewer frames on screen in `rgba` (about 235 of 360 on an iPhone 15 Pro, against 355 in `yuv`), and frames take 2.7 times the memory. Use `auto`.
+- `auto`: `yuv`, on both platforms. Android keeps HDR and 10-bit tracks in RGBA whatever the setting.
 
-Both convert with the frame's own YCbCr matrix and range, HDR tone mapped to Rec.709 by the platform. One difference: on iOS, `rgba` also converts a file tagged with other primaries or another SDR transfer function (Display P3, sRGB) to Rec.709, as AVFoundation does; `yuv`, like Android in both formats, takes its samples as Rec.709. Camera footage (Rec.709 or HLG) renders the same in both. See the [measurements](docs/FRAME_PIXEL_FORMAT.md) before choosing.
+Both convert with the frame's own YCbCr matrix and range, HDR tone mapped to Rec.709 by the platform. On iOS, both also convert files tagged Display P3 or sRGB to Rec.709, as AVFoundation does. Android takes SDR samples as Rec.709 in both formats. See the [measurements](docs/FRAME_PIXEL_FORMAT.md) before choosing.
 
 For advanced exports, `createFrameProcessor` supports asynchronous preparation at each composition timestamp. The optional `react-native-skia-webgpu-video/gpu` entry point provides a resource scope whose asynchronous disposal waits for tracked work. See the [WebGPU cube example](examples/webgpu-overlay.ts).
 
