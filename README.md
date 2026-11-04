@@ -27,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **Beta.** The Skia 3.7.4 / WebGPU 0.19.0 build has run on an iPhone 15 Pro and a Pixel 8a (export speed, pixel checks, native and instrumented tests, smoke runs). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization; two 4K cases have known issues. See [status](#status) before adopting this in production.
+> **0.1.0.** The Skia 3.9.1 / WebGPU 0.21.0 build has run on an iPhone 15 Pro and a Pixel 8a: export speed, preview frame accuracy, pixel and color checks, native and instrumented tests, smoke runs. Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization. A few 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
@@ -233,7 +233,7 @@ These are integration building blocks. Three.js adapters, Core ML models, and au
 
 Release builds, 3 repetitions per case, deterministic workloads from catalog `2026-10-07.1` (plus two 4K → 4K exports added for beta.4), median export wall time. Protocol, raw results and Perfetto analysis in the [3.7.4 verification report](migration/skia-3.7.4/verification.md). Earlier campaigns: [3.7.0](migration/skia-3.7.0/verification.md), [3.6.1](migration/skia-3.6.1/verification.md), [3.4.4](migration/skia-3.4.4/verification.md).
 
-Beta.4 (Skia 3.7.4 / WebGPU 0.19.0) exports a third faster on Android, up to 45% on 4K sources, and leaves iOS unchanged.
+Beta.4 (Skia 3.7.4 / WebGPU 0.19.0) exports a third faster on Android, up to 45% on 4K sources, and leaves iOS unchanged. 0.1.0 (Skia 3.9.1 / WebGPU 0.21.0) leaves export times unchanged on both phones, within ±4% ([3.9.1 verification](migration/skia-3.9.1/verification.md)).
 
 **Pixel 8a (Android 17)**, thermal state nominal, medians of 9 repetitions for beta.3 and 6 for beta.4:
 
@@ -272,12 +272,12 @@ Reproduce on your devices with the example app: `node scripts/test-ios-device-ab
 
 | Area | Current evidence |
 | --- | --- |
-| Frame accuracy | At 60 Hz, the preview draws the frame due at 99–100% of vsyncs in 30, 24 and 60 fps on both phones, and 97–100% in 4K with `yuv` frames on the Pixel 8a. On a warm iPhone at 120 Hz: 73–95% in 1080p, 77–90% in 4K 60 fps. Every exported frame holds the right source frame, in both frame pixel formats ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). |
-| iOS | iPhone 15 Pro: 61/61 benchmark cases pass with `yuv` frames, including the three that stopped on the video memory budget with BGRA ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). With Skia 3.7.4: 56/58 native XCTests pass, the other two being opt-in diagnostics, and the smoke profile passes in 8 of 9 runs. The one failure, a preview frame import refused right after a launch on a locked phone, did not come back ([3.7.4 verification](migration/skia-3.7.4/verification.md#reste-à-faire)). |
-| Android | Pixel 8a, beta.4: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback. The EGL-free export writes the same bytes as beta.3's (Rec.709, limited range) ([3.7.4 verification](migration/skia-3.7.4/verification.md)). Instrumented tests: 126/127; the failure, a 4K preview throughput test, fails the same way on beta.3. |
-| JavaScript / types | 238 tests in 11 suites, typecheck, package tests and 122 benchmark-harness tests pass; CI runs them on every pull request. |
+| Frame accuracy | At 60 Hz, the preview draws the frame due at 99–100% of vsyncs in 30, 24 and 60 fps on both phones, and 97–100% in 4K with `yuv` frames on the Pixel 8a. On an iPhone 15 Pro at 120 Hz with Skia 3.9.1: 99.7–100% of the frames read back are exact, and a 4K 60 fps preview shows 355–358 of its 360 frames at about 120 draws/s. Every exported frame holds the right source frame, in both frame pixel formats ([beta.3](docs/VERIFICATION_0.1.0-beta.3.md) and [3.9.1](migration/skia-3.9.1/verification.md) verifications). |
+| iOS | iPhone 15 Pro: 61/61 benchmark cases pass with `yuv` frames, including the three that stopped on the video memory budget with BGRA ([beta.3 verification](docs/VERIFICATION_0.1.0-beta.3.md)). With Skia 3.9.1: 56/58 native XCTests pass, the other two being opt-in diagnostics. The smoke profile passes, and the frame-sync profile matches Skia 3.8.1's 43/58, with all 16 exports frame-exact ([3.9.1 verification](migration/skia-3.9.1/verification.md)). |
+| Android | Pixel 8a, Skia 3.9.1: CPU vs GPU decode comparison 10/10 cases (max channel error 1, including rotation, portrait and 4K); export checks of a color pattern and of a decoded rotated clip match CPU readback, now read back asynchronously. The EGL-free export writes Rec.709, limited range ([3.7.4](migration/skia-3.7.4/verification.md) and [3.9.1](migration/skia-3.9.1/verification.md) verifications). Instrumented tests: 126/127. The failure, a 4K preview throughput test, fails the same way on Skia 3.8.1. |
+| JavaScript / types | 247 tests in 11 suites, typecheck, package tests and 122 benchmark-harness tests pass; CI runs them on every pull request. |
 | Image / audio fidelity | Sampled SDR pixels and an exported color pattern are checked on Android; iOS exported files have the same byte size as with 3.0.6. Whole-image fidelity, HDR, audible output and A/V synchronization remain unqualified. |
-| Known issues | On Pixel 8a: a seek while playing a 4K sequence leaves the clock stalled, a paused seek into a 120-clip lazy montage does not show its frame, and Android 17 reports a missing file in words the harness does not recognize; all three predate beta.3. An iOS export with `yuv` frames spends 2–4 ms more per frame than with `rgba`. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
+| Known issues | On Pixel 8a: a seek while playing a 4K sequence leaves the clock stalled, a paused seek into a 120-clip lazy montage does not show its frame, and Android 17 reports a missing file in words the harness does not recognize; all three predate beta.3. On iPhone, a 4K 60 fps preview with the deprecated `rgba` frames shows only about 235 of 360 frames: its 33 MB buffers keep a GPU wait to stay within the memory budget. With `ImageReader`, 1:1 exports are 5–16% larger files for matching sampled pixels. |
 | Long sessions | Not yet re-run since 3.0.6; the 3.0.6 results below are the latest. |
 
 ### Earlier results (Skia 3.0.6)
