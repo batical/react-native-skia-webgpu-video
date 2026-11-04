@@ -79,7 +79,22 @@ Chaque frame exportée a été relue : la bonne frame source dans tous les cas, 
 | HEVC 1080p 60 → 640×360 | 4,1 s | 8,9 s | 0,9–1,4 s | **0,5 s** |
 | Montage de 120 clips (suite `full`) | **63,5 s** | 95,9 s | 18,1 s | **14,0 s** |
 
-Sur iOS, l'export en `yuv` importe chaque frame NV12 et la convertit dans une texture, là où le BGRA est lu en place. Ce surcoût d'environ 2 à 4 ms par frame est invisible en 4K, où le décodage domine, mais pèse sur les sorties petites ou les exports longs. Pour un export iOS où la vitesse prime sur la mémoire, `framePixelFormat: 'rgba'` reste le plus rapide.
+Sur iOS, l'export en `yuv` importe chaque frame NV12 et la convertit dans une texture, là où le BGRA est lu en place. Au 21 octobre (beta.3), ce surcoût d'environ 2 à 4 ms par frame pesait sur les sorties petites ou les exports longs.
+
+**Mise à jour du 4 novembre 2026 (Skia 3.9.1, même build, deux répétitions) :** l'écart a disparu depuis l'import NV12 en place de la beta.4.
+
+| Export iPhone 15 Pro | `yuv` | `rgba` |
+| --- | --- | --- |
+| `long-montage-120-clips` (2 160 images) | **7 692 ms** | 7 778 ms |
+| `shorts-x20-lazy` | **1 298 ms** | 1 354 ms |
+| `montage-all-crossfade-lazy` | 2 191 ms | 2 122 ms |
+| `native-hevc-1080p-rot270` | 737 ms | 728 ms |
+| `encode-h264-copy` | 180 ms | 178 ms |
+
+- La conversion coûte environ 0,9 ms de GPU par image sur des sources 4K, mais le décodage NV12 gagne environ 0,8 ms.
+- `rgba` gardait un dernier avantage sur iOS : la conversion des fichiers étiquetés Display P3 ou sRGB. Depuis le 4 novembre, le décodage NV12 la demande aussi à AVFoundation (`TrackNeedsSDRConversion`, `ios/RNSVColorSpace.h`). Sur `render-tagged-p3-flowers`, l'écart `yuv`/`rgba` passe de 26 (moyenne 5,72) à 7 (moyenne 0,82), au niveau des clips Rec.709. Les autres fichiers ne bougent pas.
+- **`rgba` est donc déprécié** : il ne fait plus rien que `yuv` ne fasse aussi bien. Il reste accepté.
+- En aperçu, `rgba` est à éviter : depuis Skia 3.9.1, un aperçu 4K60 en `rgba` sur iPhone 15 Pro garde environ 235 images sur 360, contre 355 en `yuv` (voir la [vérification 3.9.1](../migration/skia-3.9.1/verification.md)).
 
 ### Mémoire
 

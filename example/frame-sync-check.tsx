@@ -53,8 +53,11 @@ type ExportCase = { id: string; items: Item[]; duration: number; outputFps: numb
 type Draw = { at: number; time: number; item: number; index: number; seq: number };
 type Samples = { draws: Draw[]; vsyncs: number[]; readMs: number[]; lastFrame: number; lastItem: number; lastIndex: number;
   // Per draw: how long drawFrame took (ms), and the distinct frames it drew.
-  drawMs: number[]; distinctFrames: number };
-// index -2: a frame not read (readEvery).
+  drawMs: number[]; distinctFrames: number;
+  // The index read for each distinct frame (by seq), as readbacks land; epoch tells the samples a readback belongs to.
+  reads: Record<number, number>; epoch: number };
+// index -2: a frame not read (readEvery). index -3: a readback not landed yet, see reads.
+const PENDING = -3;
 type Probe = { surface: SkSurface; canvas: SkCanvas; paint: SkPaint };
 
 // The frame-sync fixtures, then the benchmark's (real media: rotations, HDR, slow motion).
@@ -157,7 +160,7 @@ const toComposition = (items: Item[], duration: number, directory: string,
 });
 
 /** The source code and the export stamp of a frame, read from a 12×9 downscale: one pixel per cell. */
-export const readFrameCodes = (frame: VideoFrame) => {
+export const readFrameCodes = async (frame: VideoFrame) => {
   'worklet';
   const picture = makeVideoFrameImage(frame);
   if (!picture) return null;
@@ -170,7 +173,8 @@ export const readFrameCodes = (frame: VideoFrame) => {
     global.__frameSyncProbe = probe;
   }
   probe.canvas.drawImageRect(picture.image, picture.rect, Skia.XYWHRect(0, 0, 12, 9), probe.paint);
-  const pixels = probe.canvas.readPixels(0, 0,
+  // Skia 3.9 reads back asynchronously; the snapshot is taken now, so the probe can be drawn into again meanwhile.
+  const pixels = await probe.canvas.readPixels(0, 0,
     { width: 12, height: 9, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Opaque });
   if (!(pixels instanceof Uint8Array)) throw new Error('Frame-sync readback failed');
   return { source: readCode(pixels, 1, 3), stamp: readCode(pixels, 5, 7) };
@@ -192,7 +196,11 @@ const stampIndex = (canvas: SkCanvas, index: number, width: number, height: numb
 };
 
 const emptySamples = (): Samples =>
-  ({ draws: [], vsyncs: [], readMs: [], lastFrame: -2, lastItem: -1, lastIndex: -1, drawMs: [], distinctFrames: 0 });
+  ({ draws: [], vsyncs: [], readMs: [], lastFrame: -2, lastItem: -1, lastIndex: -1, drawMs: [], distinctFrames: 0,
+    reads: {}, epoch: performance.now() });
+/** A draw's frame index, once its readback landed (PENDING until then). */
+const resolveIndex = (samples: Samples, draw: Draw) =>
+  draw.index === PENDING ? samples.reads[draw.seq] ?? PENDING : draw.index;
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 type PreviewResult = Record<string, unknown> & { status: string };
@@ -216,6 +224,13 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
   const ready = useRef(false);
   const complete = useRef(false);
   const failure = useRef<unknown>(null);
+  // One report per case, whichever comes first: the run's or the player's error.
+  const reported = useRef(false);
+  const report = (result: Record<string, unknown>) => {
+    if (reported.current) return;
+    reported.current = true;
+    onDone(result as PreviewResult);
+  };
   const readback = run.readback ?? true;
   const readEvery = run.readEvery ?? 1;
 
@@ -235,7 +250,15 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
     if (frame && fresh) {
       if (readback && seq % readEvery === 0) {
         const start = performance.now();
-        index = readFrameCodes(frame)?.source ?? -1;
+        const epoch = last.epoch;
+        const land = (read: number) => samples.modify((value) => {
+          'worklet';
+          if (value.epoch === epoch) value.reads[seq] = read;
+          return value;
+        });
+        readFrameCodes(frame).then((codes) => land(codes?.source ?? -1), () => land(-1));
+        index = PENDING;
+        // The UI thread's share only: the GPU round trip lands later.
         readMs = performance.now() - start;
       } else {
         index = -2;
@@ -272,7 +295,15 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
     splitImportAndDraw: run.splitImportAndDraw ?? false,
     onReadyToPlay: () => { ready.current = true; },
     onComplete: () => { complete.current = true; },
-    onError: (error) => { failure.current ??= error; },
+    onError: (error) => {
+      failure.current ??= error;
+      // The player stops on an error (it goes back to null, which cancels the
+      // run below): report it, or the profile would wait for this case forever.
+      // From the UI runtime, an error may arrive as a plain object.
+      const message = (error as { message?: unknown } | null)?.message;
+      report({ id: run.id, status: 'failed',
+        failure: typeof message === 'string' ? message : JSON.stringify(error) });
+    },
   });
 
   useEffect(() => {
@@ -284,7 +315,7 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
   useEffect(() => {
     if (!player) return;
     let cancelled = false;
-    const finish = (result: Record<string, unknown>) => { if (!cancelled) onDone(result as PreviewResult); };
+    const finish = (result: Record<string, unknown>) => { if (!cancelled) report(result); };
     (async () => {
       const conditions = await sampleConditions?.().catch(() => null);
       const countersBefore = previewCounters();
@@ -294,10 +325,14 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
         if (Date.now() > deadline) throw new Error(`No completion after ${run.duration + 15} s (ready ${ready.current})`);
         await sleep(100);
       }
+      const readsDeadline = Date.now() + 2000;
+      while (samples.value.draws.some((draw) => resolveIndex(samples.value, draw) === PENDING) && Date.now() < readsDeadline)
+        await sleep(16);
       const countersAfter = previewCounters();
       const counters = Object.fromEntries(Object.entries(countersAfter)
         .map(([key, value]) => [key, value - (countersBefore[key] ?? 0)]));
-      const played = samples.value;
+      const played = { ...samples.value,
+        draws: samples.value.draws.map((draw) => ({ ...draw, index: resolveIndex(samples.value, draw) })) };
       const playback = analyzePreview({ items: run.items, fps, draws: played.draws, vsyncs: played.vsyncs });
       const drawMs = [...played.drawMs].sort((a, b) => a - b);
       const measured = played.draws.filter((draw) => draw.time >= 0.5);
@@ -327,7 +362,9 @@ function PreviewProbe({ run, directory, defaultFormat, frameRateVote, sampleCond
         let draws: Draw[] = [];
         while (Date.now() - started < 2000) {
           await sleep(16);
-          draws = samples.value.draws.filter((draw) => Math.abs(draw.time - time) < 2e-6);
+          const current = samples.value;
+          draws = current.draws.filter((draw) => Math.abs(draw.time - time) < 2e-6)
+            .map((draw) => ({ ...draw, index: resolveIndex(current, draw) }));
           if (draws.at(-1)?.index === expected) break;
         }
         const shown = draws.at(-1);
@@ -395,7 +432,7 @@ async function runExport(run: ExportCase, directory: string, outputDirectory: st
         const decoded = extractor.decodeCompositionFrames((k + 0.5) / outputFps);
         const frame = decoded.output;
         try {
-          const codes = frame ? readFrameCodes(frame) : null;
+          const codes = frame ? await readFrameCodes(frame) : null;
           frames.push(codes ?? { stamp: -1, source: -1 });
         } finally {
           for (const each of Object.values(decoded)) {
@@ -434,26 +471,26 @@ const texturePoint = (picture: NonNullable<ReturnType<typeof makeVideoFrameImage
 };
 
 /** The 8×8 patch averages of one decoded frame around points of its upright picture. */
-function readUprightPatches(frame: VideoFrame, points: readonly { u: number; v: number }[]) {
+async function readUprightPatches(frame: VideoFrame, points: readonly { u: number; v: number }[]) {
   const picture = makeVideoFrameImage(frame);
   if (!picture) throw new Error('The frame did not decode to an image');
   const imageWidth = picture.image.width();
   const imageHeight = picture.image.height();
-  return points.map(({ u, v }) => {
+  return Promise.all(points.map(async ({ u, v }) => {
     const [px, py] = texturePoint(picture, u, v);
     const x = Math.min(Math.max(Math.round(px!) - 4, 0), imageWidth - 8);
     const y = Math.min(Math.max(Math.round(py!) - 4, 0), imageHeight - 8);
-    const data = picture.image.readPixels(x, y,
+    const data = await picture.image.readPixels(x, y,
       { width: 8, height: 8, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Opaque });
     if (!(data instanceof Uint8Array)) throw new Error('Color readback failed');
     const rgb = [0, 0, 0];
     for (let i = 0; i < data.length; i += 4) for (let c = 0; c < 3; c++) rgb[c]! += data[i + c]! / 64;
     return rgb.map(Math.round);
-  });
+  }));
 }
 
 /** Decodes a clip in one frame pixel format and reads the points at each time. */
-function decodePatches(directory: string, clip: Fixture, format: 'yuv' | 'rgba', times: number[],
+async function decodePatches(directory: string, clip: Fixture, format: 'yuv' | 'rgba', times: number[],
   points: readonly { u: number; v: number }[]) {
   const extractor = nativeVideo.createVideoCompositionFramesExtractorSync({
     duration: clip.seconds, framePixelFormat: format,
@@ -467,7 +504,7 @@ function decodePatches(directory: string, clip: Fixture, format: 'yuv' | 'rgba',
       const frames = extractor.decodeCompositionFrames(time);
       try {
         if (!frames.clip) throw new Error(`${format}: no frame at ${time} s`);
-        patches.push(readUprightPatches(frames.clip, points));
+        patches.push(await readUprightPatches(frames.clip, points));
       } finally {
         for (const frame of Object.values(frames)) { releaseVideoFrameImage(frame); frame.dispose?.(); }
       }
@@ -491,8 +528,8 @@ async function runColorCheck(directory: string) {
     const entry: Record<string, unknown> = { id: `colors-${bars.id}` };
     try {
       const time = [0.5 / bars.fps];
-      const yuv = decodePatches(directory, bars, 'yuv', time, bars.patches)[0]!;
-      const rgba = decodePatches(directory, bars, 'rgba', time, bars.patches)[0]!;
+      const yuv = (await decodePatches(directory, bars, 'yuv', time, bars.patches))[0]!;
+      const rgba = (await decodePatches(directory, bars, 'rgba', time, bars.patches))[0]!;
       const reference = bars.patches.map((patch) => patch.rgb);
       const maxDifference = { yuv: patchDifference(yuv, reference).max, rgba: patchDifference(rgba, reference).max,
         yuvVsRgba: patchDifference(yuv, rgba).max };
@@ -527,8 +564,8 @@ async function runRenderCheck(directory: string) {
     const entry: Record<string, unknown> = { id: `render-${id}` };
     try {
       const times = clip.references ? RENDER_TIMES : [0.5, clip.seconds / 2, clip.seconds - 0.5];
-      const yuv = decodePatches(directory, clip, 'yuv', times, points).flat();
-      const rgba = decodePatches(directory, clip, 'rgba', times, points).flat();
+      const yuv = (await decodePatches(directory, clip, 'yuv', times, points)).flat();
+      const rgba = (await decodePatches(directory, clip, 'rgba', times, points)).flat();
       const reference = clip.references
         ? times.flatMap((time) => clip.references![String(time)]!.map((patch) => patch.rgb)) : null;
       const difference = { yuvVsRgba: patchDifference(yuv, rgba),

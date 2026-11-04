@@ -63,13 +63,14 @@ const mockMakeSurface = (_width: number, _height: number) => {
   const canvas = {
     id,
     drawColor: jest.fn(),
+    // Skia 3.9: resolves to a new array of the pixels read.
     readPixels: jest.fn(
       (
         _x: number,
         _y: number,
-        _info: unknown,
-        destination: Uint8Array<ArrayBuffer>,
-      ) => destination,
+        info: { width: number; height: number },
+      ): Promise<Uint8Array<ArrayBuffer> | null> =>
+        Promise.resolve(new Uint8Array(info.width * info.height * 4)),
     ),
     dispose: jest.fn(),
   };
@@ -91,7 +92,7 @@ jest.mock("react-native-skia", () => ({
     },
     Color: jest.fn(() => 0),
     Data: { fromBytes: jest.fn() },
-    Image: { MakeRasterImage: jest.fn() },
+    Image: { MakeRaster: jest.fn() },
   },
   BlendMode: { Clear: 0 },
   ColorType: { RGBA_8888: 4, BGRA_8888: 6 },
@@ -119,7 +120,7 @@ const reserveMemory = RNSkiaVideoModule.reserveMemory as jest.Mock;
 const releaseMemory = RNSkiaVideoModule.releaseMemory as jest.Mock;
 const runWithAutoreleasePool =
   RNSkiaVideoModule.runWithAutoreleasePool as jest.Mock;
-const makeImage = Skia.Image.MakeRasterImage as jest.Mock;
+const makeImage = Skia.Image.MakeRaster as jest.Mock;
 const dataFromBytes = Skia.Data.fromBytes as jest.Mock;
 type Surface = ReturnType<typeof mockMakeSurface>;
 const createEncoderMock = () => ({
@@ -261,7 +262,9 @@ afterEach(() => {
 describe("exportVideoComposition", () => {
   it("keeps the serialized export graph bounded independently of frame count", async () => {
     const first = await runExport({ frameRate: 360 });
-    const submitted = jest.mocked(runOnRuntime).mock.calls.map((call) => call[1]);
+    const submitted = jest
+      .mocked(runOnRuntime)
+      .mock.calls.map((call) => call[1]);
     // One setup closure and one frame closure; later frames yield on the
     // export runtime instead of hopping through the RN thread.
     expect(first.encoder.encodeFrame).toHaveBeenCalledTimes(360);
@@ -314,8 +317,6 @@ describe("exportVideoComposition", () => {
       0,
       0,
       expect.objectContaining({ width: 640, height: 360, colorType: 6 }),
-      expect.any(Uint8Array),
-      2560,
     );
     for (let i = 0; i < 4; i++) {
       expect(drawFrame.mock.invocationCallOrder[i]!).toBeLessThan(
@@ -357,8 +358,6 @@ describe("exportVideoComposition", () => {
       0,
       0,
       expect.objectContaining({ width: 320, height: 180, colorType: 4 }),
-      expect.any(Uint8Array),
-      1280,
     );
   });
   it("forwards encoderMode and leaves it undefined by default", async () => {
@@ -467,9 +466,7 @@ describe("exportVideoComposition", () => {
   it("rejects failed readback without encoding invalid storage and releases all resources", async () => {
     makeOffscreen.mockImplementationOnce((width: number, height: number) => {
       const surface = mockMakeSurface(width, height);
-      surface
-        .getCanvas()
-        .readPixels.mockReturnValue(null as unknown as Uint8Array<ArrayBuffer>);
+      surface.getCanvas().readPixels.mockResolvedValue(null);
       return surface;
     });
     const result = prepareExport();
@@ -772,27 +769,24 @@ describe("exportVideoComposition", () => {
     expectDisposed(first);
   });
 
-  it("reuses exactly one readback buffer across frames and allocates a distinct one for the next export", async () => {
+  it("encodes the pixels each readback resolves to and reserves the readback once", async () => {
     const first = await runExport();
     const buffers = first.encoder.encodeFrame.mock.calls.map(
       (call) => call[0].data,
     );
-    expect(new Set(buffers).size).toBe(1);
     const canvas = surfaceAt().getCanvas.mock.results[0]?.value;
-    for (const call of canvas.readPixels.mock.calls)
-      expect(call[3].buffer).toBe(buffers[0]);
+    const read = await Promise.all(
+      canvas.readPixels.mock.results.map(
+        (result: { value: Promise<Uint8Array> }) => result.value,
+      ),
+    );
+    expect(buffers).toEqual(read.map((pixels) => pixels.buffer));
+    for (let i = 0; i < read.length; i++)
+      expect(buffers[i]).toBe(read[i]!.buffer);
     expect(reserveMemory.mock.calls.map((call) => call[0])).toEqual([
       640 * 360 * 4,
       640 * 360 * 8,
     ]);
-    const second = await runExport();
-    expect(second.encoder.encodeFrame.mock.calls[0]?.[0].data).not.toBe(
-      buffers[0],
-    );
-    expect(
-      new Set(second.encoder.encodeFrame.mock.calls.map((call) => call[0].data))
-        .size,
-    ).toBe(1);
   });
 
   it("cancels an active export before its setup worklet without allocating any pixels or native resources", async () => {
@@ -1125,9 +1119,9 @@ describe("export native autorelease lifetimes", () => {
       surface.dispose.mockImplementation(() => observe("surface:dispose"));
       canvas.drawColor.mockImplementation(() => observe("canvas:drawColor"));
       canvas.dispose.mockImplementation(() => observe("canvas:dispose"));
-      canvas.readPixels.mockImplementation((_x, _y, _info, destination) => {
+      canvas.readPixels.mockImplementation((_x, _y, info) => {
         observe("canvas:readPixels");
-        return destination;
+        return Promise.resolve(new Uint8Array(info.width * info.height * 4));
       });
       return surface;
     });

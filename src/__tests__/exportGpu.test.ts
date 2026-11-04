@@ -51,8 +51,8 @@ const mockSurface = (label: string) => {
   const canvas = {
     drawColor: jest.fn(),
     readPixels: jest.fn(
-      (_x: number, _y: number, _info: unknown, destination: Uint8Array) =>
-        destination,
+      (_x: number, _y: number, info: { width: number; height: number }) =>
+        Promise.resolve(new Uint8Array(info.width * info.height * 4)),
     ),
     dispose: jest.fn(() => mockCalls.push(`${label}.canvas.dispose`)),
   };
@@ -72,7 +72,7 @@ jest.mock("react-native-skia", () => ({
       MakeFromGPUTexture: jest.fn(() => mockSurface("target")),
     },
     Image: {
-      MakeImageFromGPUTexture: jest.fn(() => ({
+      MakeFromGPUTexture: jest.fn(() => ({
         dispose: jest.fn(() => mockCalls.push("source.image.dispose")),
       })),
     },
@@ -109,8 +109,8 @@ const makeFromTexture = (
 ).MakeFromGPUTexture;
 
 const makeImageFromTexture = (
-  Skia.Image as unknown as { MakeImageFromGPUTexture: jest.Mock }
-).MakeImageFromGPUTexture;
+  Skia.Image as unknown as { MakeFromGPUTexture: jest.Mock }
+).MakeFromGPUTexture;
 
 // Encoder targets and decoded source frames share the import mock; the label
 // tells them apart in the recorded call order.

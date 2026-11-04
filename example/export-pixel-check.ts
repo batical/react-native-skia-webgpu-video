@@ -107,9 +107,9 @@ async function exportVideo(outPath: string, fixtureDirectory: string, hardware: 
   return { encodeTransport: backend?.encodeTransport ?? null, gpuDirectExport: backend?.gpuDirectExport ?? null };
 }
 
-function sampleOutput(outPath: string, size = { width, height },
+async function sampleOutput(outPath: string, size = { width, height },
   points: readonly (readonly [number, number])[] = quadrants.map((quadrant) =>
-    [(quadrant.x + 0.5) / 2, (quadrant.y + 0.5) / 2] as const)): Sample[] {
+    [(quadrant.x + 0.5) / 2, (quadrant.y + 0.5) / 2] as const)): Promise<Sample[]> {
   nativeVideo.configureNativeBufferInterop!(true);
   const extractor = nativeVideo.createVideoCompositionFramesExtractorSync({
     duration, lazyDecoders: true,
@@ -128,8 +128,8 @@ function sampleOutput(outPath: string, size = { width, height },
     pending.delete(frame);
     const result = makeVideoFrameImage(frame);
     if (!result) throw new Error("Decoded export did not produce a Skia image");
-    return points.map(([u, v]) => {
-      const data = result.image.readPixels(
+    return await Promise.all(points.map(async ([u, v]) => {
+      const data = await result.image.readPixels(
         Math.min(Math.max(Math.round(u * size.width) - 4, 0), size.width - 8),
         Math.min(Math.max(Math.round(v * size.height) - 4, 0), size.height - 8),
         { width: 8, height: 8, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Opaque },
@@ -140,7 +140,7 @@ function sampleOutput(outPath: string, size = { width, height },
       for (let i = 0; i < data.length; i += 4)
         for (let c = 0; c < 3; c++) rgb[c]! += data[i + c]! / 64;
       return { name: `${u},${v}`, rgb: rgb.map(Math.round) };
-    });
+    }));
   } finally {
     extractor.dispose();
     for (const frame of pending) frame.dispose?.();
@@ -163,13 +163,13 @@ export async function runExportPixelCheck(fixtureDirectory: string, outputDirect
   let cpuVideo: { transport: unknown; samples: Sample[] } | null = null;
   try {
     const gpuTransport = await exportPattern(gpuPath, fixtureDirectory, true);
-    gpu = { transport: gpuTransport, samples: sampleOutput(gpuPath) };
+    gpu = { transport: gpuTransport, samples: await sampleOutput(gpuPath) };
     const cpuTransport = await exportPattern(cpuPath, fixtureDirectory, false);
-    cpu = { transport: cpuTransport, samples: sampleOutput(cpuPath) };
+    cpu = { transport: cpuTransport, samples: await sampleOutput(cpuPath) };
     const gpuVideoTransport = await exportVideo(gpuVideoPath, fixtureDirectory, true);
-    gpuVideo = { transport: gpuVideoTransport, samples: sampleOutput(gpuVideoPath, video, videoPatches) };
+    gpuVideo = { transport: gpuVideoTransport, samples: await sampleOutput(gpuVideoPath, video, videoPatches) };
     const cpuVideoTransport = await exportVideo(cpuVideoPath, fixtureDirectory, false);
-    cpuVideo = { transport: cpuVideoTransport, samples: sampleOutput(cpuVideoPath, video, videoPatches) };
+    cpuVideo = { transport: cpuVideoTransport, samples: await sampleOutput(cpuVideoPath, video, videoPatches) };
   } catch (error) {
     failure = error instanceof Error ? error.message : String(error);
   } finally {

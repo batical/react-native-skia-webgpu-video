@@ -291,7 +291,7 @@ export const blitYuvFrame = (
   );
   if (index < 0) {
     // The least recently drawn buffer goes first. Its last frame completed:
-    // every import ends with a checked flush before the next one starts.
+    // fewer imports than this are ever on the GPU (see frameInterop.ts).
     if (entries.length >= maxImportsPerProducer) {
       releaseYuvImport(entries[0]!);
       entries.shift();
@@ -337,8 +337,8 @@ export const blitYuvFrame = (
     pass.end();
     device.queue.submit([encoder.finish()]);
   } finally {
-    // The caller's checked flush covers the draw; the release fence is not
-    // needed to hand the buffer back.
+    // The caller hands the decoder buffer back once the GPU is done with the
+    // draw; the release fence is not needed for that.
     entry.wrapper.endAccess()?.fence.destroy();
   }
 };

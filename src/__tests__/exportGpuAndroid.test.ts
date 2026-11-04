@@ -123,8 +123,8 @@ const mockSurface = (label: string) => {
   const canvas = {
     drawColor: jest.fn(),
     readPixels: jest.fn(
-      (_x: number, _y: number, _info: unknown, destination: Uint8Array) =>
-        destination,
+      (_x: number, _y: number, info: { width: number; height: number }) =>
+        Promise.resolve(new Uint8Array(info.width * info.height * 4)),
     ),
   };
   return {
@@ -145,7 +145,7 @@ jest.mock("react-native-skia", () => ({
       MakeOffscreen: jest.fn(() => mockSurface("offscreen")),
       MakeFromGPUTexture: jest.fn(() => mockSurface("target")),
     },
-    Image: { MakeImageFromGPUTexture: jest.fn() },
+    Image: { MakeFromGPUTexture: jest.fn() },
     Color: jest.fn(() => 0),
   },
   BlendMode: { Clear: 0 },
@@ -353,7 +353,7 @@ describe("Android GPU export", () => {
   });
 
   it("samples ImageReader frames in place once converted, without snapshots or waits", async () => {
-    const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+    const makeImage = Skia.Image.MakeFromGPUTexture as jest.Mock;
     makeImage.mockImplementation(() => ({
       dispose: jest.fn(() => mockCalls.push("image.dispose")),
     }));
@@ -434,7 +434,7 @@ describe("Android GPU export", () => {
   });
 
   it("closes the fresh lease Android hands out for a picture a clip holds", async () => {
-    const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+    const makeImage = Skia.Image.MakeFromGPUTexture as jest.Mock;
     makeImage.mockImplementation(() => ({ dispose: jest.fn() }));
     mockNativeFrame.mockImplementation((handle: bigint) => ({
       handle,

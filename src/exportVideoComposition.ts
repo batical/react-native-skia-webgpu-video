@@ -11,7 +11,7 @@ import {
   type WorkletRuntime,
 } from "react-native-worklets";
 import { AlphaType, BlendMode, ColorType, Skia } from "react-native-skia";
-import type { ImageInfo, SkCanvas, SkSurface } from "react-native-skia";
+import type { SkCanvas, SkSurface } from "react-native-skia";
 import { Platform } from "react-native";
 import type {
   ExportOptions,
@@ -121,25 +121,11 @@ export type VideoExportArguments<T = undefined> = ExportOptions & {
   onProfile?: (profile: ExportProfile) => void;
 };
 
-// Native Skia 3.4.4 accepts destination/stride in readPixels; its
-// published Canvas type currently omits these arguments. Use only a private,
-// full-length, zero-offset Uint8Array (the native implementation ignores offsets).
-type ReadbackCanvas = {
-  readPixels: (
-    x: number,
-    y: number,
-    info: ImageInfo,
-    destination: Uint8Array,
-    bytesPerRow: number,
-  ) => Uint8Array | Float32Array | null;
-};
-
 type ExportState = {
   encoder: VideoEncoder | null;
   extractor: VideoCompositionFramesExtractorSync | null;
   surface: SkSurface | null;
   canvas: SkCanvas | null;
-  readback: Uint8Array | null;
   /** Draw into a lent encoder buffer instead of reading pixels back. */
   gpu: boolean;
   target: EncoderTarget | null;
@@ -401,7 +387,6 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
         }
         if (cleanup.safeToRelease) {
           state.frames = {};
-          state.readback = null;
           delete storage.__rnskwgpuExport;
         } else {
           // One retained session at most; subsequent exports fail before
@@ -463,6 +448,10 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             await finish(null, true);
             return false;
           }
+          // CPU readback path only: the frame's pixels, still on their way.
+          const readback: {
+            pixels: ReturnType<SkCanvas["readPixels"]> | null;
+          } = { pixels: null };
           const draw = () => {
             "worklet";
             if (state.gpu)
@@ -517,46 +506,14 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                   time,
                 );
               } else {
-                const readbackCanvas = canvas as unknown as ReadbackCanvas;
-                const pixels = readbackCanvas.readPixels(
-                  0,
-                  0,
-                  {
-                    width: options.width,
-                    height: options.height,
-                    colorType: bgra ? ColorType.BGRA_8888 : ColorType.RGBA_8888,
-                    alphaType: AlphaType.Premul,
-                  },
-                  state.readback!,
-                  options.width * 4,
-                );
-                if (
-                  !(pixels instanceof Uint8Array) ||
-                  pixels.byteLength !== bytes ||
-                  pixels.byteOffset !== 0 ||
-                  pixels.buffer !== state.readback!.buffer
-                ) {
-                  throw new Error("Video export pixel readback failed");
-                }
-                // Fallback: consumed synchronously by the bounded native pool.
-                const storage =
-                  pixels.byteOffset === 0 &&
-                  pixels.buffer.byteLength === pixels.byteLength
-                    ? pixels.buffer
-                    : pixels.buffer.slice(
-                        pixels.byteOffset,
-                        pixels.byteOffset + pixels.byteLength,
-                      );
-                state.encoder!.encodeFrame(
-                  {
-                    kind: bgra ? "bgra" : "rgba",
-                    data: storage,
-                    width: options.width,
-                    height: options.height,
-                    bytesPerRow: options.width * 4,
-                  },
-                  time,
-                );
+                // Skia 3.9 reads back asynchronously, into a new array: the
+                // frame is encoded once it lands, after this scope.
+                readback.pixels = canvas.readPixels(0, 0, {
+                  width: options.width,
+                  height: options.height,
+                  colorType: bgra ? ColorType.BGRA_8888 : ColorType.RGBA_8888,
+                  alphaType: AlphaType.Premul,
+                });
               }
               lap("encodeMs");
             } catch (error) {
@@ -593,6 +550,35 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
             if (drawn.failed) throw drawn.failure;
           };
           runWithVideoAutoreleasePool(draw);
+          if (readback.pixels) {
+            const pixels = await readback.pixels;
+            lap("gpuMs");
+            // isView, not instanceof: true of a typed array of any realm.
+            if (!ArrayBuffer.isView(pixels) || pixels.byteLength !== bytes)
+              throw new Error("Video export pixel readback failed");
+            // Fallback: consumed synchronously by the bounded native pool.
+            const storage =
+              pixels.byteOffset === 0 &&
+              pixels.buffer.byteLength === pixels.byteLength
+                ? pixels.buffer
+                : pixels.buffer.slice(
+                    pixels.byteOffset,
+                    pixels.byteOffset + pixels.byteLength,
+                  );
+            runWithVideoAutoreleasePool(() =>
+              state.encoder!.encodeFrame(
+                {
+                  kind: bgra ? "bgra" : "rgba",
+                  data: storage,
+                  width: options.width,
+                  height: options.height,
+                  bytesPerRow: options.width * 4,
+                },
+                time,
+              ),
+            );
+            lap("encodeMs");
+          }
           state.index++;
           if (onProgress)
             scheduleOnRN(onProgress, {
@@ -660,7 +646,6 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
           extractor: null,
           surface: null,
           canvas: null,
-          readback: null,
           gpu: false,
           target: null,
           window: null,
@@ -690,10 +675,9 @@ const executeExport = <T>(args: VideoExportArguments<T>): Promise<void> =>
                 state.reservations.push(
                   reserveVideoMemory(
                     bytes * 2,
-                    "export reusable readback and transient raster",
+                    "export readback and transient raster",
                   ),
                 );
-                state.readback = new Uint8Array(bytes);
                 state.hasRecorder = true;
                 state.surface = Skia.Surface.MakeOffscreen(
                   options.width,

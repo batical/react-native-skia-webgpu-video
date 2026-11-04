@@ -32,7 +32,9 @@ static inline NSDictionary* SDRColorProperties() {
 /**
  * Whether a track needs AVFoundation's conversion to Rec.709 even when its
  * frames are decoded to NV12: an HDR transfer function (HLG, PQ) or BT.2020
- * primaries, which only a tone mapping brings to SDR.
+ * primaries, which only a tone mapping brings to SDR, and the Display P3 or
+ * DCI-P3 primaries or sRGB transfer function of a file recorded or exported
+ * for a wide-gamut screen, which BGRA output converts too.
  *
  * An SDR track decoded to NV12 is left as it is: its buffers carry their own
  * YCbCr matrix, which the GPU applies when it converts them. Asked for Rec.709
@@ -52,9 +54,12 @@ static inline bool TrackNeedsSDRConversion(AVAssetTrack* track) {
     CFTypeRef primaries = CMFormatDescriptionGetExtension(
         format, kCMFormatDescriptionExtension_ColorPrimaries);
     if (transfer && (CFEqual(transfer, kCVImageBufferTransferFunction_ITU_R_2100_HLG) ||
-                     CFEqual(transfer, kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ)))
+                     CFEqual(transfer, kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ) ||
+                     CFEqual(transfer, kCVImageBufferTransferFunction_sRGB)))
       return true;
-    if (primaries && CFEqual(primaries, kCVImageBufferColorPrimaries_ITU_R_2020))
+    if (primaries && (CFEqual(primaries, kCVImageBufferColorPrimaries_ITU_R_2020) ||
+                      CFEqual(primaries, kCVImageBufferColorPrimaries_P3_D65) ||
+                      CFEqual(primaries, kCVImageBufferColorPrimaries_DCI_P3)))
       return true;
   }
   return false;

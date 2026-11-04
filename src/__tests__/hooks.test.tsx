@@ -118,7 +118,7 @@ jest.mock("react-native-skia", () => ({
       ),
     },
     Image: {
-      MakeImageFromGPUTexture: jest.fn(
+      MakeFromGPUTexture: jest.fn(
         (
           _texture: unknown,
           _width: number,
@@ -145,7 +145,7 @@ jest.mock("../RNSkiaVideoModule", () => ({
 const createVideoPlayer = RNSkiaVideoModule.createVideoPlayer as jest.Mock;
 const createFramesExtractor =
   RNSkiaVideoModule.createVideoCompositionFramesExtractor as jest.Mock;
-const makeImage = Skia.Image.MakeImageFromGPUTexture as jest.Mock;
+const makeImage = Skia.Image.MakeFromGPUTexture as jest.Mock;
 const makeOffscreen = Skia.Surface.MakeOffscreen as jest.Mock;
 /** The player's own surfaces, without the warm-up one. */
 const surfaceCalls = () =>
@@ -355,12 +355,14 @@ describe("serialized UI worklets", () => {
     expect(extractor.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("runs frame cleanup once after GPU submission with the installed SharedValue setter", () => {
+  it("runs frame cleanup once after a GPU wait with the installed SharedValue setter", () => {
     mockSerializedRuntime = createSerializedUiRuntime();
     const extractor = mockSerializedRuntime.host(createExtractorMock());
     createFramesExtractor.mockReturnValue(extractor);
     const order = jest.fn();
-    mockSurface.flush.mockImplementation(() => order("flush"));
+    mockSurface.flush.mockImplementation((sync?: boolean) =>
+      order("flush", sync),
+    );
     const beforeDrawFrame = () => {
       "worklet";
       return "frame context";
@@ -387,9 +389,10 @@ describe("serialized UI worklets", () => {
     );
 
     tick();
+    // afterDrawFrame releases a context of the caller's: the draw waits.
     expect(order.mock.calls).toEqual([
       ["draw"],
-      ["flush"],
+      ["flush", true],
       ["after", "frame context"],
     ]);
     rendered.unmount();
@@ -634,10 +637,13 @@ describe("useVideoPlayback", () => {
     createVideoPlayer.mockImplementationOnce(() => {
       throw error;
     });
-    const rendered = renderHook((options: Options) => useVideoPlayback(options), {
-      uri: "/missing.mp4",
-      onError,
-    });
+    const rendered = renderHook(
+      (options: Options) => useVideoPlayback(options),
+      {
+        uri: "/missing.mp4",
+        onError,
+      },
+    );
     expect(onError).toHaveBeenCalledWith(error, expect.any(Function));
     expect(rendered.result.current.player).toBeNull();
     rendered.unmount();
@@ -648,9 +654,12 @@ describe("useVideoPlayback", () => {
       throw new Error("missing asset");
     });
     createVideoPlayer.mockImplementation(createPlayerMock);
-    const rendered = renderHook((options: Options) => useVideoPlayback(options), {
-      uri: "/missing.mp4",
-    });
+    const rendered = renderHook(
+      (options: Options) => useVideoPlayback(options),
+      {
+        uri: "/missing.mp4",
+      },
+    );
     expect(rendered.result.current.player).toBeNull();
     rendered.rerender({ uri: "/videos/valid.mp4" });
     expect(createVideoPlayer).toHaveBeenCalledTimes(2);
@@ -958,7 +967,13 @@ describe("useVideoComposition", () => {
       const { extractor, drawFrame, rerender } = setup({ redrawOnTime });
       extractor.isPlaying = true;
       tick();
-      rerender({ composition, drawFrame, width: 200, height: 50, redrawOnTime });
+      rerender({
+        composition,
+        drawFrame,
+        width: 200,
+        height: 50,
+        redrawOnTime,
+      });
       tick();
       expect(drawFrame).toHaveBeenCalledTimes(2);
       expect(surfaceCalls()).toHaveLength(2);
@@ -1158,7 +1173,9 @@ describe("useVideoComposition", () => {
     expect(makeImage).not.toHaveBeenCalled();
     // Skia 3 reuses the snapshot wrapper rather than importing a borrowed GL texture.
     expect(mockMakeSnapshot.mock.calls[1]?.[1]).toBe(firstImage);
-    expect(mockSurface.flush).toHaveBeenCalledWith(true);
+    // Nothing of the caller's to release: submitted without a GPU wait.
+    expect(mockSurface.flush).toHaveBeenCalledWith(false);
+    expect(mockSurface.flush).not.toHaveBeenCalledWith(true);
     expect(result.current.currentFrame.value).toBe(firstImage);
   });
 
@@ -1179,22 +1196,72 @@ describe("useVideoComposition", () => {
     expect(surfaceCalls()).toHaveLength(2);
   });
 
-  it("runs beforeDrawFrame and afterDrawFrame around each draw", () => {
-    const context = { kind: "context" };
-    const beforeDrawFrame = jest.fn(() => context);
-    const afterDrawFrame = jest.fn();
-    const { drawFrame } = setup({
-      beforeDrawFrame,
-      afterDrawFrame,
+  it("runs beforeDrawFrame and afterDrawFrame around each draw, after a GPU wait", () => {
+    const order: string[] = [];
+    let frame = 0;
+    const { extractor, drawFrame } = setup({
+      beforeDrawFrame: () => {
+        order.push(`before ${++frame}`);
+        return frame;
+      },
+      afterDrawFrame: (context: number) => order.push(`after ${context}`),
     } as unknown as Partial<Options>);
+    // Playing: every vsync draws.
+    extractor.isPlaying = true;
+    mockSurface.flush.mockImplementation((sync?: boolean) => {
+      order.push(sync ? "wait" : "submit");
+    });
 
     tick();
+    tick();
 
-    expect(beforeDrawFrame).toHaveBeenCalledTimes(1);
     expect(drawFrame).toHaveBeenCalledWith(
-      expect.objectContaining({ context }),
+      expect.objectContaining({ context: 1 }),
     );
-    expect(afterDrawFrame).toHaveBeenCalledWith(context);
+    expect(order).toEqual([
+      "before 1",
+      "wait",
+      "after 1",
+      "before 2",
+      "wait",
+      "after 2",
+    ]);
+  });
+
+  it("submits frames without a GPU wait, and waits after six in a row without an import", () => {
+    const { extractor } = setup();
+    extractor.isPlaying = true;
+
+    for (let i = 0; i < 7; i++) tick();
+    expect(mockSurface.flush.mock.calls.map(([sync]) => sync)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+    ]);
+
+    tick();
+    expect(mockSurface.flush).toHaveBeenLastCalledWith(false);
+  });
+
+  it("counts an import's GPU wait as a wait for the draws before it", () => {
+    const { extractor } = setup();
+    extractor.isPlaying = true;
+    const frames = () =>
+      (globalThis as { __rnskwgpuFrames?: { checkedWaits: number } })
+        .__rnskwgpuFrames!;
+
+    for (let i = 0; i < 5; i++) tick();
+    // An import (of this player or another on the runtime) waited.
+    frames().checkedWaits++;
+    for (let i = 0; i < 6; i++) tick();
+
+    expect(mockSurface.flush).not.toHaveBeenCalledWith(true);
+    tick();
+    expect(mockSurface.flush).toHaveBeenLastCalledWith(true);
   });
 
   it("drains partially recorded commands before cleaning the context when drawing throws", () => {

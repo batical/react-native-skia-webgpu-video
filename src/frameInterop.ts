@@ -14,6 +14,7 @@ import {
   frameByteSize,
   releaseVideoMemory,
   reserveVideoMemory,
+  videoMemoryBudget,
 } from "./memory";
 import {
   blitNv12Frame,
@@ -47,6 +48,13 @@ type Entry = {
   reservation: number;
   releasedSources: WeakSet<VideoFrame>;
 };
+/** A decoder buffer an import's GPU copy still reads. */
+type InFlightImport = {
+  frame: VideoFrame;
+  nativeSource: NativeVideoFrame | null;
+  /** The decoder buffer's size, still reserved in the memory budget. */
+  bytes: number;
+};
 type PendingSource = {
   owned: SkImage | null;
   reservation: number;
@@ -70,6 +78,30 @@ type Cache = {
   pendingSources: PendingSource[];
   /** Android decoder buffers imported once, per producer. */
   yuvImports: Map<number, YuvImport[]>;
+  /** Checked GPU waits so far (see videoFrameImportWaits). */
+  checkedWaits: number;
+  /** Oldest first; at most maxInFlightImports. */
+  inFlight: InFlightImport[];
+};
+
+// Imports whose GPU copy may still be running, their decoder buffers out. Kept
+// below the YUV imports cached per producer (yuvBlit.ts), so that the one it
+// evicts, the least recently drawn, is never still being read.
+const maxInFlightImports = 2;
+
+/** Whether the memory budget affords keeping a decoder buffer of `bytes` out
+ * until the GPU is done with it: a buffer within a sixteenth of the budget
+ * (two out stay within an eighth), and room left for the decoder's next two
+ * frames, which it reserves ahead. With the default 256 MB, a 4K BGRA frame
+ * (33 MB) is waited for; two 4K NV12 ones (12 MB each) are not. */
+const affordsInFlight = (bytes: number): boolean => {
+  "worklet";
+  const budget = videoMemoryBudget();
+  return (
+    !!budget &&
+    bytes <= budget.maxBytes / 16 &&
+    budget.maxBytes - budget.currentBytes >= 2 * bytes
+  );
 };
 
 // Capture a scalar on the RN runtime instead of importing Platform inside a
@@ -96,6 +128,8 @@ const getCache = (): Cache => {
       cpuBytesPerRow: 0,
       pendingSources: [],
       yuvImports: new Map(),
+      checkedWaits: 0,
+      inFlight: [],
     };
   }
   return runtime.__rnskwgpuFrames;
@@ -121,6 +155,57 @@ const clearSurfaceView = (cache: Cache) => {
   cache.stage = null;
 };
 
+/** Waits for all the GPU work submitted so far, on the shared context. */
+const waitForGpu = (cache: Cache): void => {
+  "worklet";
+  if (cache.stage) cache.stage.flush(true);
+  else {
+    const view = cache.uploadTexture
+      ? Skia.Surface.MakeFromGPUTexture(cache.uploadTexture)
+      : null;
+    if (!view) throw new Error("Video import drain surface is unavailable");
+    try {
+      view.flush(true);
+    } finally {
+      view.dispose();
+    }
+  }
+  cache.checkedWaits++;
+};
+
+/** Hands the decoder buffers of the first `count` imports in flight back,
+ * once the GPU is done with them: because the GPU reported the last of these
+ * imports done (in order: the work before it is done too), or after a wait
+ * for it, made here when `count` is all of them and nobody `waited`. */
+const settleInFlightImports = (
+  cache: Cache,
+  count: number,
+  waited = false,
+): void => {
+  "worklet";
+  if (!count) return;
+  if (count === cache.inFlight.length && !waited) waitForGpu(cache);
+  for (let i = 0; i < count; i++) {
+    const entry = cache.inFlight.shift()!;
+    try {
+      entry.nativeSource?.release();
+      entry.nativeSource = null;
+      entry.frame.dispose?.();
+    } catch (error) {
+      // Like a failed release at import: only the final drain retries it.
+      cache.pendingSources.push({
+        nativeSource: entry.nativeSource,
+        owned: null,
+        reservation: 0,
+        frame: entry.frame,
+        needsDrain: false,
+        sourceReleased: false,
+      });
+      throw error;
+    }
+  }
+};
+
 const clearCpuPixels = (cache: Cache) => {
   "worklet";
   cache.cpuPixels = null;
@@ -131,6 +216,7 @@ const clearCpuPixels = (cache: Cache) => {
 
 const clearStagingSurface = (cache: Cache) => {
   "worklet";
+  settleInFlightImports(cache, cache.inFlight.length);
   cache.stage?.flush(true);
   clearSurfaceView(cache);
   cache.uploadTexture?.destroy();
@@ -151,6 +237,15 @@ const drainNativeCopies = (cache: Cache): void => {
     throw new Error("Video import drain surface is unavailable");
   cache.canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
   cache.stage.flush(true);
+  cache.checkedWaits++;
+};
+
+/** The checked GPU waits this runtime's imports have made so far, and the
+ * completions the GPU reported for them. Each one covers all the GPU work
+ * submitted before it, on the shared context. */
+export const videoFrameImportWaits = (): number => {
+  "worklet";
+  return getCache().checkedWaits;
 };
 
 /** Clear a runtime's imported images after ending all its producers.
@@ -159,6 +254,7 @@ const drainNativeCopies = (cache: Cache): void => {
 export const clearVideoFrameImages = (releaseStagingSurface = false): void => {
   "worklet";
   const cache = getCache();
+  settleInFlightImports(cache, cache.inFlight.length);
   if (cache.pendingSources.length) {
     // A failed drain retains leases; only a successful fence can release them.
     if (cache.pendingSources.some((source) => source.needsDrain)) {
@@ -203,17 +299,20 @@ export const releaseVideoFrameImage = (frame: VideoFrame): void => {
   const cache = getCache();
   const entry = cache.images.get(producer);
   if (entry && entry.id === (frame.id ?? -1)) clearEntry(cache, producer);
-  // Each import ends with a checked flush; after a failed one, only the
-  // drain in clearVideoFrameImages may release the decoder buffers.
-  if (!cache.pendingSources.length)
+  // Every import is done once the GPU is; after a failed one, only the drain
+  // in clearVideoFrameImages may release the decoder buffers.
+  if (!cache.pendingSources.length && cache.yuvImports.has(producer)) {
+    settleInFlightImports(cache, cache.inFlight.length);
     releaseYuvImports(cache.yuvImports, producer);
+  }
   if (cache.images.size === 0) clearVideoFrameImages(true);
 };
 
 /** Returns immutable, owned pixels. WebGPU uploads Android RGBA pixels or blits
  * native buffers into one reusable texture, then snapshots a fresh Skia view.
  * Graphite-backed snapshots bypass the raster ImageProvider's image-count LRU.
- * Wait for completion before releasing sources or rewriting the scratch texture. */
+ * Sources go back once the GPU is done with them; the next import rewrites the
+ * scratch texture after the copy, in queue order. */
 export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   "worklet";
   const cache = getCache();
@@ -237,6 +336,8 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   let ownsSurfaceView = false;
   let nativeSource: NativeVideoFrame | null = null;
   let sourceDrained = false;
+  let completion: Promise<undefined> | null = null;
+  let sourceBytes = 0;
   let releaseSource = true;
   let importFailed = false;
   try {
@@ -310,7 +411,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
           );
           const data = Skia.Data.fromBytes(pixels);
           try {
-            image = Skia.Image.MakeRasterImage(
+            image = Skia.Image.MakeRaster(
               {
                 width: frame.width,
                 height: frame.height,
@@ -510,21 +611,77 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
       // Snapshot records an independent texture copy and submits it after
       // the external blit on the shared queue. The wrapper never draws.
       image = cache.stage.makeImageSnapshot();
-      cache.stage.flush(true);
-      sourceDrained = true;
+      // Submitted without waiting for the GPU, which held the UI thread for
+      // the work of every Skia view on the shared context: the decoder buffer
+      // is handed back once the GPU reports the copy done. A wait still
+      // bounds the buffers out, and stands in where nothing can report.
+      // NV12 and Android's YUV buffers take a byte and a half per pixel.
+      sourceBytes =
+        texture.kind === "native-buffer" &&
+        (texture.region || texture.format === "nv12")
+          ? Math.ceil(bytes * 0.375)
+          : bytes;
+      const wait =
+        typeof device.queue.onSubmittedWorkDone !== "function" ||
+        cache.inFlight.length >= maxInFlightImports ||
+        !affordsInFlight(sourceBytes);
+      cache.stage.flush(wait);
+      if (!wait) {
+        try {
+          completion = device.queue.onSubmittedWorkDone();
+        } catch {
+          // A runtime WebGPU cannot settle promises on.
+          completion = null;
+        }
+      }
+      if (wait || !completion) {
+        if (!wait) cache.stage.flush(true);
+        cache.checkedWaits++;
+        // Every import before this one is done too.
+        settleInFlightImports(cache, cache.inFlight.length, true);
+        completion = null;
+        sourceDrained = true;
+      }
     }
     if (!image) throw new Error("Cannot create a video frame image");
-    // Complete the native handoff before replacing published pixels. A failed
-    // source close must not evict a paused image or leave an unpublished cache
-    // entry behind when the caller receives an import error.
-    if (ownsSurfaceView) {
-      clearSurfaceView(cache);
+    if (completion) {
+      // The GPU copy may still read the decoder buffer: it goes back once the
+      // GPU reports the copy done, or after a wait (settleInFlightImports).
+      // The view stays for that wait.
+      const entry: InFlightImport = { frame, nativeSource, bytes: sourceBytes };
+      cache.inFlight.push(entry);
+      nativeSource = null;
+      releaseSource = false;
       ownsSurfaceView = false;
+      completion.then(
+        () => {
+          const settled = cache.inFlight.indexOf(entry) + 1;
+          // Zero: a wait handed it back already.
+          if (!settled) return;
+          cache.checkedWaits++;
+          try {
+            settleInFlightImports(cache, settled, true);
+          } catch (error) {
+            console.warn("Video frame release failed", error);
+          }
+        },
+        // Handed back by the next wait instead.
+        () => undefined,
+      );
+    } else {
+      // Complete the native handoff before replacing published pixels. A
+      // failed source close must not evict a paused image or leave an
+      // unpublished cache entry behind when the caller receives an import
+      // error.
+      if (ownsSurfaceView) {
+        clearSurfaceView(cache);
+        ownsSurfaceView = false;
+      }
+      nativeSource?.release();
+      nativeSource = null;
+      frame.dispose?.();
+      releaseSource = false;
     }
-    nativeSource?.release();
-    nativeSource = null;
-    frame.dispose?.();
-    releaseSource = false;
     clearEntry(cache, key);
     cache.images.set(key, {
       id: frame.id ?? -1, image, reservation,

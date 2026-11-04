@@ -1,9 +1,9 @@
 {
-  "version": "3.7.4",
+  "version": "3.9.1",
   "files": {
     "cpp/rnskia/RNDawnContext.h": {
-      "before": "7381d2c92b739deffa8429b72d66442b0a40655f3c66ce354bab81d2e058f874",
-      "after": "1846064f3db7eaca296a2f9c3c5fd45904300437cd79d1eeab771f63cf644e34",
+      "before": "d9e9370842e544a3d1a9e4337298c9ea2165c60c87acfe16530ac1325990bab8",
+      "after": "6e003b921aa7f6f00eed0560fd199d9a21c35119854cb026a2d802e39b5a6157",
       "edits": [
         {
           "before": "    current->context->submit(syncToCpu);\n    return inserted;\n  }\n",
@@ -38,8 +38,8 @@
       ]
     },
     "cpp/api/JsiSkApi.h": {
-      "before": "72c8c6828c16ad9c764a749d5140f1a3536f83dd582dce65d6e7f42d88587a30",
-      "after": "9920a47ed26d4713b1f515f2acb54663ca47f44426d3110aed47f0193925ca49",
+      "before": "6fc95fecbb2c9a14124f4ce1e04df73a65ece69d2a302f66966be9870f72e7b2",
+      "after": "4f40e5543cb3edfa263b6e87c18b3549698b779b9236f5448420f4efbf20238a",
       "edits": [
         {
           "before": "  JSI_HOST_FUNCTION(getNativeDevice) {\n",

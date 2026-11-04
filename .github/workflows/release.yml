@@ -1,0 +1,94 @@
+name: Publish to npm
+run-name: Publish ${{ github.event.release.tag_name || inputs.tag }} to npm
+
+# A published GitHub release goes to npm through npm trusted publishing: no npm
+# token, login or passkey. The package's trusted publisher on npmjs.com names
+# this file and has "Allow npm dist-tag" checked. scripts/release.mjs creates
+# the release and waits for this run; `gh workflow run release.yml -f tag=vX.Y.Z`
+# publishes an existing release again (a version already on npm only gets its
+# dist-tags).
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, such as v0.1.0-beta.5
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC)
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing covers dist-tags from npm 11.21.0.
+      - name: Install npm 11.21.1
+        run: npm install --global npm@11.21.1
+
+      # npm receives the archive attached to the GitHub release, so both carry
+      # the same bytes.
+      - name: Download the release archive
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || { echo "::error::Not a release tag: $TAG"; exit 1; }
+          for attempt in 1 2 3 4 5 6; do
+            gh release download "$TAG" --pattern '*.tgz' --dir release && exit 0
+            sleep 10
+          done
+          exit 1
+
+      - name: Publish and set the dist-tags
+        run: |
+          node --input-type=module <<'EOF'
+          import { execFileSync } from 'node:child_process';
+          import { readdirSync } from 'node:fs';
+
+          const run = (args) => execFileSync('npm', args, { stdio: 'inherit' });
+          const view = (name) => JSON.parse(execFileSync('npm', ['view', name, '--json', '--prefer-online'], { encoding: 'utf8' }));
+          const archives = readdirSync('release').filter((file) => file.endsWith('.tgz'));
+          if (archives.length !== 1) throw new Error(`Expected one archive on ${process.env.TAG}, found ${archives.length}`);
+          const archive = `release/${archives[0]}`;
+          const { name, version } = JSON.parse(execFileSync('tar', ['-xzOf', archive, 'package/package.json'], { encoding: 'utf8' }));
+          if (`v${version}` !== process.env.TAG) throw new Error(`${archive} holds ${version}, not ${process.env.TAG}`);
+
+          // The dist-tag rule of scripts/release.mjs: 0.2.0-beta.1 -> beta.
+          const prerelease = /^\d+\.\d+\.\d+-([0-9A-Za-z-]+)/.exec(version)?.[1];
+          const distTag = prerelease && !/^\d+$/.test(prerelease) ? prerelease : prerelease ? 'next' : 'latest';
+          const before = view(name);
+          const versions = [].concat(before.versions);
+          const isNew = !versions.includes(version);
+          if (isNew) run(['publish', archive, '--tag', distTag]);
+          else console.log(`${name}@${version} is already on npm; checking its dist-tags.`);
+
+          // Until a stable version exists, `latest`, what a bare install gets,
+          // follows the newest prerelease. A tag never moves back to an older version.
+          const tags = [distTag, ...(prerelease && !versions.some((v) => !v.includes('-')) ? ['latest'] : [])];
+          const time = { ...before.time, [version]: before.time[version] ?? new Date().toISOString() };
+          for (const tag of tags) {
+            const current = before['dist-tags'][tag];
+            if (current === version || (isNew && tag === distTag)) continue;
+            if (current && time[current] > time[version]) { console.log(`${tag} stays on ${current}, newer than ${version}.`); continue; }
+            run(['dist-tag', 'add', `${name}@${version}`, tag]);
+          }
+          run(['view', name, 'dist-tags', '--prefer-online']);
+          EOF
