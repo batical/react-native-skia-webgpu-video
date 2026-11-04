@@ -157,15 +157,16 @@ export type VideoPlayer = {
  *   (12.4 MB rather than 33.2 MB in 4K), so the decoder holds more frames
  *   ahead for the same memory. On Android only 8-bit SDR tracks decoded at
  *   their own size; other tracks stay `rgba`.
- * - `rgba`: frames converted to RGB as they are decoded (iOS: by VideoToolbox,
- *   Android: by an OpenGL pass), which a GPU export samples in place.
+ * - `rgba` (deprecated): frames converted to RGB as they are decoded (iOS: by
+ *   VideoToolbox, Android: by an OpenGL pass). It no longer has an advantage:
+ *   exports run as fast in `yuv`, which renders the same colors, and a 4K60
+ *   preview keeps fewer frames on screen in `rgba`, whose frames take 4 bytes
+ *   a pixel. It still works; use `auto`.
  * - `auto`: `yuv`, on both platforms.
  *
- * Camera footage (Rec.709, or HLG tone mapped to Rec.709) renders the same
- * either way: both convert with the frame's YCbCr matrix and range. On iOS,
- * `rgba` also converts a file tagged with other primaries or another SDR
- * transfer function (Display P3, sRGB) to Rec.709; `yuv` takes its samples as
- * Rec.709, as Android does in both formats.
+ * Both convert with the frame's YCbCr matrix and range. On iOS, both convert
+ * HDR (HLG, PQ), BT.2020, Display P3 and sRGB files to Rec.709 through
+ * AVFoundation. Android takes SDR samples as Rec.709 in both formats.
  */
 export type VideoFramePixelFormat = "auto" | "yuv" | "rgba";
 
