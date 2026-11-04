@@ -123,8 +123,8 @@ const mockSurface = (label: string) => {
   const canvas = {
     drawColor: jest.fn(),
     readPixels: jest.fn(
-      (_x: number, _y: number, _info: unknown, destination: Uint8Array) =>
-        destination,
+      (_x: number, _y: number, info: { width: number; height: number }) =>
+        Promise.resolve(new Uint8Array(info.width * info.height * 4)),
     ),
   };
   return {

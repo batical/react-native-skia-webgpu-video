@@ -27,7 +27,8 @@ const patches = [[0.04, 0.04], [0.5, 0.04], [0.96, 0.04],
   [0.04, 0.96], [0.5, 0.96], [0.96, 0.96],
   [0.21, 0.5], [0.61, 0.5], [0.5, 0.21], [0.5, 0.61]] as const;
 
-function capture(frame: VideoFrame, expectedTransport: string, beginImport: () => void): Picture {
+// Imports the frame and asks for its patches right away; the pixels land asynchronously (Skia 3.9).
+async function capture(frame: VideoFrame, expectedTransport: string, beginImport: () => void): Promise<Picture> {
   const transport = (frame.texture as { kind?: string } | null)?.kind;
   if (transport !== expectedTransport)
     throw new Error(`Expected ${expectedTransport}, received ${transport}`);
@@ -37,12 +38,12 @@ function capture(frame: VideoFrame, expectedTransport: string, beginImport: () =
   beginImport();
   const result = makeVideoFrameImage(frame);
   if (!result) throw new Error("Decoded frame did not produce a Skia image");
+  const reads = patches.map(([u, v]) => result.image.readPixels(
+    Math.floor((frame.width - 8) * u), Math.floor((frame.height - 8) * v),
+    { width: 8, height: 8, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Opaque },
+  ));
   const pixels: number[] = [];
-  for (const [u, v] of patches) {
-    const data = result.image.readPixels(
-      Math.floor((frame.width - 8) * u), Math.floor((frame.height - 8) * v),
-      { width: 8, height: 8, colorType: ColorType.RGBA_8888, alphaType: AlphaType.Opaque },
-    );
+  for (const data of await Promise.all(reads)) {
     if (!(data instanceof Uint8Array) || data.length !== 8 * 8 * 4)
       throw new Error("Skia pixel readback failed");
     for (const value of data) pixels.push(value);
@@ -51,7 +52,7 @@ function capture(frame: VideoFrame, expectedTransport: string, beginImport: () =
     timestamp, transport, pixels };
 }
 
-function decode(fixture: Fixture, directory: string, hardware: boolean, mode: VideoTextureMode) {
+async function decode(fixture: Fixture, directory: string, hardware: boolean, mode: VideoTextureMode) {
   nativeVideo.configureNativeBufferInterop!(hardware);
   const extractor = nativeVideo.createVideoCompositionFramesExtractorSync({
     duration: 2, lazyDecoders: true,
@@ -79,7 +80,8 @@ function decode(fixture: Fixture, directory: string, hardware: boolean, mode: Vi
     // teardown, before its first import into Skia.
     extractor.dispose();
     const retained = consume(first);
-    return { retained, later, stats: getVideoResourceStats() };
+    // Both imports happened above; only their readbacks are awaited.
+    return { retained: await retained, later: await later, stats: getVideoResourceStats() };
   } catch (error) {
     operationError = error;
     throw error;
@@ -143,9 +145,9 @@ export async function runAndroidInteropSmoke(directory: string, fixtures: Fixtur
         activeCase = `${id}/${mode}`;
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
         await beforeCase();
-        const cpu = decode(fixture, directory, false, mode);
+        const cpu = await decode(fixture, directory, false, mode);
         await beforeCase();
-        const gpu = decode(fixture, directory, true, mode);
+        const gpu = await decode(fixture, directory, true, mode);
         await beforeCase();
         const retained = compare(cpu.retained, gpu.retained);
         const later = compare(cpu.later, gpu.later);
