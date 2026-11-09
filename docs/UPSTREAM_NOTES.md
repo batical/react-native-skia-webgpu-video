@@ -1,5 +1,15 @@
 # Points amont à revoir lors d'une mise à jour Skia
 
+**Mise à jour du 9 novembre 2026 :** **`react-native-skia@3.9.2`** et **`react-native-webgpu@0.21.2`**, toujours sur Dawn/Graphite **157.1.0**. Le `main` amont du jour (`cf9240bd6`) ne diffère de la v3.9.2 que par un banc de performance de l'exemple et de la CI ([#4385](https://github.com/wcandillon/react-native-skia/pull/4385)) : le paquet publié est le même.
+- **Patch :** `JsiSkSurface.h` et `JsiSkApi.h` sont identiques octet pour octet à ceux de la 3.9.1. `RNDawnContext.h` change, mais les 8 éditions s'y appliquent telles quelles.
+- **Une ligne ajoutée au patch :** `submitRecordingChecked` marque son snap et son exécution comme travail GPU (`RNSkGpuActivity::Scope`), comme le fait désormais `submitRecording` en amont.
+  - La 3.9.2 compile en tâche de fond les pipelines courants et ceux du lancement précédent (`RNSkPipelineWarmup`, [#4398](https://github.com/wcandillon/react-native-skia/pull/4398)).
+  - Ce warmup ne compile que si aucun travail GPU n'est marqué, car chaque compilation tient le verrou du device Dawn.
+  - Sans le marquage, nos soumissions vérifiées (l'export) passeraient pour un device au repos.
+- **Autres changements amont :** cadence des vues refaite ([#4398](https://github.com/wcandillon/react-native-skia/pull/4398)), le thread principal Android n'attend plus le thread de présentation ([#4395](https://github.com/wcandillon/react-native-skia/pull/4395)), `MakeGPUTextureFromImage` n'attend plus le CPU ([#4401](https://github.com/wcandillon/react-native-skia/pull/4401), non utilisé ici).
+- **WebGPU 0.21.1 et 0.21.2 :** un `null` dans une liste d'emplacements garde son index ([#617](https://github.com/wcandillon/react-native-webgpu/pull/617)), `device.queue` rend toujours le même objet ([#614](https://github.com/wcandillon/react-native-webgpu/pull/614)), pod compatible `use_frameworks!` ([#612](https://github.com/wcandillon/react-native-webgpu/pull/612)).
+- [#4276](https://github.com/wcandillon/react-native-skia/pull/4276) est toujours ouverte : le patch ne rétrécit pas.
+
 **Mise à jour du 4 novembre 2026 :** **`react-native-skia@3.9.1`** et **`react-native-webgpu@0.21.0`**, sur Dawn/Graphite **157.1.0** ; les deux paquets montent ensemble.
 - **Patch :** `RNDawnContext.h` et `JsiSkApi.h` changent en amont, mais les 8 éditions s'appliquent telles quelles ; seuls les empreintes et les décalages changent.
 - **Readbacks asynchrones (3.9.0, [#4368](https://github.com/wcandillon/react-native-skia/pull/4368)) :** `canvas.readPixels` renvoie une promesse et ne prend plus de tableau de destination. Le readback CPU de secours de l'export attend donc la lecture avant d'encoder.
@@ -129,7 +139,7 @@ La [source Skia de ce build](https://chromium.googlesource.com/skia/+/2466dcf393
 
 Fichiers inspectables :
 
-- [`patches/react-native-skia+3.8.1.patch`](../patches/react-native-skia+3.8.1.patch) : diff du correctif courant ; ceux des versions précédentes sont conservés comme historique.
+- [`patches/react-native-skia+3.9.2.patch`](../patches/react-native-skia+3.9.2.patch) : diff du correctif courant ; ceux des versions précédentes sont conservés comme historique.
 - [`scripts/skia-canvas-patch.json`](../scripts/skia-canvas-patch.json) : version, empreintes avant/après et substitutions attendues.
 - [`scripts/apply-skia-canvas-patch.mjs`](../scripts/apply-skia-canvas-patch.mjs) : vérifie tout avant toute écriture, accepte un patch déjà appliqué, refuse un paquet différent.
 

@@ -1426,7 +1426,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-skia (3.9.1):
+  - react-native-skia (3.9.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1473,7 +1473,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-webgpu (0.21.0):
+  - react-native-webgpu (0.21.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2350,9 +2350,9 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 44dd007f917e2396afa0e70bbd70273237d93fde
   React-microtasksnativemodule: f413ee411341fb3c34d20e85e9f6f524921fab15
   React-mutationobservernativemodule: 58f6d2adf7d98e72b241608dfa2ddce414d2a4e7
-  react-native-skia: bafae4183d4bbaf0dc433a6b48d59dc0dcbfde81
+  react-native-skia: 664894286ccbf0d0f9727c2f132499dbd4122792
   react-native-skia-webgpu-video: 3dfd41b1018b347ade67c12d48b787b3ae4fc819
-  react-native-webgpu: c764ad1fab604bd41260f78844bbd16d167b0b6c
+  react-native-webgpu: d56183ba5d1b525477d49add6a8d43cd6b146bed
   React-NativeModulesApple: 167e532fb9bae30f3c66636b8ee0092bab263667
   React-networking: 89f6b69755a3176f30e56ba1ba8e214b1518ecfb
   React-oscompat: db6675ddaef3bddd1b41533627f3d26ec710c05f
