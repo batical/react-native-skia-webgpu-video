@@ -1,5 +1,10 @@
 # Points amont à revoir lors d'une mise à jour Skia
 
+**Mise à jour du 12 novembre 2026 :** **`react-native-skia@3.10.0`** et **`react-native-webgpu@0.21.3`**, sur Dawn/Graphite **158.0.0** (Skia m158, [#4419](https://github.com/wcandillon/react-native-skia/pull/4419)) ; les deux paquets montent ensemble.
+- **Patch :** `RNDawnContext.h` et `JsiSkSurface.h` sont identiques octet pour octet à ceux de la 3.9.2. `JsiSkApi.h` change (ajout de `ShapeBlob`), mais les éditions s'y appliquent telles quelles ; seules ses empreintes changent.
+- **Autres changements amont :** `pendingFrames` exposé par vue sur `SkGraphiteContext` ([#4412](https://github.com/wcandillon/react-native-skia/pull/4412)), rejeu des commandes du recorder sans copies ([#4423](https://github.com/wcandillon/react-native-skia/pull/4423), [#4424](https://github.com/wcandillon/react-native-skia/pull/4424)), `SkShapeBlob` ([#4413](https://github.com/wcandillon/react-native-skia/pull/4413), non utilisé ici).
+- **Vérifié sur l'hôte seulement :** Jest, typecheck, tests du paquet. Pas encore de build ni de mesure sur appareil.
+
 **Mise à jour du 9 novembre 2026 :** **`react-native-skia@3.9.2`** et **`react-native-webgpu@0.21.2`**, toujours sur Dawn/Graphite **157.1.0**. Le `main` amont du jour (`cf9240bd6`) ne diffère de la v3.9.2 que par un banc de performance de l'exemple et de la CI ([#4385](https://github.com/wcandillon/react-native-skia/pull/4385)) : le paquet publié est le même.
 - **Patch :** `JsiSkSurface.h` et `JsiSkApi.h` sont identiques octet pour octet à ceux de la 3.9.1. `RNDawnContext.h` change, mais les 8 éditions s'y appliquent telles quelles.
 - **Une ligne ajoutée au patch :** `submitRecordingChecked` marque son snap et son exécution comme travail GPU (`RNSkGpuActivity::Scope`), comme le fait désormais `submitRecording` en amont.
@@ -139,7 +144,7 @@ La [source Skia de ce build](https://chromium.googlesource.com/skia/+/2466dcf393
 
 Fichiers inspectables :
 
-- [`patches/react-native-skia+3.9.2.patch`](../patches/react-native-skia+3.9.2.patch) : diff du correctif courant ; ceux des versions précédentes sont conservés comme historique.
+- [`patches/react-native-skia+3.10.0.patch`](../patches/react-native-skia+3.10.0.patch) : diff du correctif courant ; ceux des versions précédentes sont conservés comme historique.
 - [`scripts/skia-canvas-patch.json`](../scripts/skia-canvas-patch.json) : version, empreintes avant/après et substitutions attendues.
 - [`scripts/apply-skia-canvas-patch.mjs`](../scripts/apply-skia-canvas-patch.mjs) : vérifie tout avant toute écriture, accepte un patch déjà appliqué, refuse un paquet différent.
 
