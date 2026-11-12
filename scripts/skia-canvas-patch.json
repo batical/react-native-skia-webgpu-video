@@ -1,5 +1,5 @@
 {
-  "version": "3.9.2",
+  "version": "3.10.0",
   "files": {
     "cpp/rnskia/RNDawnContext.h": {
       "before": "ed26c1390ac4912089b354651c970801d42db7318ed40c51c19357b2252c52d4",
@@ -38,8 +38,8 @@
       ]
     },
     "cpp/api/JsiSkApi.h": {
-      "before": "6fc95fecbb2c9a14124f4ce1e04df73a65ece69d2a302f66966be9870f72e7b2",
-      "after": "4f40e5543cb3edfa263b6e87c18b3549698b779b9236f5448420f4efbf20238a",
+      "before": "07846e9776f57bd2638e2e3092931e5a1324d66710693a2f7e550f648fe13934",
+      "after": "5c0bf4231d658366c8a902221238c3a244b6444cf407468f80c1cd1718b2be16",
       "edits": [
         {
           "before": "  JSI_HOST_FUNCTION(getNativeDevice) {\n",
