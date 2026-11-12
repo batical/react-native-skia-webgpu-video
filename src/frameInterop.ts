@@ -45,6 +45,8 @@ type FrameTexture =
 type Entry = {
   id: number;
   image: SkImage | null;
+  /** The import texture the image wraps, if any. */
+  texture?: GPUTexture | null;
   reservation: number;
   releasedSources: WeakSet<VideoFrame>;
 };
@@ -63,15 +65,28 @@ type PendingSource = {
   sourceReleased: boolean;
   nativeSource?: NativeVideoFrame | null;
 };
+/** A texture frames are converted into, and that their images wrap. */
+type ImportTexture = {
+  texture: GPUTexture;
+  width: number;
+  height: number;
+  format: GPUTextureFormat;
+  reservation: number;
+};
+/** The textures of a producer: its frames go into them in turn, so that the
+ * image of the previous frame stays whole while the next is written. One
+ * texture only, written in place, when the memory budget is short. */
+type ImportTarget = { textures: ImportTexture[] };
 type Cache = {
   images: Map<number, Entry>;
   stage: SkSurface | null;
   canvas: SkCanvas | null;
-  width: number;
-  height: number;
-  format: GPUTextureFormat | null;
+  /** The texture `stage` wraps: the one of the last import, owned by its
+   * producer's target or by `freeTextures`. */
   uploadTexture: GPUTexture | null;
-  uploadReservation: number;
+  targets: Map<number, ImportTarget>;
+  /** Textures of released producers, for the next producer of that size. */
+  freeTextures: ImportTexture[];
   cpuPixels: Uint8Array<ArrayBuffer> | null;
   cpuReservation: number;
   cpuBytesPerRow: number;
@@ -118,11 +133,9 @@ const getCache = (): Cache => {
       images: new Map(),
       stage: null,
       canvas: null,
-      width: 0,
-      height: 0,
-      format: null,
       uploadTexture: null,
-      uploadReservation: 0,
+      targets: new Map(),
+      freeTextures: [],
       cpuPixels: null,
       cpuReservation: 0,
       cpuBytesPerRow: 0,
@@ -160,9 +173,14 @@ const waitForGpu = (cache: Cache): void => {
   "worklet";
   if (cache.stage) cache.stage.flush(true);
   else {
-    const view = cache.uploadTexture
-      ? Skia.Surface.MakeFromGPUTexture(cache.uploadTexture)
-      : null;
+    let texture = cache.uploadTexture ?? cache.freeTextures[0]?.texture;
+    if (!texture) {
+      for (const target of cache.targets.values()) {
+        texture = target.textures[0]?.texture;
+        if (texture) break;
+      }
+    }
+    const view = texture ? Skia.Surface.MakeFromGPUTexture(texture) : null;
     if (!view) throw new Error("Video import drain surface is unavailable");
     try {
       view.flush(true);
@@ -206,6 +224,134 @@ const settleInFlightImports = (
   }
 };
 
+// Free textures kept for the next producer, when they are small enough.
+const maxFreeImportTextures = 2;
+
+/** Work already submitted still completes on a destroyed texture; a caller
+ * that cannot tell whether everything reading it was submitted waits first. */
+const destroyImportTexture = (cache: Cache, entry: ImportTexture) => {
+  "worklet";
+  if (cache.uploadTexture === entry.texture) {
+    clearSurfaceView(cache);
+    cache.uploadTexture = null;
+  }
+  entry.texture.destroy();
+  releaseVideoMemory(entry.reservation);
+  entry.reservation = 0;
+};
+
+// A texture leaves its list only once destroyed: a failed teardown is
+// retried by the next one, its memory still accounted.
+const releaseFreeImportTextures = (cache: Cache) => {
+  "worklet";
+  while (cache.freeTextures.length) {
+    destroyImportTexture(cache, cache.freeTextures[cache.freeTextures.length - 1]!);
+    cache.freeTextures.pop();
+  }
+};
+
+/** Gives up the textures of a producer whose image is disposed. Small ones
+ * are kept for the next producer of that size (a montage goes from clip to
+ * clip), within the budget's sixteenth each, as for imports in flight. */
+const releaseImportTarget = (cache: Cache, producer: number, keep = true) => {
+  "worklet";
+  const target = cache.targets.get(producer);
+  if (!target) return;
+  const budget = videoMemoryBudget();
+  while (target.textures.length) {
+    const entry = target.textures[target.textures.length - 1]!;
+    if (
+      keep &&
+      cache.freeTextures.length < maxFreeImportTextures &&
+      !!budget &&
+      frameByteSize(entry.width, entry.height) <= budget.maxBytes / 16
+    )
+      cache.freeTextures.push(entry);
+    else destroyImportTexture(cache, entry);
+    target.textures.pop();
+  }
+  cache.targets.delete(producer);
+};
+
+/** The texture the next frame of `producer` goes into: one that its current
+ * image does not wrap, when the producer has or can afford a second one. */
+const acquireImportTexture = (
+  cache: Cache,
+  device: GPUDevice,
+  producer: number,
+  width: number,
+  height: number,
+  format: GPUTextureFormat,
+  usage: number,
+  label: string,
+): GPUTexture => {
+  "worklet";
+  let target = cache.targets.get(producer);
+  if (
+    target &&
+    target.textures.some(
+      (entry) =>
+        entry.width !== width ||
+        entry.height !== height ||
+        entry.format !== format,
+    )
+  ) {
+    // The producer changed size: its image wraps a texture given up here.
+    clearEntry(cache, producer);
+    releaseImportTarget(cache, producer, false);
+    target = undefined;
+  }
+  if (!target) {
+    target = { textures: [] };
+    cache.targets.set(producer, target);
+  }
+  const shown = cache.images.get(producer);
+  const live = shown?.image
+    ? target.textures.findIndex((entry) => entry.texture === shown.texture)
+    : -1;
+  let index = target.textures.findIndex((_, i) => i !== live);
+  if (index < 0) {
+    const free = cache.freeTextures.findIndex(
+      (entry) =>
+        entry.width === width &&
+        entry.height === height &&
+        entry.format === format,
+    );
+    const bytes = frameByteSize(width, height);
+    const budget = videoMemoryBudget();
+    if (free >= 0) {
+      target.textures.push(cache.freeTextures.splice(free, 1)[0]!);
+      index = target.textures.length - 1;
+    } else if (
+      !target.textures.length ||
+      !budget ||
+      budget.maxBytes - budget.currentBytes >= 3 * bytes
+    ) {
+      // Free textures of another size only hold memory back from here on.
+      releaseFreeImportTextures(cache);
+      const reservation = reserveVideoMemory(bytes, label);
+      let texture: GPUTexture;
+      try {
+        texture = device.createTexture({
+          size: { width, height },
+          format,
+          usage,
+          label,
+        });
+      } catch (error) {
+        releaseVideoMemory(reservation);
+        throw error;
+      }
+      target.textures.push({ texture, width, height, format, reservation });
+      index = target.textures.length - 1;
+    } else {
+      // No room for a second texture: write over the current frame.
+      index = live;
+    }
+  }
+  return target.textures[index]!.texture;
+};
+
 const clearCpuPixels = (cache: Cache) => {
   "worklet";
   cache.cpuPixels = null;
@@ -219,18 +365,17 @@ const clearStagingSurface = (cache: Cache) => {
   settleInFlightImports(cache, cache.inFlight.length);
   cache.stage?.flush(true);
   clearSurfaceView(cache);
-  cache.uploadTexture?.destroy();
+  for (const producer of [...cache.targets.keys()])
+    releaseImportTarget(cache, producer, false);
+  releaseFreeImportTextures(cache);
   cache.uploadTexture = null;
-  releaseVideoMemory(cache.uploadReservation);
-  cache.uploadReservation = 0;
   clearCpuPixels(cache);
-  cache.width = cache.height = 0;
-  cache.format = null;
 };
 
 /** Record explicit recovery work after a possibly submitted external copy.
- * Clearing scratch cannot modify an already owned snapshot. The checked fence
- * must succeed before either native lease or the texture can be released. */
+ * It clears the texture of the import that failed, whose image is dropped;
+ * with two textures, the producer's previous image is in the other one. The
+ * checked fence must succeed before either native lease or the texture can be released. */
 const drainNativeCopies = (cache: Cache): void => {
   "worklet";
   if (!cache.stage || !cache.canvas)
@@ -250,7 +395,7 @@ export const videoFrameImportWaits = (): number => {
 
 /** Clear a runtime's imported images after ending all its producers.
  * Do not clear a paused producer's current frame: its native source has
- * already been released, and the owned snapshot is its remaining pixels. */
+ * already been released, and its image's texture is its remaining pixels. */
 export const clearVideoFrameImages = (releaseStagingSurface = false): void => {
   "worklet";
   const cache = getCache();
@@ -298,7 +443,10 @@ export const releaseVideoFrameImage = (frame: VideoFrame): void => {
   const producer = frame.producerId ?? frame.id ?? -1;
   const cache = getCache();
   const entry = cache.images.get(producer);
-  if (entry && entry.id === (frame.id ?? -1)) clearEntry(cache, producer);
+  if (entry && entry.id === (frame.id ?? -1)) {
+    clearEntry(cache, producer);
+    releaseImportTarget(cache, producer);
+  }
   // Every import is done once the GPU is; after a failed one, only the drain
   // in clearVideoFrameImages may release the decoder buffers.
   if (!cache.pendingSources.length && cache.yuvImports.has(producer)) {
@@ -308,11 +456,17 @@ export const releaseVideoFrameImage = (frame: VideoFrame): void => {
   if (cache.images.size === 0) clearVideoFrameImages(true);
 };
 
-/** Returns immutable, owned pixels. WebGPU uploads Android RGBA pixels or blits
- * native buffers into one reusable texture, then snapshots a fresh Skia view.
- * Graphite-backed snapshots bypass the raster ImageProvider's image-count LRU.
- * Sources go back once the GPU is done with them; the next import rewrites the
- * scratch texture after the copy, in queue order. */
+/** Returns owned pixels. WebGPU uploads Android RGBA pixels or blits native
+ * buffers into a texture of the frame's producer, which the image wraps: no
+ * copy into a snapshot, and no entry in the raster ImageProvider's LRU.
+ * Sources go back once the GPU is done with them.
+ *
+ * The image is the producer's until its next frame is imported, which
+ * disposes it. A producer has two textures and writes its frames into them in
+ * turn, so the texture of an image is only written again by the import after
+ * the one that disposed it; with a memory budget too short for a second
+ * texture, the next frame is written over it, in queue order after the draws
+ * already submitted. */
 export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   "worklet";
   const cache = getCache();
@@ -321,7 +475,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
     const existing = cache.images.get(producer);
     if (existing?.id === frame.id && existing.image) {
       // Android can issue a fresh lease for the same paused picture. The
-      // snapshot already owns its pixels, so close that unused native lease.
+      // image already owns its pixels, so close that unused native lease.
       // Weak tracking avoids retaining raw buffers or closing one wrapper twice.
       if (!existing.releasedSources.has(frame)) {
         frame.dispose?.();
@@ -338,6 +492,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   let sourceDrained = false;
   let completion: Promise<undefined> | null = null;
   let sourceBytes = 0;
+  let importTexture: GPUTexture | null = null;
   let releaseSource = true;
   let importFailed = false;
   try {
@@ -444,49 +599,25 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
       }
       const format =
         uploadRgba || uploadAndroidRgba ? "rgba8unorm" : "bgra8unorm";
-      reservation = reserveVideoMemory(bytes, "owned video image");
-      if (
-        !cache.uploadTexture ||
-        cache.width !== frame.width ||
-        cache.height !== frame.height ||
-        cache.format !== format
-      ) {
-        clearStagingSurface(cache);
-        cache.uploadReservation = reserveVideoMemory(
-          bytes,
-          uploadRgba
-            ? "RGBA frame WebGPU upload texture"
-            : "native frame WebGPU upload texture",
-        );
-        try {
-          // One scratch texture per runtime. COPY_SRC lets Graphite snapshot
-          // it with a GPU blit rather than draw into another staging target.
-          cache.uploadTexture = device.createTexture({
-            size: { width: frame.width, height: frame.height },
-            format,
-            // Android AHB and CPU frames share the RGBA scratch. Include
-            // COPY_DST even for a first AHB frame, so a later CPU fallback
-            // cannot reuse a texture that forbids writeTexture.
-            usage:
-              uploadRgba || uploadAndroidRgba
-                ? rgbaVideoTextureUsage
-                : nativeVideoTextureUsage,
-            label: uploadRgba
-              ? "video RGBA frame upload"
-              : "video native frame upload",
-          });
-          cache.width = frame.width;
-          cache.height = frame.height;
-          cache.format = format;
-        } catch (error) {
-          try {
-            clearStagingSurface(cache);
-          } catch {
-            /* unfinished cleanup/accounting stays reachable */
-          }
-          throw error;
-        }
-      }
+      // The frame is converted straight into a texture of its producer, which
+      // the image wraps: no copy into a snapshot. Android AHB and CPU frames
+      // share RGBA textures, COPY_DST included even for a first AHB frame, so
+      // that a later CPU fallback can write into them.
+      clearSurfaceView(cache);
+      cache.uploadTexture = null;
+      cache.uploadTexture = acquireImportTexture(
+        cache,
+        device,
+        key,
+        frame.width,
+        frame.height,
+        format,
+        uploadRgba || uploadAndroidRgba
+          ? rgbaVideoTextureUsage
+          : nativeVideoTextureUsage,
+        uploadRgba ? "video RGBA frame" : "video native frame",
+      );
+      importTexture = cache.uploadTexture;
       if (copyRgbaPixels && texture.kind === "rgba") {
         if (
           !cache.cpuPixels ||
@@ -523,9 +654,8 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
         clearCpuPixels(cache);
       }
       clearSurfaceView(cache);
-      // WebGPU writes do not invalidate SkSurface's cached snapshot. A fresh
-      // surface wrapper for every frame prevents stale pixels without another
-      // GPU allocation or a write through Skia that would overwrite the input.
+      // The surface only carries the checked submissions and waits of this
+      // import, and its recovery drain; the image wraps the texture itself.
       cache.stage = Skia.Surface.MakeFromGPUTexture(cache.uploadTexture!);
       if (!cache.stage) throw new Error("Cannot wrap video upload texture");
       ownsSurfaceView = true;
@@ -610,7 +740,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
       }
       // Snapshot records an independent texture copy and submits it after
       // the external blit on the shared queue. The wrapper never draws.
-      image = cache.stage.makeImageSnapshot();
+      image = Skia.Image.MakeFromGPUTexture(cache.uploadTexture!);
       // Submitted without waiting for the GPU, which held the UI thread for
       // the work of every Skia view on the shared context: the decoder buffer
       // is handed back once the GPU reports the copy done. A wait still
@@ -684,7 +814,10 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
     }
     clearEntry(cache, key);
     cache.images.set(key, {
-      id: frame.id ?? -1, image, reservation,
+      id: frame.id ?? -1,
+      image,
+      reservation,
+      texture: importTexture,
       releasedSources: new WeakSet([frame]),
     });
     return image;
