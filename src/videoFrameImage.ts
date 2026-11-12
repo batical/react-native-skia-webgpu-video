@@ -41,7 +41,7 @@ export type VideoFrameFit = "fill" | "cover" | "contain";
  *
  * @param frame the frame, drawn in the tick it was handed out in
  * @param output an image returned for a previous frame, recycled rather than
- * allocating a new wrapper. Accepted for compatibility; owned snapshots are used in v3
+ * allocating a new wrapper. Accepted for compatibility; the image wraps a texture the library owns
  * @returns the image and its picture, or null when the frame has no texture
  */
 export const makeVideoFrameImage = (

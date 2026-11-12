@@ -283,6 +283,15 @@ export const useVideoComposition = <T = undefined>({
 
   const surfaceSharedValue = useSharedValue<SkSurface | null>(null);
   const canvasSharedValue = useSharedValue<SkCanvas | null>(null);
+  // The preview draws into two surfaces in turn, and shows each through an
+  // image sharing its texture (asImage): no copy per draw, as a snapshot
+  // made. The picture on screen stays whole while the next is drawn into the
+  // other surface.
+  const spareSurfaceSharedValue = useSharedValue<SkSurface | null>(null);
+  const spareCanvasSharedValue = useSharedValue<SkCanvas | null>(null);
+  const bufferImages = useSharedValue<Array<SkImage | null>>([]);
+  // The buffer on screen: 0, 1 (the spare), or -1 before the first draw.
+  const frontBuffer = useSharedValue(-1);
   const surfaceReservation = useSharedValue(0);
   const surfaceWidth = useSharedValue(0);
   const surfaceHeight = useSharedValue(0);
@@ -290,8 +299,10 @@ export const useVideoComposition = <T = undefined>({
     "worklet";
     const resources = {
       surface: surfaceSharedValue.value,
+      spareSurface: spareSurfaceSharedValue.value,
       canvas: canvasSharedValue.value,
-      images: [currentFrame.value, pendingSnapshot.value],
+      // currentFrame is one of the buffers' images.
+      images: [...bufferImages.value, pendingSnapshot.value],
       frames: Object.values(previousSources.value),
       reservation: surfaceReservation.value,
       afterDraw: pendingAfterDraw.value?.run,
@@ -307,6 +318,10 @@ export const useVideoComposition = <T = undefined>({
     sourcesGeneration.value = 0;
     surfaceSharedValue.value = null;
     canvasSharedValue.value = null;
+    spareSurfaceSharedValue.value = null;
+    spareCanvasSharedValue.value = null;
+    bufferImages.value = [];
+    frontBuffer.value = -1;
     surfaceReservation.value = 0;
     surfaceWidth.value = 0;
     surfaceHeight.value = 0;
@@ -478,8 +493,9 @@ export const useVideoComposition = <T = undefined>({
         // picture by the ratio between them, so the surface is re-keyed on its
         // dimensions the way exportVideoComposition already re-keys its own.
         const retired = {
-          images: [currentFrame.value, pendingSnapshot.value],
+          images: [...bufferImages.value, pendingSnapshot.value],
           surface,
+          spareSurface: spareSurfaceSharedValue.value,
           canvas: canvasSharedValue.value,
           reservation: surfaceReservation.value,
           afterDraw: pendingAfterDraw.value?.run,
@@ -489,10 +505,14 @@ export const useVideoComposition = <T = undefined>({
         pendingAfterDraw.value = null;
         canvasSharedValue.value = null;
         surfaceSharedValue.value = null;
+        spareSurfaceSharedValue.value = null;
+        spareCanvasSharedValue.value = null;
+        bufferImages.value = [];
+        frontBuffer.value = -1;
         surfaceReservation.value = 0;
         const retiredFailure = disposePreviewResources(retired);
         if (retiredFailure.failed) throw retiredFailure.error;
-        // Surface + immutable snapshot/COW backing while replacing the preview.
+        // The two surfaces the preview draws into in turn.
         const reservation = reserveVideoMemory(
           frameByteSize(pixelWidth, pixelHeight) * 2,
           "composition preview",
@@ -503,6 +523,13 @@ export const useVideoComposition = <T = undefined>({
           surfaceSharedValue.value = surface;
           if (!surface) throw new Error("Cannot allocate preview surface");
           canvasSharedValue.value = getVideoCanvas(surface);
+          const spare = Skia.Surface.MakeOffscreen(pixelWidth, pixelHeight);
+          spareSurfaceSharedValue.value = spare;
+          if (!spare) throw new Error("Cannot allocate preview surface");
+          spareCanvasSharedValue.value = getVideoCanvas(spare);
+          const first = surface.asImage();
+          bufferImages.value = [first];
+          bufferImages.value = [first, spare.asImage()];
           surfaceWidth.value = pixelWidth;
           surfaceHeight.value = pixelHeight;
         } catch (error) {
@@ -515,8 +542,13 @@ export const useVideoComposition = <T = undefined>({
         console.warn("Failed to create surface");
         return;
       }
+      // Draw into the buffer that is not on screen.
+      const back = frontBuffer.value === 0 ? 1 : 0;
+      if (back === 1) surface = spareSurfaceSharedValue.value!;
+      const backSurface = surface;
 
-      const canvas = canvasSharedValue.value!;
+      const canvas =
+        back === 1 ? spareCanvasSharedValue.value! : canvasSharedValue.value!;
       // Cleared as the export clears it: a drawFrame that leaves part of the
       // canvas alone showed the previous frames there, and not in the export.
       canvas.drawColor(Skia.Color("#00000000"), BlendMode.Clear);
@@ -541,12 +573,7 @@ export const useVideoComposition = <T = undefined>({
           width: pixelWidth,
           height: pixelHeight,
         });
-        const previous = currentFrame.value;
-        const next = surface.makeImageSnapshot(
-          undefined,
-          previous ?? undefined,
-        );
-        if (next !== previous) pendingSnapshot.value = next;
+        const next = bufferImages.value[back]!;
         // Waiting for the GPU here held the UI thread for the work of every
         // Skia view on the shared context: a vsync in three with 4K frames on
         // iOS with Skia 3.9.1, every other one before. The draw samples only
@@ -556,16 +583,14 @@ export const useVideoComposition = <T = undefined>({
         const wait =
           afterDrawFrame !== undefined ||
           uncheckedDraws.value >= maxUncheckedDraws;
-        surface.flush(wait);
+        backSurface.flush(wait);
         uncheckedDraws.value = wait ? 0 : uncheckedDraws.value + 1;
         drawn.submitted = true;
         frameGeneration.value = generation;
-        if (next === previous) currentFrame.modify(undefined, true);
-        else {
-          currentFrame.value = next;
-          previous?.dispose();
-        }
-        pendingSnapshot.value = null;
+        // The image shares the surface's texture: it shows this draw once
+        // the flush above has submitted it.
+        currentFrame.value = next;
+        frontBuffer.value = back;
       } catch (error) {
         drawn.failed = true;
         drawn.error = error;

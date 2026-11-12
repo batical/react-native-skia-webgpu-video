@@ -101,6 +101,7 @@ const mockSurface = {
   getCanvas: jest.fn(() => mockCanvas),
   flush: jest.fn(),
   makeImageSnapshot: mockMakeSnapshot,
+  asImage: jest.fn(() => mockMakeSnapshot()),
   dispose: jest.fn(),
 };
 
@@ -283,7 +284,7 @@ describe("serialized UI worklets", () => {
     expect(rendered.result.current.currentFrame.value).not.toBeNull();
     rendered.unmount();
     expect(extractor.dispose).toHaveBeenCalledTimes(1);
-    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
+    expect(mockSurface.dispose).toHaveBeenCalledTimes(2);
     expect(RNSkiaVideoModule.releaseMemory).toHaveBeenCalledTimes(1);
     expect(mockSerializedRuntime.evaluatedBodies).toBeGreaterThan(5);
   });
@@ -350,7 +351,7 @@ describe("serialized UI worklets", () => {
     );
     expect(rendered.result.current.player).toBeNull();
     expect(extractor.dispose).toHaveBeenCalledTimes(1);
-    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
+    expect(mockSurface.dispose).toHaveBeenCalledTimes(2);
     rendered.unmount();
     expect(extractor.dispose).toHaveBeenCalledTimes(1);
   });
@@ -976,7 +977,7 @@ describe("useVideoComposition", () => {
       });
       tick();
       expect(drawFrame).toHaveBeenCalledTimes(2);
-      expect(surfaceCalls()).toHaveLength(2);
+      expect(surfaceCalls()).toHaveLength(4);
     });
 
     it("still skips while paused with nothing new", () => {
@@ -1109,7 +1110,7 @@ describe("useVideoComposition", () => {
 
     rerender({ composition, drawFrame, width: 100, height: 50 });
     tick();
-    expect(surfaceCalls()).toHaveLength(1);
+    expect(surfaceCalls()).toHaveLength(2);
     expect(drawFrame).toHaveBeenCalledTimes(1);
   });
 
@@ -1159,7 +1160,7 @@ describe("useVideoComposition", () => {
     );
   });
 
-  it("creates the surface once and recycles the output image", () => {
+  it("creates its two surfaces once and shows their images in turn, without a snapshot", () => {
     const { extractor, result } = setup();
     extractor.isPlaying = true;
 
@@ -1168,22 +1169,28 @@ describe("useVideoComposition", () => {
     expect(firstImage).not.toBeNull();
 
     tick();
-    expect(surfaceCalls()).toHaveLength(1);
+    const secondImage = result.current.currentFrame.value;
+    // The picture on screen is not drawn over: the other surface's image.
+    expect(secondImage).not.toBeNull();
+    expect(secondImage).not.toBe(firstImage);
+
+    tick();
+    expect(result.current.currentFrame.value).toBe(firstImage);
+    expect(surfaceCalls()).toHaveLength(2);
+    // One image per surface, sharing its texture: no copy per draw.
+    expect(mockSurface.asImage).toHaveBeenCalledTimes(2);
     expect(mockMakeSnapshot).toHaveBeenCalledTimes(2);
     expect(makeImage).not.toHaveBeenCalled();
-    // Skia 3 reuses the snapshot wrapper rather than importing a borrowed GL texture.
-    expect(mockMakeSnapshot.mock.calls[1]?.[1]).toBe(firstImage);
     // Nothing of the caller's to release: submitted without a GPU wait.
     expect(mockSurface.flush).toHaveBeenCalledWith(false);
     expect(mockSurface.flush).not.toHaveBeenCalledWith(true);
-    expect(result.current.currentFrame.value).toBe(firstImage);
   });
 
   it("re-keys the surface when the size changes", () => {
     const { extractor, rerender } = setup();
     extractor.isPlaying = true;
     tick();
-    expect(surfaceCalls()).toHaveLength(1);
+    expect(surfaceCalls()).toHaveLength(2);
 
     rerender({
       composition,
@@ -1192,8 +1199,8 @@ describe("useVideoComposition", () => {
       height: 50,
     });
     tick();
-    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
-    expect(surfaceCalls()).toHaveLength(2);
+    expect(mockSurface.dispose).toHaveBeenCalledTimes(2);
+    expect(surfaceCalls()).toHaveLength(4);
   });
 
   it("runs beforeDrawFrame and afterDrawFrame around each draw, after a GPU wait", () => {
@@ -1443,13 +1450,13 @@ describe("useVideoComposition", () => {
     act(() => renderer.unmount());
   });
 
-  it("releases its canvas, surface and displayed image on unmount", () => {
+  it("releases its canvases, surfaces and their images on unmount", () => {
     const { result, unmount } = setup();
     tick();
     const image = result.current.currentFrame.value!;
     unmount();
     expect(image.dispose).toHaveBeenCalledTimes(1);
-    expect(mockSurface.dispose).toHaveBeenCalledTimes(1);
+    expect(mockSurface.dispose).toHaveBeenCalledTimes(2);
     expect(mockSurface.flush).toHaveBeenCalledWith(true);
     expect(result.current.currentFrame.value).toBeNull();
   });

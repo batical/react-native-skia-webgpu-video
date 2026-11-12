@@ -5,6 +5,8 @@ import type { VideoFrame } from "./types";
 
 type PreviewResources = {
   surface?: SkSurface | null;
+  /** The preview's second buffer (see useVideoCompositionPlayer). */
+  spareSurface?: SkSurface | null;
   canvas?: SkCanvas | null;
   images?: Array<SkImage | null>;
   frames?: VideoFrame[];
@@ -36,6 +38,8 @@ export const disposePreviewResources = (resources: PreviewResources) => {
     resources.canvas = null;
     resources.surface?.dispose();
     resources.surface = null;
+    resources.spareSurface?.dispose();
+    resources.spareSurface = null;
     releaseVideoMemory(resources.reservation ?? 0);
     resources.reservation = 0;
   } catch (error) {
