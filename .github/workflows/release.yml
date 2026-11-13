@@ -67,7 +67,8 @@ jobs:
           const view = (name) => JSON.parse(execFileSync('npm', ['view', name, '--json', '--prefer-online'], { encoding: 'utf8' }));
           const archives = readdirSync('release').filter((file) => file.endsWith('.tgz'));
           if (archives.length !== 1) throw new Error(`Expected one archive on ${process.env.TAG}, found ${archives.length}`);
-          const archive = `release/${archives[0]}`;
+          // ./ keeps npm from reading release/x.tgz as a GitHub repository.
+          const archive = `./release/${archives[0]}`;
           const { name, version } = JSON.parse(execFileSync('tar', ['-xzOf', archive, 'package/package.json'], { encoding: 'utf8' }));
           if (`v${version}` !== process.env.TAG) throw new Error(`${archive} holds ${version}, not ${process.env.TAG}`);
 
