@@ -180,7 +180,12 @@ const waitForGpu = (cache: Cache): void => {
         if (texture) break;
       }
     }
-    const view = texture ? Skia.Surface.MakeFromGPUTexture(texture) : null;
+    // A released producer's textures may all be gone (too big to keep free)
+    // while its imports are still in flight: any Graphite surface's checked
+    // flush waits on the shared context just the same.
+    const view = texture
+      ? Skia.Surface.MakeFromGPUTexture(texture)
+      : Skia.Surface.MakeOffscreen(1, 1);
     if (!view) throw new Error("Video import drain surface is unavailable");
     try {
       view.flush(true);
