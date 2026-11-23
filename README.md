@@ -35,11 +35,11 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 
 | Dependency | Current configuration |
 | --- | --- |
-| React Native | `0.86.2` tested; declared peer range `>=0.83 <0.87` |
-| React | `19.2.3` tested |
+| React Native | `0.88.1` tested; declared peer range `>=0.86 <0.89` (Reanimated 4.7 supports 0.86–0.88) |
+| React | `19.3.0` tested |
 | React Native Skia | **`react-native-skia@3.10.0`** |
 | React Native WebGPU | **`react-native-webgpu@0.21.3`** (both resolve `react-native-webgpu-dawn@158.0.0`) |
-| Reanimated / Worklets | **`4.5.3` / `0.11.3`** |
+| Reanimated / Worklets | **`4.7.1` / `0.13.1`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
 
@@ -50,7 +50,7 @@ On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`
 ### Install
 
 ```sh
-npm install --save-exact react-native-skia@3.10.0 react-native-webgpu@0.21.3 react-native-reanimated@4.5.3 react-native-worklets@0.11.3
+npm install --save-exact react-native-skia@3.10.0 react-native-webgpu@0.21.3 react-native-reanimated@4.7.1 react-native-worklets@0.13.1
 npm install --save-exact react-native-skia-webgpu-video
 ```
 
