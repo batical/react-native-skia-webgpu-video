@@ -42,15 +42,13 @@ afterEach(() => {
 describe("shared video GPU runtime inputs", () => {
   it("keeps the RN native object captured even when the consuming runtime has no RNWebGPU global", () => {
     const source = { release: jest.fn() };
-    const bridge = { createVideoFrameFromNativeBuffer: jest.fn(() => source) };
+    const bridge = { createNativeBufferFromPointer: jest.fn(() => source) };
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = bridge;
     jest.isolateModules(() => {
       const gpu = require("../gpuDevice") as typeof import("../gpuDevice");
       delete (globalThis as unknown as Record<string, unknown>).RNWebGPU;
       expect(gpu.createNativeVideoGpuFrame(123n)).toBe(source);
-      expect(bridge.createVideoFrameFromNativeBuffer).toHaveBeenCalledWith(
-        123n,
-      );
+      expect(bridge.createNativeBufferFromPointer).toHaveBeenCalledWith(123n);
       expect(gpu.getVideoGpuDevice()).toBe(mockDevice);
       expect(gpu.nativeVideoTextureUsage).toBe(21);
       expect(gpu.rgbaVideoTextureUsage).toBe(23);
@@ -77,7 +75,7 @@ describe("shared video GPU runtime inputs", () => {
     mockDevice.features.add("shared-texture-memory-ahardware-buffer");
     mockDevice.features.add("shared-fence-sync-fd");
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = {
-      createVideoFrameFromNativeBuffer: jest.fn(),
+      createNativeBufferFromPointer: jest.fn(),
     };
     jest.isolateModules(() => {
       require("../gpuDevice");
@@ -93,7 +91,7 @@ describe("shared video GPU runtime inputs", () => {
   it("selects CPU before decoder setup if either required Dawn feature is absent", () => {
     (Platform as unknown as { OS: string }).OS = "android";
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = {
-      createVideoFrameFromNativeBuffer: jest.fn(),
+      createNativeBufferFromPointer: jest.fn(),
     };
     for (const feature of [
       "shared-texture-memory-ahardware-buffer",
@@ -134,7 +132,7 @@ describe("shared video GPU runtime inputs", () => {
     mockDevice.features.add("shared-texture-memory-ahardware-buffer");
     mockDevice.features.add("shared-fence-sync-fd");
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = {
-      createVideoFrameFromNativeBuffer: jest.fn(),
+      createNativeBufferFromPointer: jest.fn(),
     };
     mockConfigureInterop.mockImplementationOnce(() => {
       throw new Error(
@@ -152,7 +150,7 @@ describe("shared video GPU runtime inputs", () => {
     mockDevice.features.add("shared-texture-memory-ahardware-buffer");
     mockDevice.features.add("shared-fence-sync-fd");
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = {
-      createVideoFrameFromNativeBuffer: jest.fn(),
+      createNativeBufferFromPointer: jest.fn(),
     };
     const failure = new Error("Native AHB memory budget exhausted");
     mockConfigureInterop.mockImplementationOnce(() => {
@@ -182,7 +180,7 @@ describe("shared video GPU runtime inputs", () => {
     mockDevice.features.add("shared-texture-memory-ahardware-buffer");
     mockDevice.features.add("shared-fence-sync-fd");
     (globalThis as unknown as Record<string, unknown>).RNWebGPU = {
-      createVideoFrameFromNativeBuffer: jest.fn(),
+      createNativeBufferFromPointer: jest.fn(),
     };
     jest.isolateModules(() => {
       require("../gpuDevice");

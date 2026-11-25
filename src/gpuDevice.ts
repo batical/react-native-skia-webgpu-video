@@ -8,7 +8,7 @@ import {
   importDevice,
   installWebGPU,
 } from "react-native-webgpu";
-import type { NativeVideoFrame, RNCanvasContext } from "react-native-webgpu";
+import type { NativeBuffer, RNCanvasContext } from "react-native-webgpu";
 import RNSkiaVideoModule from "./RNSkiaVideoModule";
 
 // Evaluate on the RN runtime. NativeObject serializers carry these objects to
@@ -28,7 +28,7 @@ if (
 ) {
   const features = sharedDevice.features as ReadonlySet<string> | undefined;
   const supported = Boolean(
-    typeof nativeWebGPU?.createVideoFrameFromNativeBuffer === "function" &&
+    typeof nativeWebGPU?.createNativeBufferFromPointer === "function" &&
     typeof features?.has === "function" &&
     features.has("shared-texture-memory-ahardware-buffer") &&
     features.has("shared-fence-sync-fd"),
@@ -52,13 +52,11 @@ export const getVideoGpuDevice = (): GPUDevice => {
   return sharedDevice;
 };
 
-export const createNativeVideoGpuFrame = (
-  pointer: bigint,
-): NativeVideoFrame => {
+export const createNativeVideoGpuFrame = (pointer: bigint): NativeBuffer => {
   "worklet";
   if (!nativeWebGPU)
     throw new Error("React Native WebGPU is missing from the native app");
-  return nativeWebGPU.createVideoFrameFromNativeBuffer(pointer);
+  return nativeWebGPU.createNativeBufferFromPointer(pointer);
 };
 
 /** Android: a canvas context presenting to a native window that is not a

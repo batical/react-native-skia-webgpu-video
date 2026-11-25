@@ -6,8 +6,8 @@
   <a href="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/batical/react-native-skia-webgpu-video/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
   <a href="https://www.npmjs.com/package/react-native-skia-webgpu-video"><img alt="npm" src="https://img.shields.io/npm/v/react-native-skia-webgpu-video" /></a>
   <a href="#status"><img alt="Status: stable" src="https://img.shields.io/badge/status-stable-22c55e" /></a>
-  <img alt="React Native Skia 3.10.0" src="https://img.shields.io/badge/Skia-3.10.0-38bdf8" />
-  <img alt="React Native WebGPU 0.21.3" src="https://img.shields.io/badge/WebGPU-0.21.3-a78bfa" />
+  <img alt="React Native Skia 3.12.0" src="https://img.shields.io/badge/Skia-3.12.0-38bdf8" />
+  <img alt="React Native WebGPU 0.24.0" src="https://img.shields.io/badge/WebGPU-0.24.0-a78bfa" />
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399" /></a>
 </p>
 
@@ -37,20 +37,20 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 | --- | --- |
 | React Native | `0.88.1` tested; declared peer range `>=0.86 <0.89` (Reanimated 4.7 supports 0.86–0.88) |
 | React | `19.3.0` tested |
-| React Native Skia | **`react-native-skia@3.10.0`** |
-| React Native WebGPU | **`react-native-webgpu@0.21.3`** (both resolve `react-native-webgpu-dawn@158.0.0`) |
+| React Native Skia | **`react-native-skia@3.12.0`** |
+| React Native WebGPU | **`react-native-webgpu@0.24.0`** (both pin the `binaries-158.1.0` release of Dawn) |
 | Reanimated / Worklets | **`4.7.1` / `0.13.1`** |
 | Native runtime | New Architecture and Hermes |
 | Android | API **28+**, Vulkan 1.1 (declared as a required feature by Skia) |
 
-A native rebuild is required. Expo Go cannot load this module. Skia and WebGPU now share Dawn through the `react-native-webgpu-dawn` npm package: `node` must be on the `PATH` during `pod install` and Gradle builds, and both packages must resolve the same version of it. For iOS, use the deployment target required by your React Native and Skia versions; the example targets iOS 16.4 or later.
+A native rebuild is required. Expo Go cannot load this module. Skia and WebGPU share one Dawn. Since Skia 3.12.0 and WebGPU 0.24.0, each downloads its native binaries from its GitHub release when the app is built, checks their SHA-256 and caches them: the first build needs network access. Both packages must pin the same binaries release (their `binaries.json`); the build fails otherwise. In Xcode, the app target needs User Script Sandboxing set to No. For iOS, use the deployment target required by your React Native and Skia versions; the example targets iOS 16.4 or later.
 
 On ProMotion iPhones, add `CADisableMinimumFrameDurationOnPhone` (Boolean, `YES`) to your app's `Info.plist`: without it, iOS holds every frame callback of the app, the preview's included, at 60 Hz. On Android 15 and later, a playing preview asks the display for its highest refresh rate itself.
 
 ### Install
 
 ```sh
-npm install --save-exact react-native-skia@3.10.0 react-native-webgpu@0.21.3 react-native-reanimated@4.7.1 react-native-worklets@0.13.1
+npm install --save-exact react-native-skia@3.12.0 react-native-webgpu@0.24.0 react-native-reanimated@4.7.1 react-native-worklets@0.13.1
 npm install --save-exact react-native-skia-webgpu-video
 ```
 

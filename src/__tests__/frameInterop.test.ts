@@ -41,26 +41,37 @@ const mockCreateTexture = jest.fn(
   ): { nativePointer: bigint; destroy: jest.Mock } => mockUploadTexture,
 );
 const mockWrapNative = jest.fn((_pointer: bigint) => mockNativeSource);
-// One wrapper per imported decoder buffer, in creation order.
+// One shared texture memory per imported decoder buffer, in creation order,
+// with its texture and the external texture that samples it.
 const mockYuvImports: {
-  externalTexture: object;
+  texture: { destroy: jest.Mock };
+  external: { destroy: jest.Mock };
+  createTexture: jest.Mock;
   beginAccess: jest.Mock;
   endAccess: jest.Mock;
   destroy: jest.Mock;
 }[] = [];
-const mockImportYuv = jest.fn((_source: unknown, _descriptor: unknown) => {
-  const wrapper = {
-    externalTexture: {},
+const mockImportYuv = jest.fn((_descriptor: unknown) => {
+  const texture = { destroy: jest.fn() };
+  const memory = {
+    texture,
+    external: { destroy: jest.fn() },
+    createTexture: jest.fn(() => texture),
     beginAccess: jest.fn(),
-    endAccess: jest.fn(() => null),
+    endAccess: jest.fn(() => ({ initialized: true, fences: [] })),
     destroy: jest.fn(),
   };
-  mockYuvImports.push(wrapper);
-  return wrapper;
+  mockYuvImports.push(memory);
+  return memory;
 });
-// One external texture per iOS NV12 frame, in import order.
+// One external texture per iOS NV12 frame, in import order. An Android
+// buffer's external texture samples its memory's texture instead.
 const mockExternals: { destroy: jest.Mock }[] = [];
-const mockImportExternal = jest.fn((_descriptor: unknown) => {
+const mockImportExternal = jest.fn((descriptor: { source?: unknown }) => {
+  const imported = mockYuvImports.find(
+    (memory) => memory.texture === descriptor.source,
+  );
+  if (imported) return imported.external;
   const external = { destroy: jest.fn() };
   mockExternals.push(external);
   return external;
@@ -90,7 +101,7 @@ jest.mock("../gpuDevice", () => ({
     createSampler: jest.fn(() => ({})),
     createShaderModule: jest.fn(() => ({})),
     createRenderPipeline: jest.fn(() => ({})),
-    createNativeBufferExternalTexture: mockImportYuv,
+    importSharedTextureMemory: mockImportYuv,
     importExternalTexture: mockImportExternal,
     createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
     createBindGroup: jest.fn(() => ({})),
@@ -318,8 +329,13 @@ describe("Android ImageReader YUV frames", () => {
       expect(mockCopy).not.toHaveBeenCalled();
       // Imported with a reference of its own, keeping the video's encoding.
       expect(mockWrapNative).toHaveBeenNthCalledWith(2, 123n);
-      expect(mockImportYuv).toHaveBeenCalledWith(owned, {
+      expect(mockImportYuv).toHaveBeenCalledWith({
         label: "video decoder buffer",
+        source: owned,
+      });
+      expect(mockImportExternal).toHaveBeenCalledWith({
+        label: "video decoder buffer",
+        source: mockYuvImports[0]!.texture,
         rotation: 90,
         mirrored: false,
         sourceColorSpace: { primaries: "srgb", transfer: "srgb" },
@@ -327,9 +343,11 @@ describe("Android ImageReader YUV frames", () => {
       // Turned clockwise the buffer is 6×8; the bottom padding comes first
       // along x.
       expect(lastMapping()).toEqual(fround([4 / 6, 6 / 8, 2 / 6, 0]));
-      const [wrapper] = mockYuvImports;
-      expect(wrapper!.beginAccess).toHaveBeenCalledTimes(1);
-      expect(wrapper!.endAccess).toHaveBeenCalledTimes(1);
+      const [memory] = mockYuvImports;
+      expect(memory!.beginAccess).toHaveBeenCalledTimes(1);
+      expect(memory!.beginAccess).toHaveBeenCalledWith(memory!.texture, true);
+      expect(memory!.endAccess).toHaveBeenCalledTimes(1);
+      expect(memory!.endAccess).toHaveBeenCalledWith(memory!.texture);
       expect(mockPass.draw).toHaveBeenCalledWith(3);
       expect(mockSubmit).toHaveBeenCalledTimes(1);
       // The snapshot owns the pixels: both native leases close after the
@@ -338,7 +356,9 @@ describe("Android ImageReader YUV frames", () => {
       expect(frame.dispose).toHaveBeenCalledTimes(1);
       expect(owned.release).not.toHaveBeenCalled();
       interop.clearVideoFrameImages(true);
-      expect(wrapper!.destroy).toHaveBeenCalledTimes(1);
+      expect(memory!.external.destroy).toHaveBeenCalledTimes(1);
+      expect(memory!.texture.destroy).toHaveBeenCalledTimes(1);
+      expect(memory!.destroy).toHaveBeenCalledTimes(1);
       expect(owned.release).toHaveBeenCalledTimes(1);
     });
   });
@@ -359,8 +379,8 @@ describe("Android ImageReader YUV frames", () => {
       // The mapping did not change, so it is written once per import.
       expect(mockWriteBuffer).toHaveBeenCalledTimes(2);
       interop.releaseVideoFrameImage(frames[2]!);
-      for (const wrapper of mockYuvImports)
-        expect(wrapper.destroy).toHaveBeenCalledTimes(1);
+      for (const memory of mockYuvImports)
+        expect(memory.destroy).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -380,7 +400,7 @@ describe("Android ImageReader YUV frames", () => {
       expect(mockImportYuv).toHaveBeenCalledTimes(7);
       // The least recently drawn buffer went first.
       expect(
-        mockYuvImports.map((wrapper) => wrapper.destroy.mock.calls.length),
+        mockYuvImports.map((memory) => memory.destroy.mock.calls.length),
       ).toEqual([1, 0, 0, 0, 0, 0, 0]);
     });
   });
@@ -658,11 +678,9 @@ describe("Android RGBA Graphite upload", () => {
   it("keeps only the producer's texture when the CPU scratch budget refuses allocation before native copy", () => {
     withAndroidInterop(
       ({ interop, reserve: androidReserve, release: androidRelease }) => {
-        androidReserve
-          .mockReturnValueOnce(1)
-          .mockImplementationOnce(() => {
-            throw new Error("CPU upload budget exceeded");
-          });
+        androidReserve.mockReturnValueOnce(1).mockImplementationOnce(() => {
+          throw new Error("CPU upload budget exceeded");
+        });
         const native = copyableRgbaFrame();
         expect(() => interop.imageFromVideoFrame(native.frame)).toThrow(
           "CPU upload budget exceeded",
@@ -776,9 +794,7 @@ describe("Android RGBA Graphite upload", () => {
         );
         expect(
           androidReserve.mock.calls.map((call) => call.slice(0, 2)),
-        ).toEqual([
-          [32, "video RGBA frame"],
-        ]);
+        ).toEqual([[32, "video RGBA frame"]]);
         interop.releaseVideoFrameImage(frame);
         expect(image.dispose).toHaveBeenCalledTimes(1);
         expect(mockUploadTexture.destroy).toHaveBeenCalledTimes(1);
@@ -1793,9 +1809,7 @@ describe("owned video frame transport", () => {
       label: "video native frame",
     });
     expect(
-      reserve.mock.calls.filter(
-        (call) => call[1] === "video native frame",
-      ),
+      reserve.mock.calls.filter((call) => call[1] === "video native frame"),
     ).toEqual([
       [32, "video native frame"],
       [32, "video native frame"],
@@ -2100,7 +2114,6 @@ describe("owned video frame transport", () => {
     expect(largerTexture.destroy).toHaveBeenCalledTimes(1);
     expect(first.dispose).toHaveBeenCalledTimes(1);
   });
-
 
   it("replaces a producer's textures and image when its frames change size", () => {
     const first = imageFromVideoFrame({

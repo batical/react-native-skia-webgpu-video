@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { AlphaType, BlendMode, ColorType, Skia } from "react-native-skia";
 import type { SkCanvas, SkImage, SkSurface } from "react-native-skia";
 import type { VideoFrame } from "./types";
-import type { NativeVideoFrame } from "react-native-webgpu";
+import type { NativeBuffer } from "react-native-webgpu";
 import {
   getVideoGpuDevice,
   createNativeVideoGpuFrame,
@@ -53,7 +53,7 @@ type Entry = {
 /** A decoder buffer an import's GPU copy still reads. */
 type InFlightImport = {
   frame: VideoFrame;
-  nativeSource: NativeVideoFrame | null;
+  nativeSource: NativeBuffer | null;
   /** The decoder buffer's size, still reserved in the memory budget. */
   bytes: number;
 };
@@ -63,7 +63,7 @@ type PendingSource = {
   frame: VideoFrame;
   needsDrain: boolean;
   sourceReleased: boolean;
-  nativeSource?: NativeVideoFrame | null;
+  nativeSource?: NativeBuffer | null;
 };
 /** A texture frames are converted into, and that their images wrap. */
 type ImportTexture = {
@@ -493,7 +493,7 @@ export const imageFromVideoFrame = (frame: VideoFrame): SkImage | null => {
   let image: SkImage | null = null;
   let copyPending = false;
   let ownsSurfaceView = false;
-  let nativeSource: NativeVideoFrame | null = null;
+  let nativeSource: NativeBuffer | null = null;
   let sourceDrained = false;
   let completion: Promise<undefined> | null = null;
   let sourceBytes = 0;

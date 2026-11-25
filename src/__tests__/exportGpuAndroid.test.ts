@@ -1,6 +1,18 @@
 const mockRuntimeTasks: Array<() => void> = [];
 const mockCalls: string[] = [];
-const mockImport = jest.fn();
+// The YUV conversion of decoded ImageReader frames (see yuvBlit.ts): each
+// buffer is imported once as shared texture memory.
+const mockYuvMemories: { destroy: jest.Mock }[] = [];
+const mockImport = jest.fn((_descriptor: { label?: string }) => {
+  const memory = {
+    createTexture: jest.fn(() => ({ destroy: jest.fn() })),
+    beginAccess: jest.fn(),
+    endAccess: jest.fn(() => ({ initialized: true, fences: [] })),
+    destroy: jest.fn(() => mockCalls.push("yuv.destroy")),
+  };
+  mockYuvMemories.push(memory);
+  return memory;
+});
 const mockNativeFrame = jest.fn();
 // The canvas context presenting to the encoder's input window.
 const mockWindowFormat = { value: "rgba8unorm" };
@@ -19,8 +31,6 @@ const mockWindowContext = {
   unconfigure: jest.fn(() => mockCalls.push("unconfigure")),
 };
 const mockMakeWindowContext = jest.fn();
-// The YUV conversion of decoded ImageReader frames (see yuvBlit.ts).
-const mockYuvWrappers: { destroy: jest.Mock }[] = [];
 const mockDevice = {
   importSharedTextureMemory: mockImport,
   createTexture: jest.fn((descriptor: { size: object; label?: string }) => {
@@ -39,16 +49,7 @@ const mockDevice = {
   createSampler: jest.fn(() => ({})),
   createShaderModule: jest.fn(() => ({})),
   createRenderPipeline: jest.fn(() => ({})),
-  createNativeBufferExternalTexture: jest.fn(() => {
-    const wrapper = {
-      externalTexture: {},
-      beginAccess: jest.fn(),
-      endAccess: jest.fn(() => null),
-      destroy: jest.fn(() => mockCalls.push("yuv.destroy")),
-    };
-    mockYuvWrappers.push(wrapper);
-    return wrapper;
-  }),
+  importExternalTexture: jest.fn(() => ({ destroy: jest.fn() })),
   createBuffer: jest.fn(() => ({ destroy: jest.fn() })),
   createBindGroup: jest.fn(() => ({})),
   createCommandEncoder: jest.fn((descriptor?: { label?: string }) => ({
@@ -225,7 +226,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockCalls.length = 0;
   mockRuntimeTasks.length = 0;
-  mockYuvWrappers.length = 0;
+  mockYuvMemories.length = 0;
   mockWindowFormat.value = "rgba8unorm";
   mockMakeWindowContext.mockReset().mockReturnValue(mockWindowContext);
   jest.spyOn(console, "warn").mockImplementation(() => undefined);
@@ -402,9 +403,9 @@ describe("Android GPU export", () => {
       mockDevice.createTexture.mock.results[sources[0]!.index]!.value;
     expect(makeImage.mock.calls).toEqual([[source], [source], [source]]);
     // Two buffers, each imported once.
-    expect(mockDevice.createNativeBufferExternalTexture).toHaveBeenCalledTimes(
-      2,
-    );
+    expect(
+      mockImport.mock.calls.filter(([d]) => d.label === "video decoder buffer"),
+    ).toHaveLength(2);
     // After the probe's flush.
     const exported = mockCalls.slice(mockCalls.indexOf("target.flush") + 1);
     // The conversion precedes the drawing, submitted without a wait; a lease
@@ -425,8 +426,8 @@ describe("Android GPU export", () => {
     );
     for (const frame of frames) expect(frame.dispose).toHaveBeenCalledTimes(1);
     // Everything is released once the export ends.
-    for (const wrapper of mockYuvWrappers)
-      expect(wrapper.destroy).toHaveBeenCalledTimes(1);
+    for (const memory of mockYuvMemories)
+      expect(memory.destroy).toHaveBeenCalledTimes(1);
     expect(source.destroy).toHaveBeenCalledTimes(1);
     expect(RNSkiaVideoModule.releaseMemory).toHaveBeenCalledWith(42);
     makeImage.mockReset();
