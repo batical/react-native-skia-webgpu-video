@@ -27,7 +27,7 @@ A new Skia 3 / WebGPU frame-interop layer, written from scratch with explicit re
 - **Audio compositions** with clip audio, separate tracks, and per-item volume.
 - **Custom GPU processing** through an export frame processor and an optional WebGPU resource scope.
 
-> **0.1.0.** The Skia 3.9.1 / WebGPU 0.21.0 build has run on an iPhone 15 Pro and a Pixel 8a: export speed, preview frame accuracy, pixel and color checks, native and instrumented tests, smoke runs. Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization. A few 4K cases have known issues. See [status](#status) before adopting this in production.
+> **0.2.0.** The Skia 3.12.0 / WebGPU 0.24.0 build has run on an iPhone 15 Pro and a Pixel 8a: export speed, preview frame accuracy, pixel and color checks, smoke runs, and the native tests on the iPhone (the Android instrumented suite last ran on 3.9.1). Not yet qualified: memory over long sessions (last checked on 3.0.6), HDR, audible output and A/V synchronization. A few 4K cases have known issues. See [status](#status) before adopting this in production.
 
 ## Installation
 
