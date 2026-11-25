@@ -15,7 +15,9 @@ const pureOnly = process.argv.includes('--pure-only');
 const flags = ['-std=c++20', '-g', ...(asan ? ['-fsanitize=address,undefined', '-fno-omit-frame-pointer'] : [])];
 const includes = ['-I', 'cpp', '-I', 'ios',
   '-I', 'node_modules/react-native/ReactCommon/jsi',
-  '-I', 'node_modules/react-native/ReactCommon/callinvoker'];
+  '-I', 'node_modules/react-native/ReactCommon/callinvoker',
+  // React Native 0.88: CallInvoker.h includes <react/cxxstableapi/UmbrellaGuard.h>.
+  '-I', 'node_modules/react-native/ReactCommon'];
 const jsi = 'node_modules/react-native/ReactCommon/jsi/jsi/jsi.cpp';
 const monitor = 'cpp/RNSVRuntimeLifecycleMonitor.cpp';
 

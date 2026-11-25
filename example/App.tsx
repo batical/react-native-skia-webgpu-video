@@ -121,7 +121,7 @@ export default function App() {
     environment: { deviceId: isAndroid || details.executionTarget === 'simulator' ? details.deviceId : device.deviceId,
       benchmarkRunId: details.benchmarkRunId ?? undefined, processIdentifier: details.processIdentifier,
       deviceModel: details.deviceModel, executionTarget: details.executionTarget,
-      platform: native.Platform.OS, osVersion: details.osVersion, reactNativeVersion: '0.86.2',
+      platform: native.Platform.OS, osVersion: details.osVersion, reactNativeVersion: '0.88.1',
       measurementClock: 'performance.now',
       buildMode: __DEV__ ? 'debug' : 'release', displayRefreshRate: details.displayRefreshRate,
       thermalState: details.thermalState, powerMode: details.powerMode },

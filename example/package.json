@@ -7,12 +7,12 @@
     "ios": "react-native run-ios --device"
   },
   "dependencies": {
-    "react": "19.2.3",
-    "react-native": "0.86.2",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
     "react-native-skia": "3.10.0",
     "react-native-webgpu": "0.21.3",
-    "react-native-reanimated": "4.5.3",
-    "react-native-worklets": "0.11.3",
+    "react-native-reanimated": "4.7.1",
+    "react-native-worklets": "0.13.1",
     "react-native-skia-webgpu-video": "file:.."
   }
 }

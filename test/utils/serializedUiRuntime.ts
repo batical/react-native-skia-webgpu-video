@@ -3,7 +3,7 @@ import { createContext, runInContext } from "node:vm";
 type Worklet = ((...args: any[]) => any) & {
   __workletHash?: number;
   __initData?: { code: string };
-  __closure?: Record<string, unknown>;
+  __closure?: Record<string, unknown> | unknown[];
 };
 
 /** The installed implementation is deliberately loaded instead of imitating
@@ -54,12 +54,20 @@ export const createSerializedUiRuntime = () => {
       if (worklet.__workletHash !== undefined) {
         if (!worklet.__initData?.code)
           throw new Error("Serialized worklet code is missing");
-        const descriptor = { __closure: {} as Record<string, unknown> };
+        // Worklets 0.13 captures positionally (`const [a, b] = this.__closure`);
+        // earlier versions used an object keyed by name.
+        const captures = worklet.__closure ?? {};
+        const closure: Record<string, unknown> | unknown[] = Array.isArray(
+          captures,
+        )
+          ? []
+          : {};
+        const descriptor = { __closure: closure };
         const evaluated = runInContext(worklet.__initData.code, context);
         const fn = evaluated.bind(descriptor);
         unpacked.set(value, fn);
-        for (const [key, capture] of Object.entries(worklet.__closure ?? {}))
-          descriptor.__closure[key] = unpack(capture);
+        for (const [key, capture] of Object.entries(captures))
+          (closure as Record<string, unknown>)[key] = unpack(capture);
         evaluatedBodies++;
         return fn;
       }
