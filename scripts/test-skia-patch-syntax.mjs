@@ -28,7 +28,8 @@ try {
   for (const path of ['cpp', 'cpp/api', 'cpp/jsi', 'cpp/rnskia', 'cpp/utils',
     'cpp/skia', 'cpp/dawn/include']) args.push('-I', join(skia, path));
   args.push('-I', 'node_modules/react-native/ReactCommon/jsi',
-    '-I', 'node_modules/react-native/ReactCommon/callinvoker', unit);
+    '-I', 'node_modules/react-native/ReactCommon/callinvoker',
+    '-I', 'node_modules/react-native/ReactCommon', unit);
   const result = spawnSync('xcrun', args, { cwd: root, stdio: 'inherit', timeout: 120000 });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`Skia canvas header compilation exited with ${result.status ?? result.signal}`);

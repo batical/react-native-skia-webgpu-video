@@ -13,7 +13,8 @@ const args = ['--sdk', 'iphonesimulator', 'clang++', '-std=c++20',
   '-Wno-deprecated-declarations', '-F', frameworks,
   '-I', 'ios', '-I', 'cpp',
   '-I', 'node_modules/react-native/ReactCommon/jsi',
-  '-I', 'node_modules/react-native/ReactCommon/callinvoker'];
+  '-I', 'node_modules/react-native/ReactCommon/callinvoker',
+  '-I', 'node_modules/react-native/ReactCommon'];
 if (process.env.RNSV_HERMES_INCLUDE) args.push('-I', process.env.RNSV_HERMES_INCLUDE);
 else args.push('-DRNSV_TEST_JSC', '-I', 'node_modules/react-native/ReactCommon/jsc');
 args.push('ios/tests/LegacyParityTests.mm');
