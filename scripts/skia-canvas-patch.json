@@ -1,9 +1,9 @@
 {
-  "version": "3.10.0",
+  "version": "3.12.0",
   "files": {
     "cpp/rnskia/RNDawnContext.h": {
-      "before": "ed26c1390ac4912089b354651c970801d42db7318ed40c51c19357b2252c52d4",
-      "after": "bceaaf3cabcde96d4d3843210d74e2de23991631e85427ec34c4b481ff30e5a0",
+      "before": "30bf962161efbb2a0f95fa3ab6b8d07f20962ff54b13d1bd3ffefaf06433e18d",
+      "after": "3f664584c2980a4a92ad41271edfe8a7360af6d1a5c361f5792b53bf96971dda",
       "edits": [
         {
           "before": "    current->context->submit(syncToCpu);\n    return inserted;\n  }\n",

@@ -5,7 +5,7 @@ import type { SkImage } from "react-native-skia";
 import type {
   GPUSharedTextureMemory,
   GPUSharedTextureMemoryDescriptor,
-  NativeVideoFrame,
+  NativeBuffer,
 } from "react-native-webgpu";
 import {
   createNativeVideoGpuFrame,
@@ -33,7 +33,7 @@ import type { YuvImport } from "./yuvBlit";
 export type ExportFrameImport = {
   id: number;
   frame: VideoFrame;
-  nativeFrame: NativeVideoFrame | null;
+  nativeFrame: NativeBuffer | null;
   memory: GPUSharedTextureMemory | null;
   texture: GPUTexture | null;
   accessing: boolean;

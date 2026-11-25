@@ -4,7 +4,7 @@ import type { SkCanvas, SkSurface } from "react-native-skia";
 import type {
   GPUSharedTextureMemory,
   GPUSharedTextureMemoryDescriptor,
-  NativeVideoFrame,
+  NativeBuffer,
   RNCanvasContext,
 } from "react-native-webgpu";
 import { getVideoCanvas } from "./canvas";
@@ -28,7 +28,7 @@ import type { VideoEncoder } from "./types";
 export type EncoderTarget = {
   /** iOS: the lent CVPixelBuffer. */
   pointer: bigint | null;
-  frame: NativeVideoFrame | null;
+  frame: NativeBuffer | null;
   memory: GPUSharedTextureMemory | null;
   texture: GPUTexture | null;
   accessing: boolean;

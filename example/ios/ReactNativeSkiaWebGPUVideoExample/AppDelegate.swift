@@ -38,6 +38,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let sceneWindow = UIWindow(windowScene: windowScene)
     window = sceneWindow
 
+    // A test app: the display stays awake for as long as it is in front, the
+    // native tests and the wait between two runs included, so the phone's
+    // Auto-Lock setting can stay as it is.
+    UIApplication.shared.isIdleTimerDisabled = true
+
     // Hosting the native tests, which make their own Hermes runtime: React
     // Native would look for Metro, fail, and crash in its error handler while
     // the test process exits.

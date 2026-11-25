@@ -1,8 +1,5 @@
 /// <reference types="@webgpu/types" />
-import type {
-  GPUNativeBufferExternalTexture,
-  NativeVideoFrame,
-} from "react-native-webgpu";
+import type { GPUSharedTextureMemory, NativeBuffer } from "react-native-webgpu";
 import {
   createNativeVideoGpuFrame,
   videoShaderStages,
@@ -16,8 +13,12 @@ export type YuvImport = {
   handle: bigint;
   rotation: number;
   /** The import's own reference on the buffer, released with it. */
-  source: NativeVideoFrame;
-  wrapper: GPUNativeBufferExternalTexture;
+  source: NativeBuffer;
+  /** The buffer's import. `texture` is used only between the memory's
+   * beginAccess() and endAccess(); `external` samples it as RGB. */
+  memory: GPUSharedTextureMemory;
+  texture: GPUTexture;
+  external: GPUExternalTexture;
   uniforms: GPUBuffer;
   bindGroup: GPUBindGroup;
   /** uv scale and offset last written to `uniforms`. */
@@ -190,7 +191,9 @@ const getPipeline = (
 /** Call only once the GPU work sampling the buffer has completed. */
 export const releaseYuvImport = (entry: YuvImport): void => {
   "worklet";
-  entry.wrapper.destroy();
+  entry.external.destroy();
+  entry.texture.destroy();
+  entry.memory.destroy();
   entry.uniforms.destroy();
   entry.source.release();
 };
@@ -221,11 +224,21 @@ const importYuvBuffer = (
   "worklet";
   // A reference of its own: the caller's frame keeps its usual lifetime.
   const source = createNativeVideoGpuFrame(handle);
-  let wrapper: GPUNativeBufferExternalTexture | null = null;
+  let memory: GPUSharedTextureMemory | null = null;
+  let texture: GPUTexture | null = null;
+  let external: GPUExternalTexture | null = null;
   let uniforms: GPUBuffer | null = null;
   try {
-    wrapper = device.createNativeBufferExternalTexture(source, {
+    // Imported once: the external texture is kept for every frame of the
+    // buffer, and sampled only inside the memory's access (see blitYuvFrame).
+    memory = device.importSharedTextureMemory({
       label: "video decoder buffer",
+      source,
+    });
+    texture = memory.createTexture();
+    external = device.importExternalTexture({
+      label: "video decoder buffer",
+      source: texture,
       rotation: rotation as 0 | 90 | 180 | 270,
       mirrored: false,
       sourceColorSpace,
@@ -239,7 +252,7 @@ const importYuvBuffer = (
       label: "video YUV blit",
       layout: blit.layout,
       entries: [
-        { binding: 0, resource: wrapper.externalTexture },
+        { binding: 0, resource: external },
         { binding: 1, resource: blit.sampler },
         { binding: 2, resource: { buffer: uniforms } },
       ],
@@ -248,7 +261,9 @@ const importYuvBuffer = (
       handle,
       rotation,
       source,
-      wrapper,
+      memory,
+      texture,
+      external,
       uniforms,
       bindGroup,
       mapping: [],
@@ -256,7 +271,9 @@ const importYuvBuffer = (
   } catch (error) {
     // Nothing was submitted with this import yet.
     uniforms?.destroy();
-    wrapper?.destroy();
+    external?.destroy();
+    texture?.destroy();
+    memory?.destroy();
     source.release();
     throw error;
   }
@@ -273,7 +290,7 @@ export const blitYuvFrame = (
   device: GPUDevice,
   imports: Map<number, YuvImport[]>,
   producer: number,
-  source: NativeVideoFrame,
+  source: NativeBuffer,
   rotation: number,
   region: { x: number; y: number; width: number; height: number },
   target: GPUTexture,
@@ -317,7 +334,8 @@ export const blitYuvFrame = (
     device.queue.writeBuffer(entry.uniforms, 0, new Float32Array(mapping));
     entry.mapping = mapping;
   }
-  entry.wrapper.beginAccess();
+  // The decoder finished writing the buffer: no producer fence to wait for.
+  entry.memory.beginAccess(entry.texture, true);
   try {
     const encoder = device.createCommandEncoder({ label: "video YUV blit" });
     const pass = encoder.beginRenderPass({
@@ -339,7 +357,8 @@ export const blitYuvFrame = (
   } finally {
     // The caller hands the decoder buffer back once the GPU is done with the
     // draw; the release fence is not needed for that.
-    entry.wrapper.endAccess()?.fence.destroy();
+    const ended = entry.memory.endAccess(entry.texture);
+    for (const state of ended?.fences ?? []) state.fence.destroy();
   }
 };
 
@@ -354,7 +373,7 @@ export const blitYuvFrame = (
  */
 export const blitNv12Frame = (
   device: GPUDevice,
-  source: NativeVideoFrame,
+  source: NativeBuffer,
   target: GPUTexture,
 ): void => {
   "worklet";
@@ -407,6 +426,6 @@ export const blitNv12Frame = (
     pass.end();
     device.queue.submit([encoder.finish()]);
   } finally {
-    (external as GPUExternalTexture & { destroy?: () => void }).destroy?.();
+    external.destroy();
   }
 };
